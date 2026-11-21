@@ -13,7 +13,11 @@
 | 0.9 Desktop | portable application/installer | clean Windows/Linux install and rollback |
 | 1.0 Stable | documented supported matrix | regression and hardware validation |
 
-## Current milestone: 0.4.0-rc.1 — integrated dataset and curated LoRA candidate
+## Current milestone: 0.5.0-rc.1 — Multiview candidate (release preparation)
+
+The 0.5 RC.1 code and recovery fixes are integrated through PR #85. The operator reported 7/7 Windows/RTX 3090 acceptance checks passed. Release metadata is being prepared; no stable `v0.5.0` has been tagged or published. See [the 0.5 acceptance register](RC_0_5_0_READINESS.md) for boundaries, exact checks and remaining final SHA CI, engine/workflow compatibility, security and rollback gates. Earlier 0.4.0 stable blockers remain explicit.
+
+## Previous milestone: 0.4.0-rc.1 — integrated dataset and curated LoRA candidate
 
 **Status:** [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) is a published GitHub prerelease based on the candidate merged through PR #76. Subsequent Dataset Studio safety changes (PR #77) are in `main` and may be newer than the immutable release tag. This is not 0.4.0 stable. The Dataset Studio hardening checks (PR #77) were also merged after Windows/Linux CI. The last published prerelease remains `v0.3.0-rc.1` until GitHub Releases confirms otherwise.
 
@@ -23,7 +27,7 @@
 
 **Stable 0.4.0 gate (not yet met):** complete documented supported-engine export profiles, train/validation reproducibility and round-trip manifests, GPU/Windows acceptance across a supported matrix, rollback/no-data-loss update and addressed release blockers. These remain planned, not hidden by a version number.
 
-## Planned milestone: 0.5.0 — Multiview Studio
+## 0.5.0 stable milestone — Multiview Studio (pending)
 
 See [the detailed 0.5.0 delivery and acceptance plan](MULTIVIEW_0_5_ROADMAP.md). It covers subjects/captures/view metadata, source provenance, visual coverage, optional controlled ComfyUI view generation, group-aware exports, multilingual UI, and Windows/Linux plus GPU acceptance. The 0.5 milestone does not waive unfinished 0.4 stable release gates.
 
