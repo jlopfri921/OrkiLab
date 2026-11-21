@@ -983,13 +983,28 @@ function renderCheckpointReviews(){
   const actions=el("div",undefined,"row");actions.append(save,status);box.append(options,details,actions);root.append(box);
  }
 }
-async function loadTrainedLoras(){
+let trainedLoraCache=null;
+function renderTrainedLoras(models){
  const root=$("trained-loras-list"),status=$("trained-loras-status");root.replaceChildren();
- status.textContent=revLang("Loading…","Cargando…");
- try{
-  const d=await api("/api/workspace/trained-loras"),models=d.models||[];
-  status.textContent=models.length?models.length+" "+revLang("selected models","modelos seleccionados"):revLang("No models marked Best or Final yet","Aún no hay modelos marcados como Mejor o Definitivo");
-  for(const m of models){
+ const engineFilter=$("trained-loras-engine"),oldEngine=engineFilter.value;
+ engineFilter.replaceChildren(new Option(t("All engines"),""));
+ for(const id of [...new Set(models.map(m=>m.engine))].sort())engineFilter.add(new Option(engines.find(e=>e.id===id)?.name||id,id));
+ if([...engineFilter.options].some(o=>o.value===oldEngine))engineFilter.value=oldEngine;
+ const q=$("trained-loras-search").value.trim().toLocaleLowerCase(),designation=$("trained-loras-designation").value,engine=engineFilter.value,sort=$("trained-loras-sort").value;
+ const selected=models.filter(m=>
+  (!q||[m.project_name,m.engine,m.base_model,m.workflow_name,m.gpu_name,m.comfy_name,m.notes,m.filename,m.step].some(v=>String(v??"").toLocaleLowerCase().includes(q)))&&
+  (!engine||m.engine===engine)&&(designation===""||(designation==="final"?m.is_final:m.is_best)));
+ selected.sort((a,b)=>{
+  if(sort==="oldest")return String(a.updated_at||"").localeCompare(String(b.updated_at||""));
+  if(sort==="score")return (b.rating||0)-(a.rating||0)||Number(b.is_final)-Number(a.is_final);
+  if(sort==="steps_asc")return a.step-b.step;
+  if(sort==="steps_desc")return b.step-a.step;
+  if(sort==="name_asc")return String(a.project_name).localeCompare(String(b.project_name));
+  return String(b.updated_at||"").localeCompare(String(a.updated_at||""));
+ });
+ status.textContent=selected.length+" / "+models.length+" "+revLang("selected models","modelos seleccionados");
+ if(!selected.length)root.append(el("p",models.length?revLang("No LoRA matches your search or filters.","Ningún LoRA coincide con los filtros."):revLang("No models marked Best or Final yet","Aún no hay modelos marcados como Mejor o Definitivo"),"muted no-i18n"));
+ for(const m of selected){
    const card=el("article",undefined,"panel");
    card.append(el("strong",m.project_name+" · "+revLang("Step ","Paso ")+m.step,"no-i18n"));
    card.append(el("p",m.is_final?revLang("★ Final model","★ Modelo definitivo"):revLang("☆ Best model","☆ Mejor modelo"),"muted no-i18n"));
@@ -1004,9 +1019,25 @@ async function loadTrainedLoras(){
    for(const [label,value] of pairs)card.append(el("p",label+": "+(value==null||value===""?revLang("Not recorded","No registrado"):value),"muted no-i18n"));
    const link=el("a",revLang("Open in comparator","Abrir en comparador"),"no-i18n");link.href="/workspace/comfyui?checkpoint_project="+encodeURIComponent(m.project_id)+"#compare";
    card.append(link);root.append(card);
-  }
+ }
+}
+async function loadTrainedLoras(fromCache=false){
+ const status=$("trained-loras-status");
+ if(fromCache&&trainedLoraCache!==null){renderTrainedLoras(trainedLoraCache);return}
+ status.textContent=revLang("Loading…","Cargando…");
+ try{
+  const d=await api("/api/workspace/trained-loras");
+  trainedLoraCache=d.models||[];
+  renderTrainedLoras(trainedLoraCache);
  }catch(e){status.textContent=e.message}
 }
+for(const id of ["trained-loras-search","trained-loras-designation","trained-loras-engine","trained-loras-sort"]){
+ $(id).addEventListener(id==="trained-loras-search"?"input":"change",()=>loadTrainedLoras(true));
+}
+$("trained-loras-clear").onclick=()=>{
+ $("trained-loras-search").value="";$("trained-loras-designation").value="";$("trained-loras-engine").value="";$("trained-loras-sort").value="newest";
+ loadTrainedLoras(true);
+};
 $("trained-loras-refresh").onclick=loadTrainedLoras;
 loadTrainedLoras().catch(()=>{});
 function chosenCheckpoints(){return [...$("compare-checkpoint-list").querySelectorAll('input[data-checkpoint]:checked')].map(x=>x.value)}
