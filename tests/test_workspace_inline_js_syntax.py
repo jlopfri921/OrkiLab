@@ -25,6 +25,17 @@ class InlineScripts(HTMLParser):
 
 class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
+    def test_multiview_local_viewpoint_assistant_compiles_and_is_wired(self):
+        path=ROOT/"assets"/"orkilab"/"multiview-viewpoint-ai.js"
+        result=subprocess.run([shutil.which("node"),"--check",str(path)],
+                              capture_output=True,text=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stderr)
+        html=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
+        self.assertIn('src="/assets/orkilab/multiview-viewpoint-ai.js"',html)
+        self.assertIn("OrkiViewpointAI.mount(",html)
+        self.assertIn("capture.id,api,refresh,capture",html)
+
+    @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
     def test_multiview_rc1_recovery_script_compiles_and_is_wired(self):
         script=ROOT/"assets"/"orkilab"/"multiview-rc1.js"
         result=subprocess.run([shutil.which("node"),"--check",str(script)],
