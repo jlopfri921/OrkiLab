@@ -2072,5 +2072,12 @@
   "ComfyUI/models/loras folder (on this PC)": "ComfyUI/models/loras フォルダー（このPC）",
   "Install selected": "選択項目をインストール",
   "Uninstall selected": "選択項目をアンインストール",
-  "Check installed": "インストールを確認"
+  "Check installed": "インストールを確認",
+  "My trained LoRAs": "学習済みLoRA",
+  "Trained LoRA library": "学習済みLoRAライブラリ",
+  "← Back to training": "学習画面に戻る",
+  "Only models marked Best or Final appear here. Your original training files remain unchanged.": "ベストまたは最終モデルに指定したものだけを表示します。元の学習ファイルは変更されません。",
+  "Selected models": "選択したモデル",
+  "Refresh library": "ライブラリを更新",
+  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "ベストまたは最終モデルに指定したLoRAと学習・評価情報を確認できます。いつでも学習画面に戻れます。"
 }
