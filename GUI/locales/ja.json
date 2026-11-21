@@ -2109,5 +2109,15 @@
   "Highest rated": "高評価順",
   "Fewest steps": "ステップ数が少ない順",
   "Most steps": "ステップ数が多い順",
-  "Project A–Z": "プロジェクト A–Z"
+  "Project A–Z": "プロジェクト A–Z",
+  "Final model": "最終モデル",
+  "Best model": "ベストモデル",
+  "Unrated": "未評価",
+  "Reference image": "参考画像",
+  "No reference image uploaded yet.": "参考画像はまだありません。",
+  "Save reference image": "参考画像を保存",
+  "Select an image first.": "まず画像を選択してください。",
+  "Maximum size: 2 MB.": "最大サイズ：2 MB。",
+  "Use PNG, JPEG or WebP.": "PNG、JPEG、WebPをご利用ください。",
+  "Image saved.": "画像を保存しました。"
 }
