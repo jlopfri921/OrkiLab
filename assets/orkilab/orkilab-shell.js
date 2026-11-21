@@ -160,6 +160,8 @@
             veil.hidden = true;
             root.classList.remove("orki-mobile-open");
             document.body.classList.remove("orki-mobile-sheet-open");
+            const trigger = bar.querySelector('button[aria-controls="orki-mobile-sheet"]');
+            if (trigger) trigger.setAttribute("aria-expanded","false");
             if (restore && lastFocus && lastFocus.isConnected) lastFocus.focus();
         }
         function openSheet() {
@@ -198,6 +200,8 @@
             sheet.hidden = false;
             root.classList.add("orki-mobile-open");
             document.body.classList.add("orki-mobile-sheet-open");
+            const trigger = bar.querySelector('button[aria-controls="orki-mobile-sheet"]');
+            if (trigger) trigger.setAttribute("aria-expanded","true");
             close.focus();
         }
         const tabs = () => isComfy()
