@@ -47,6 +47,7 @@
 #settings-dialog .settings-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:3;background:var(--panel);padding:10px 0;border-bottom:1px solid #30445e;margin-bottom:16px}#settings-dialog .settings-dialog-head h2{margin:0}#settings-close-top{display:inline-flex;gap:8px;align-items:center;justify-content:center;border:1px solid var(--accent);background:#15313e;color:var(--text);font-weight:700;flex-shrink:0}#settings-dialog{max-height:88vh;overflow:auto}
 #workflow-details{width:min(720px,calc(100vw - 32px));max-height:min(82vh,850px);overflow-y:auto;color:var(--text);background:var(--panel);border:1px solid #3a536d;border-radius:14px;padding:20px;box-shadow:0 18px 60px #0008}#workflow-details::backdrop{background:rgba(1,8,19,.72)}#workflow-inspection{overflow-wrap:anywhere}#workflow-inspection p{margin:9px 0}#workflow-close{flex-shrink:0}\n
 .history-entry{margin-bottom:10px}.history-entry-summary{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;cursor:pointer;list-style-position:inside}.history-entry-summary strong{overflow-wrap:anywhere}.history-entry-summary .muted{font-size:12px}.history-entry-content{padding-top:12px;border-top:1px solid #34455c;margin-top:12px}.history-entry-summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.trained-lora-card{margin:10px 0}.trained-lora-summary{display:flex;flex-wrap:wrap;align-items:center;gap:10px;cursor:pointer;list-style-position:inside}.trained-lora-summary strong{flex:1;min-width:200px;overflow-wrap:anywhere}.trained-lora-summary .muted{font-size:12px}.trained-lora-stars{color:#f5cb6a;letter-spacing:.08em;font-weight:700;white-space:nowrap}.trained-lora-content{border-top:1px solid #34455c;margin-top:14px;padding-top:12px}.trained-lora-reference{max-width:620px;margin-bottom:14px}.trained-lora-reference>img{display:block;max-width:100%;max-height:420px;object-fit:contain;border-radius:10px;background:#0b1221;margin-bottom:12px}.trained-lora-summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 </style><link rel="stylesheet" href="/assets/orkilab/orkilab-ui.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-app-shell.css">
 </head><body class="orki-queue-theme">
 <header><a href="/workspace"><img src="/assets/orkilab/orkilab-logo-dark.svg" alt="OrkiLab"></a><div class="row"><label><span>Language</span><select id="workspace-language" class="no-i18n"></select></label><span id="version" class="muted no-i18n">OrkiLab</span><a class="orki-header-kofi no-i18n" href="https://ko-fi.com/jorgelf" target="_blank" rel="noopener noreferrer" title="Voluntary support for the open-source OrkiLab project">♡ Ko-fi · Support OrkiLab</a></div></header>
@@ -984,6 +985,7 @@ function renderCheckpointReviews(){
  }
 }
 let trainedLoraCache=null;
+const expandedTrainedLoraIds=new Set();
 function renderTrainedLoras(models){
  const root=$("trained-loras-list"),status=$("trained-loras-status");root.replaceChildren();
  const engineFilter=$("trained-loras-engine"),oldEngine=engineFilter.value;
@@ -1005,9 +1007,57 @@ function renderTrainedLoras(models){
  status.textContent=selected.length+" / "+models.length+" "+revLang("selected models","modelos seleccionados");
  if(!selected.length)root.append(el("p",models.length?revLang("No LoRA matches your search or filters.","Ningún LoRA coincide con los filtros."):revLang("No models marked Best or Final yet","Aún no hay modelos marcados como Mejor o Definitivo"),"muted no-i18n"));
  for(const m of selected){
-   const card=el("article",undefined,"panel");
-   card.append(el("strong",m.project_name+" · "+revLang("Step ","Paso ")+m.step,"no-i18n"));
-   card.append(el("p",m.is_final?revLang("★ Final model","★ Modelo definitivo"):revLang("☆ Best model","☆ Mejor modelo"),"muted no-i18n"));
+   const card=el("details",undefined,"panel trained-lora-card");
+   const key=m.project_id+":"+m.filename;
+   card.open=expandedTrainedLoraIds.has(key);
+   const summary=el("summary",undefined,"trained-lora-summary");
+   const title=el("strong",m.project_name+" · "+revLang("Step ","Paso ")+m.step,"no-i18n");
+   const small=el("span",(m.is_final?revLang("Modelo definitivo","Modelo definitivo"):revLang("Best model","Mejor modelo"))+" · "+m.engine,"muted no-i18n");
+   const stars=el("span",m.rating==null?revLang("Unrated","Sin valorar"):"★".repeat(m.rating)+"☆".repeat(5-m.rating),"trained-lora-stars no-i18n");
+   stars.setAttribute("aria-label",m.rating==null?revLang("Unrated","Sin valorar"):String(m.rating)+"/5");
+   summary.append(title,small,stars);
+   const content=el("div",undefined,"trained-lora-content");
+   card.append(summary,content);
+   let rendered=false;
+   function renderExpanded(){
+    if(rendered)return;
+    rendered=true;
+    const reference=el("section",undefined,"trained-lora-reference");
+    const image=el("img");
+    image.alt=revLang("Reference for ","Imagen de referencia de ")+m.project_name;
+    image.loading="lazy";
+    if(m.reference_url){
+     image.src=m.reference_url+"?v="+encodeURIComponent(m.updated_at||"");
+     reference.append(image);
+    }else reference.append(el("p",revLang("No reference image uploaded yet.","Aún no hay imagen de referencia."),"muted no-i18n"));
+    const input=el("input");input.type="file";input.accept="image/png,image/jpeg,image/webp";
+    const upload=el("button",revLang("Save reference image","Guardar imagen de referencia"));
+    upload.type="button";
+    const message=el("small","","muted no-i18n");
+    upload.onclick=async()=>{
+     const file=input.files?.[0];
+     if(!file){message.textContent=revLang("Select an image first.","Selecciona una imagen.");return}
+     if(file.size>2000000){message.textContent=revLang("Maximum size: 2 MB.","Tamaño máximo: 2 MB.");return}
+     if(!["image/png","image/jpeg","image/webp"].includes(file.type)){message.textContent=revLang("Use PNG, JPEG or WebP.","Usa PNG, JPEG o WebP.");return}
+     upload.disabled=true;
+     try{
+      const bytes=new Uint8Array(await file.arrayBuffer());
+      let binary="";
+      for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+      await post("/api/workspace/trained-loras/reference/"+encodeURIComponent(m.project_id),{
+       filename:m.filename,image_base64:btoa(binary)
+      });
+      message.textContent=revLang("Image saved.","Imagen guardada.");
+      const data=await api("/api/workspace/trained-loras");
+      trainedLoraCache=data.models||[];
+      expandedTrainedLoraIds.add(key);
+      renderTrainedLoras(trainedLoraCache);
+     }catch(e){message.textContent=e.message}
+     finally{upload.disabled=false}
+    };
+    const imageActions=el("div",undefined,"row");imageActions.append(input,upload,message);
+    reference.append(imageActions);
+    content.append(reference);
    const pairs=[["Engine",m.engine],[revLang("Base model","Modelo base"),m.base_model],
     [revLang("Test workflow","Workflow de prueba"),m.workflow_name],["Rating",m.rating==null?null:m.rating+"/5"],
     [revLang("Training duration (minutes)","Duración del entrenamiento (minutos)"),m.duration_minutes],["GPU",m.gpu_name],
@@ -1016,9 +1066,16 @@ function renderTrainedLoras(models){
     [revLang("Metrics source","Origen de métricas"),m.metrics_source==="user_supplied"?revLang("Manual","Manual"):revLang("Not recorded","No registrado")],
     [revLang("Installed filename","Nombre en ComfyUI"),m.comfy_name],
     [revLang("Original file","Archivo original"),m.source_path],[revLang("Notes","Observaciones"),m.notes]];
-   for(const [label,value] of pairs)card.append(el("p",label+": "+(value==null||value===""?revLang("Not recorded","No registrado"):value),"muted no-i18n"));
+   for(const [label,value] of pairs)content.append(el("p",label+": "+(value==null||value===""?revLang("Not recorded","No registrado"):value),"muted no-i18n"));
    const link=el("a",revLang("Open in comparator","Abrir en comparador"),"no-i18n");link.href="/workspace/comfyui?checkpoint_project="+encodeURIComponent(m.project_id)+"#compare";
-   card.append(link);root.append(card);
+   content.append(link);
+   }
+   card.addEventListener("toggle",()=>{
+    if(card.open){expandedTrainedLoraIds.add(key);renderExpanded()}
+    else expandedTrainedLoraIds.delete(key);
+   });
+   if(card.open)renderExpanded();
+   root.append(card);
  }
 }
 async function loadTrainedLoras(fromCache=false){
