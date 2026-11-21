@@ -25,6 +25,18 @@ class InlineScripts(HTMLParser):
 
 class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
+    def test_multiview_alpha2_external_javascript_compiles(self):
+        path=ROOT/"assets"/"orkilab"/"multiview-alpha2.js"
+        result=subprocess.run([shutil.which("node"),"--check",str(path)],
+                              capture_output=True,text=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stderr)
+        html=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
+        self.assertIn('src="/assets/orkilab/multiview-alpha2.js"',html)
+        self.assertIn("OrkiMultiviewCoverage.mount(",html)
+        self.assertIn('await coverage.refresh()',html)
+        self.assertNotIn('await loadCaptures(subject.id,body)',html)
+
+    @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
     def test_multiview_inline_javascript_compiles(self):
         parser=InlineScripts()
         parser.feed((ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8"))
