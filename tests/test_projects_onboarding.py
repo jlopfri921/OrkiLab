@@ -33,9 +33,9 @@ class ProjectsOnboardingTests(unittest.TestCase):
                 self.assertIn(fragment,HTML)
 
     def test_empty_state_and_archiving_do_not_block_existing_projects(self):
-        for fragment in ('empty.hidden=!isEmpty', 'projects-empty-create").hidden=archived',
+        for fragment in ('empty.hidden=!isEmpty', 'projects-empty-create").hidden=archived||all.length>0',
                          'if(!d.projects.length)', # optional; not required
-                         'for(const p of d.projects)', 'archive",',
+                         'for(const p of matched)', 'archive",',
                          'projects-empty-create").onclick=()=>$("new").click()'):
             if fragment == 'if(!d.projects.length)':
                 continue
