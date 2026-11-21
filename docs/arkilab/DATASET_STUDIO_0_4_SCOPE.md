@@ -1,6 +1,6 @@
 # OrkiLab 0.4.0 — Dataset Studio: initial scope and acceptance
 
-**Status:** Dataset Studio source is available in `main` as part of `0.4.0-rc.1`; publication of the prerelease is tracked separately. This is **not** certified stable `0.4.0`. Local Windows/Ollama/GPU and complete per-trainer dataset acceptance are not certified by CPU-only CI. PR #77 added seven safety/manifest/handoff regression checks, passing 238 tests on both Windows and Linux with no failures. The original alpha.1 closeout is retained as historical evidence ([alpha.1 register](DATASET_STUDIO_0_4_ALPHA1_CLOSEOUT.md)); the current gate is [RC 0.4.0 readiness](RC_0_4_0_READINESS.md). The published 0.3.0-rc.1 tag remains immutable.
+**Status:** Dataset Studio was included in published GitHub prerelease [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1); subsequent hardening in PR #77 was merged to `main` after the release-candidate preparation. This is **not** certified stable `0.4.0`. Local Windows/Ollama/GPU and complete per-trainer dataset acceptance are not certified by CPU-only CI. PR #77 added seven safety/manifest/handoff regression checks, passing 238 tests on both Windows and Linux with no failures. The original alpha.1 closeout is retained as historical evidence ([alpha.1 register](DATASET_STUDIO_0_4_ALPHA1_CLOSEOUT.md)); the current gate is [RC 0.4.0 readiness](RC_0_4_0_READINESS.md). The published 0.3.0-rc.1 tag remains immutable.
 
 ## Goal and workflow
 
