@@ -43,6 +43,10 @@ def register(app, base, load_config):
     checkpoint_reviews.register(app, base)
     store = ProjectStore(base / "settings" / "orkilab" / "projects.sqlite3")
 
+    @app.get("/workspace/guide")
+    def orkilab_guide_page():
+        return send_from_directory(str(base / "GUI"), "orkilab_guide.html")
+
     @app.get("/workspace/datasets")
     def dataset_studio_page():
         return send_from_directory(str(base / "GUI"), "dataset_studio.html")
