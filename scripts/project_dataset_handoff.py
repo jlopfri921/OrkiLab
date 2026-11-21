@@ -1,5 +1,6 @@
 """Project-scoped trainer dataset handoff without modifying shared trainer settings."""
 import json
+import os
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -61,6 +62,34 @@ def project_data(base, project_id, engine_id):
                 raise HandoffError("Prepared dataset metadata is inconsistent")
         except (OSError, ValueError, TypeError) as exc:
             raise HandoffError("Cannot validate prepared dataset") from exc
+        # A manifest bearing the correct project ID is not enough: reject
+        # incomplete, traversing or replaced image/caption pairs before launch.
+        items = manifest.get("items")
+        if not isinstance(items, list) or not 0 < len(items) <= 200:
+            raise HandoffError("Prepared dataset manifest has no valid image/caption entries")
+        seen = set()
+        for entry in items:
+            if not isinstance(entry, dict):
+                raise HandoffError("Prepared dataset manifest contains an invalid entry")
+            image = entry.get("image")
+            caption = entry.get("caption")
+            if (not isinstance(image, str) or not isinstance(caption, str)
+                    or not image or not caption or image in seen or caption in seen
+                    or len(image) > 220 or len(caption) > 220
+                    or Path(image).name != image or Path(caption).name != caption
+                    or image in (".", "..") or caption in (".", "..")
+                    or "\\\\" in image or "\\\\" in caption
+                    or Path(image).suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
+                    or not caption.lower().endswith(".txt")
+                    or Path(image).stem.casefold() != Path(caption).stem.casefold()):
+                raise HandoffError("Prepared dataset manifest contains unsafe file names")
+            seen.update((image, caption))
+            for name in (image, caption):
+                path_in_dataset = resolved / name
+                if path_in_dataset.is_symlink() or not path_in_dataset.is_file():
+                    raise HandoffError("Prepared dataset is incomplete; prepare it again")
+                if not 0 < path_in_dataset.stat().st_size <= 40 * 1024 * 1024:
+                    raise HandoffError("Prepared dataset file is empty or too large")
         project["selected_dataset"] = str(resolved)
         project["dataset_origin"] = "prepared"
     elif project["dataset"]:
