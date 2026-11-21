@@ -14,7 +14,7 @@ The readable project name is normalized for safe filenames (for example, accents
 
 1. Open ComfyUI Zone → LoRA Comparator → Project checkpoints.
 2. Select a project and the desired steps (2–6 for a comparison).
-3. Enter the **existing folder path on the launcher PC** ending in `ComfyUI/models/loras`. A network or remote-only ComfyUI server cannot use this local file management endpoint.
+3. Enter the **existing folder path on the launcher PC** ending in `ComfyUI/models/loras`. The folder is remembered in the host's ComfyUI connection settings after a successful Install, Uninstall or Check, and restored when OrkiLab is reopened. A network or remote-only ComfyUI server cannot use this local file management endpoint.
 4. Choose **Install selected**. A destination that exists but is not an unchanged, already registered OrkiLab copy will never be overwritten.
 5. Refresh the models in ComfyUI (or restart ComfyUI), **then prepare the workflow again** so its `lora_name` choices are current. Confirm and run the comparison.
 6. To free disk space, select the checkpoints and choose **Uninstall selected**. Confirm removal. This only removes tracked copies whose file hashes still match their installation records; never the training Outputs source.
