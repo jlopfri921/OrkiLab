@@ -76,13 +76,13 @@ class CheckpointReviewsTests(unittest.TestCase):
 
     def test_reference_image_requires_curated_model(self):
         import base64
-        image = b"\\x89PNG\\r\\n\\x1a\\n" + b"0"*24
+        image = b"\x89PNG\r\n\x1a\n" + b"0"*24
         with self.assertRaises(ValueError):
             reviews.set_reference_image(self.base,self.project,self.first,base64.b64encode(image).decode("ascii"))
 
     def test_reference_image_is_saved_and_returned_only_for_curated_model(self):
         import base64
-        image = b"\\x89PNG\\r\\n\\x1a\\n" + b"0"*24
+        image = b"\x89PNG\r\n\x1a\n" + b"0"*24
         reviews.save_review(self.base,self.project,self.first,rating=5,is_final=True)
         ext=reviews.set_reference_image(self.base,self.project,self.first,base64.b64encode(image).decode("ascii"))
         self.assertEqual(ext,".png")
