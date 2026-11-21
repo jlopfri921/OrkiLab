@@ -28,6 +28,14 @@ class CollapsedHistoryUiTests(unittest.TestCase):
         self.assertIn('if(details.open)try{pre.textContent=JSON.stringify(await fetchGraph()',source)
         self.assertIn('historyOffset+=100',self.page)
 
+    def test_search_filter_and_sort_are_server_backed(self):
+        for token in ('id="history-search"','id="history-state"','id="history-sort"',
+                      'id="history-clear"','new URLSearchParams({offset:String(historyOffset)',
+                      'historyOffset+data.jobs.length>=data.total',
+                      'historyQueuedRefresh'):
+            with self.subTest(token=token):
+                self.assertIn(token,self.page)
+
     def test_can_expand_using_keyboard_accessible_native_details(self):
         self.assertIn(".history-entry-summary:focus-visible",self.page)
         self.assertNotIn('const card=el("article",undefined,"panel history-job")',self.page)
