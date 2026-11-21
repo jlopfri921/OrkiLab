@@ -21,11 +21,14 @@ def validate_settings(body, previous):
     folder = body.get("model_folder", previous["model_folder"])
     if not isinstance(folder, str) or len(folder) > 1024 or any(ord(c) < 32 for c in folder):
         raise ValueError("Invalid model folder")
+    lora_folder = body.get("lora_folder", previous.get("lora_folder", ""))
+    if not isinstance(lora_folder, str) or len(lora_folder) > 1024 or any(ord(c) < 32 for c in lora_folder):
+        raise ValueError("Invalid ComfyUI LoRA folder")
     result = {"mode": mode, "url": validate_url(body.get("url", previous["url"])),
-              "model_folder": folder.strip()}
+              "model_folder": folder.strip(), "lora_folder": lora_folder.strip()}
     return result
 
-DEFAULT_SETTINGS = {"mode": "hybrid", "url": DEFAULT, "model_folder": ""}
+DEFAULT_SETTINGS = {"mode": "hybrid", "url": DEFAULT, "model_folder": "", "lora_folder": ""}
 
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
