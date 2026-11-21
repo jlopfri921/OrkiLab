@@ -285,6 +285,9 @@
         document.querySelector("#workspace-context")?.classList.add("orki-app-context");
         const locale = typeof I18N !== "undefined" && names[I18N.lang] ? I18N.lang : "en";
         unifiedFooter(content, names[locale]);
+        const multiviewEntry = home.querySelector('a[href="/workspace/multiview"]');
+        if (multiviewEntry && multiviewEntry.firstChild?.nodeType === Node.TEXT_NODE)
+            multiviewEntry.firstChild.textContent = multiviewLabel[locale] + " ";
         placeVersionBelowMenu(location.pathname.replace(/\/$/, "") === "/workspace/comfyui" ? document.querySelector("#comfy-navigation") : home, document.querySelector("#version"));
         // ComfyUI is a focused zone: ONLY its own navigation plus the
         // existing first "Back to Workspace" link in #comfy-navigation.
@@ -532,6 +535,9 @@
             }
             nav.replaceWith(canonical);
             if (typeof I18N !== "undefined") I18N.apply(canonical);
+            const multiviewItem = canonical.querySelector('a[href="/workspace/multiview"]');
+            if (multiviewItem && multiviewItem.firstChild?.nodeType === Node.TEXT_NODE)
+                multiviewItem.firstChild.textContent = multiviewLabel[locale] + " ";
             const oldContext = content.querySelector(".orki-shell-workspace-context");
             if (oldContext) {
                 const titleText = oldContext.querySelector("#orki-shell-context-title")?.textContent || "";
