@@ -778,7 +778,7 @@ async function loadProjectCheckpoints(){
    const check=el("input");check.type="checkbox";check.value=entry.name;check.checked=suggested.has(entry.step);
    check.dataset.checkpoint="true";
    check.onchange=()=>{$("compare-confirm").checked=false;updateCheckpointCount()};
-   row.append(check,document.createTextNode((I18N.lang==="es"?"Paso ":"Step ")+entry.step+" · "+entry.name+" · "+(entry.size_bytes/1048576).toFixed(1)+" MiB"));
+   row.append(check,document.createTextNode((I18N.lang==="es"?"Paso ":"Step ")+entry.step+" · "+(entry.comfy_name||entry.name)+" · "+(entry.size_bytes/1048576).toFixed(1)+" MiB"));
    root.append(row);
   }
   $("compare-checkpoint-status").textContent=checkpointList.length
@@ -797,7 +797,7 @@ async function manageSelectedCheckpoints(action){
  try{
   const result=await post("/api/workspace/projects/"+encodeURIComponent(project)+"/checkpoints/manage",{action,directory:folder,checkpoints:names});
   const installed=result.checkpoints.filter(x=>x.installed).length;
-  status.textContent=(I18N.lang==="es"?"Copias instaladas: ":"Installed copies: ")+installed+"/"+result.checkpoints.length+(action==="status"?"":I18N.lang==="es"?" · Actualiza modelos en ComfyUI y prepara de nuevo el workflow.":" · Refresh models in ComfyUI and prepare the workflow again.");
+  status.textContent=(I18N.lang==="es"?"Copias instaladas: ":"Installed copies: ")+installed+"/"+result.checkpoints.length+". "+result.checkpoints.map(x=>x.comfy_name+": "+(x.installed?"✓":"—")).join(" · ")+(action==="status"?"":I18N.lang==="es"?" · Actualiza modelos en ComfyUI y prepara de nuevo el workflow.":" · Refresh models in ComfyUI and prepare the workflow again.");
   if(action!=="status")$("compare-confirm").checked=false;
   updateCompareRunState();
  }catch(error){status.textContent=error.message}
