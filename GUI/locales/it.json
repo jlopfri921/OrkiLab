@@ -2072,5 +2072,12 @@
   "ComfyUI/models/loras folder (on this PC)": "Cartella ComfyUI/models/loras (su questo PC)",
   "Install selected": "Installa selezionati",
   "Uninstall selected": "Disinstalla selezionati",
-  "Check installed": "Verifica installazione"
+  "Check installed": "Verifica installazione",
+  "My trained LoRAs": "I miei LoRA addestrati",
+  "Trained LoRA library": "Libreria dei LoRA addestrati",
+  "← Back to training": "Torna all’addestramento",
+  "Only models marked Best or Final appear here. Your original training files remain unchanged.": "Qui compaiono solo i modelli contrassegnati come Migliori o Definitivi. I file di addestramento originali rimangono invariati.",
+  "Selected models": "Modelli selezionati",
+  "Refresh library": "Aggiorna libreria",
+  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "Consulta i LoRA selezionati e i relativi dati di addestramento e valutazione. Puoi tornare all’addestramento in qualsiasi momento."
 }
