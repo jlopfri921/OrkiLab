@@ -14,7 +14,7 @@ class MultiviewProjectPickerTests(unittest.TestCase):
 
     def test_select_only_active_image_projects_from_canonical_registry(self):
         self.assertIn('api("/api/workspace/projects?archived=0")',self.studio)
-        self.assertIn('all.filter(p=>p.category==="image")',self.studio)
+        self.assertIn('all.filter(p=>String(p.category||"").toLowerCase()==="image")',self.studio)
         self.assertIn('api("/api/workspace/projects?archived=1")',self.studio)
         self.assertIn('if(available)select.value=previous;',self.studio)
         self.assertIn('else if(images.length===1)select.value=images[0].id;',self.studio)
@@ -29,6 +29,18 @@ class MultiviewProjectPickerTests(unittest.TestCase):
                       'projectText("remote")'):
             with self.subTest(token=token):
                 self.assertIn(token,self.studio)
+
+    def test_project_loading_does_not_depend_on_optional_modules(self):
+        self.assertIn('loadProjects().catch(error=>warn("Project discovery",error));',self.studio)
+        start=self.studio.index('document.addEventListener("DOMContentLoaded",()=>{')
+        bootstrap=self.studio[start:]
+        self.assertLess(bootstrap.index('loadProjects().catch('),
+                        bootstrap.index('OrkiMultiviewExport.mount('))
+        self.assertLess(bootstrap.index('loadProjects().catch('),
+                        bootstrap.index('OrkiMultiviewRecovery.mount('))
+        self.assertIn('catch(error){warn("ZIP export module",error)}',bootstrap)
+        self.assertIn('catch(error){warn("Photo recovery module",error)}',bootstrap)
+        self.assertIn('catch(error){warn("Translation initialization",error)}',bootstrap)
 
     def test_workspace_links_to_exact_saved_project_id(self):
         self.assertIn('multiviewLink.href="/workspace/multiview?project="+encodeURIComponent(p.id)',self.workspace)
