@@ -148,9 +148,12 @@ class CoverageApiTests(unittest.TestCase):
     def test_existing_alpha1_sqlite_migrates_without_wiping_references(self):
         self.assertEqual(self.add_capture(azimuth_deg=30).status_code,201)
         database=self.root/"settings"/"orkilab"/"multiview.sqlite3"
+        # Simulate an actual alpha.1 database without the new column.
         with closing(sqlite3.connect(database)) as conn:
-            conn.execute("UPDATE mv_captures SET sharpness_score=NULL")
+            conn.execute("ALTER TABLE mv_captures DROP COLUMN sharpness_score")
             conn.commit()
+            self.assertNotIn("sharpness_score",
+                [c[1] for c in conn.execute("PRAGMA table_info(mv_captures)")])
         result=self.client.get(self.url).get_json()
         self.assertEqual(result["quality"]["sharpness_unavailable"],1)
         self.assertEqual(result["occupied_sectors"],[30])
