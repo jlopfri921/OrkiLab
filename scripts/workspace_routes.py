@@ -11,6 +11,7 @@ import workflow_library
 import generation_studio
 import dataset_studio
 import multiview_studio
+import multiview_assist
 import gpu_monitor
 import gpu_stats
 import project_layout
@@ -28,6 +29,7 @@ def register(app, base, load_config):
     generation_studio.register(app, base)
     dataset_studio.register(app, base)
     multiview_studio.register(app, base)
+    multiview_assist.register(app, base)
     project_checkpoints.register(app, base)
     managed_checkpoints.register(app, base)
     checkpoint_reviews.register(app, base)
