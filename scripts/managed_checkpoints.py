@@ -4,28 +4,18 @@ Copies are independently named and tracked; original trainer outputs are untouch
 import hashlib
 import json
 import os
-import re
-import unicodedata
 import shutil
 import tempfile
 import threading
 from pathlib import Path
 from flask import jsonify, request
-from project_checkpoints import inventory
+from project_checkpoints import inventory, installed_model_name
 
 _LOCK = threading.RLock()
 _PREFIX = "OrkiLab_"
 
 def model_name(project_name, name):
-    # Visible project name; an existing file from another project is never overwritten.
-    label = unicodedata.normalize("NFKD", project_name or "")
-    label = "".join(c for c in label if not unicodedata.combining(c))
-    label = re.sub(r"[^A-Za-z0-9_-]+", "_", label).strip("_-")[:64]
-    if not label:
-        raise ValueError("Project name cannot be converted to a safe filename")
-    if Path(name).name != name or not name.lower().endswith(".safetensors"):
-        raise ValueError("Invalid checkpoint filename")
-    return f"{_PREFIX}{label}_{name}"
+    return installed_model_name(project_name, name)
 
 def destination(raw):
     if not isinstance(raw, str) or len(raw) > 1024:
