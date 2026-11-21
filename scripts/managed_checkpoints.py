@@ -4,6 +4,8 @@ Copies are independently named and tracked; original trainer outputs are untouch
 import hashlib
 import json
 import os
+import re
+import unicodedata
 import shutil
 import tempfile
 import threading
@@ -14,11 +16,16 @@ from project_checkpoints import inventory
 _LOCK = threading.RLock()
 _PREFIX = "OrkiLab_"
 
-def model_name(project_id, name):
-    # Prefix plus project identity prevents two trainings from colliding.
+def model_name(project_name, name):
+    # Visible project name; an existing file from another project is never overwritten.
+    label = unicodedata.normalize("NFKD", project_name or "")
+    label = "".join(c for c in label if not unicodedata.combining(c))
+    label = re.sub(r"[^A-Za-z0-9_-]+", "_", label).strip("_-")[:64]
+    if not label:
+        raise ValueError("Project name cannot be converted to a safe filename")
     if Path(name).name != name or not name.lower().endswith(".safetensors"):
         raise ValueError("Invalid checkpoint filename")
-    return f"{_PREFIX}{project_id[:12]}_{name}"
+    return f"{_PREFIX}{label}_{name}"
 
 def destination(raw):
     if not isinstance(raw, str) or len(raw) > 1024:
@@ -74,7 +81,7 @@ def manage(base, project_id, directory, names, action):
     with _LOCK:
         manifest = load_manifest(base)
         for name in names:
-            alias = model_name(project_id, name)
+            alias = model_name(data["project_name"], name)
             target = root / alias
             source = output / name
             if source.is_symlink() or not source.is_file() or not source.resolve().is_relative_to(output):
