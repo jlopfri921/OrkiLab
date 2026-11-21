@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OrkiLab — Multiview Studio 0.5 alpha</title>
+<link rel="icon" href="/assets/orkilab/orkilab-icon.svg">
+<script src="/i18n.js"></script>
+<style>
+:root{color-scheme:dark;--accent:#3cdbd0;--line:#354b66;--muted:#a4b4cc}
+*{box-sizing:border-box}body{font:15px system-ui,sans-serif;background:#0b1221;color:#e8f0fb;margin:0}
+a{color:var(--accent)}.studio-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:24px;max-width:1488px;margin:auto;padding:24px}
+.studio-navigation{display:flex;flex-direction:column;gap:8px}.studio-navigation a{padding:12px;background:#152238;border-radius:9px;text-decoration:none}
+.studio-content{min-width:0}h1{font-size:clamp(24px,2.8vw,32px);margin:0 0 9px}h2{font-size:19px;margin:0 0 12px}
+p{line-height:1.5}.muted{color:var(--muted)}.panel{background:#152238;border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}.row>*{min-width:0}label{display:grid;gap:6px;flex:1 1 180px}
+button,input,select,textarea{font:inherit;color:#e8f0fb;background:#101d30;border:1px solid #49617e;border-radius:8px;padding:9px;min-width:0}
+input[type=text],input[type=search],input[type=number],textarea{width:100%}textarea{resize:vertical}button{cursor:pointer}
+button:disabled{opacity:.5}button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:#146b73;font-weight:650}button.danger{color:#ffd1d1;border-color:#92535c}
+details.subject,details.capture{background:#111d30;border:1px solid #344b64;border-radius:12px;padding:12px;margin:10px 0}
+summary{cursor:pointer;font-weight:700;line-height:1.5}summary span{font-weight:400;color:var(--muted);font-size:13px;margin-left:8px}
+.inner{border-top:1px solid #344b64;margin-top:12px;padding-top:12px}
+.capture-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:10px}
+.capture-grid details{margin:0}
+.capture-grid img{display:block;max-width:100%;width:100%;max-height:300px;object-fit:contain;border-radius:9px;margin-bottom:10px;background:#07111c}
+.capture-grid p{overflow-wrap:anywhere;font-size:13px}.status{min-height:22px}
+small{font-size:12px}.source-tag{color:#beddee}
+[hidden]{display:none!important}
+@media(max-width:900px){.studio-layout{grid-template-columns:1fr}.studio-navigation{flex-direction:row;flex-wrap:wrap}.studio-navigation a{flex:1 1 135px}}
+</style>
+<link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css">
+<link rel="stylesheet" href="/assets/orkilab/orkilab-shell.css">
+<link rel="stylesheet" href="/assets/orkilab/orkilab-app-shell.css">
+</head><body class="orki-queue-theme orki-app-frame orki-standalone-shell">
+<header class="orki-shell-header orki-app-header"><a href="/workspace"><img src="/assets/orkilab/orkilab-logo-dark.svg" alt="OrkiLab"></a><div class="row"><label><span>Language</span><select id="workspace-language" class="no-i18n"></select></label><span id="version" class="muted no-i18n">OrkiLab</span><a class="orki-header-kofi no-i18n" href="https://ko-fi.com/jorgelf" target="_blank" rel="noopener noreferrer">♡ Ko-fi · Support OrkiLab</a></div></header>
+<div class="studio-layout"><nav class="studio-navigation" aria-label="Workspace sections">
+<a href="/workspace#overview">Dashboard</a><a href="/workspace#projects">Projects</a>
+<a href="/workspace#engines">Training engines</a><a href="/workspace/datasets">Dataset Studio</a>
+<a href="/workspace/multiview" aria-current="page">Multiview Studio</a>
+<a href="/workspace#gpu-manager">GPU Manager</a><a href="/queue">Job queue</a>
+<a href="/workspace/comfyui">ComfyUI Zone</a></nav>
+<main class="studio-content">
+<h1>Multiview Studio <small class="muted">0.5.0-alpha.1</small></h1>
+<p>Organize multiple photographs of a subject by viewpoint, angle and distance. Real and synthetic sources are clearly distinguished. Your original files are never changed.</p>
+<section class="panel" aria-labelledby="project-heading">
+<h2 id="project-heading">Project</h2>
+<div class="row"><label><span>Choose a project</span><select id="mv-project"><option value="">Choose a project</option></select></label>
+<button id="mv-refresh" type="button">Refresh</button><a href="/workspace#projects">Manage projects</a></div>
+<p class="muted">Use an existing project. Multiview metadata belongs to this project only.</p>
+</section>
+<section class="panel" id="mv-workspace" hidden>
+<h2>Subjects</h2>
+<form id="mv-subject-form" class="row"><label><span>Subject name</span><input id="mv-subject-name" maxlength="120" required placeholder="e.g. Sculpture or product"></label>
+<label><span>Notes (optional)</span><input id="mv-subject-notes" maxlength="1000"></label><button class="primary" type="submit">Create subject</button></form>
+<div class="row" style="margin-top:18px"><label><span>Search subjects</span><input type="search" id="mv-subject-search" maxlength="120" placeholder="Search by name"></label>
+<label><span>Sort subjects</span><select id="mv-subject-sort"><option value="recent">Recently updated</option><option value="name">Name A–Z</option><option value="count">Most photographs</option></select></label></div>
+<p id="mv-subject-count" class="muted no-i18n"></p><div id="mv-subjects" class="no-i18n"></div>
+</section>
+<p id="mv-status" class="status muted no-i18n" role="status" aria-live="polite"></p>
+</main></div>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const t=key=>(typeof I18N!=="undefined"?I18N.translate(key):key);
+const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=text;if(cls)n.className=cls;return n};
+const url=(project,tail="")=>"/api/workspace/multiview/projects/"+encodeURIComponent(project)+tail;
+const SOURCE_TYPES=["real_photo","video_frame","synthetic","unknown"];
+let currentProject="",allSubjects=[],expandedSubjects=new Set(),expandedCaptures=new Set(),capturePaging=new Map();
+function report(message){$("mv-status").textContent=message}
+async function api(path,options={}){
+ const response=await fetch(path,{credentials:"same-origin",cache:"no-store",...options});
+ const data=await response.json();
+ if(!response.ok)throw Error(data.error||t("Request failed"));
+ return data;
+}
+async function change(path,method,body){
+ return api(path,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+}
+function field(label,value="",type="text"){
+ const holder=node("label");holder.append(node("span",t(label)));
+ const control=node(type==="textarea"?"textarea":"input");
+ if(type!=="textarea")control.type=type;
+ control.value=value??"";
+ holder.append(control);
+ return [holder,control];
+}
+function selector(label,options,value){
+ const holder=node("label");holder.append(node("span",t(label)));
+ const sel=node("select");
+ for(const [key,name] of options){const option=new Option(t(name),key);sel.add(option)}
+ sel.value=value;holder.append(sel);
+ return [holder,sel];
+}
+const sourceOptions=[["real_photo","Real photograph"],["video_frame","Video frame"],["synthetic","Synthetic image"],["unknown","Unknown origin"]];
+const provenanceOptions=[["manual","Entered manually"],["unknown","Unknown"],["workflow","Generated by workflow"],["embedded_exif","Embedded metadata"],["estimated","Estimated"]];
+const reviewOptions=[["unreviewed","Not reviewed"],["approved","Approved"],["rejected","Rejected"]];
+function optionalNumber(input){return input.value.trim()===""?null:Number(input.value)}
+async function loadProjects(){
+ try{
+  const data=await api("/api/workspace/projects");
+  const select=$("mv-project"),previous=select.value||new URLSearchParams(location.search).get("project")||"";
+  select.replaceChildren(new Option(t("Choose a project"),""));
+  for(const p of data.projects)select.add(new Option(p.name+" · "+p.engine,p.id));
+  if([...select.options].some(o=>o.value===previous))select.value=previous;
+  await loadSubjects();
+ }catch(e){report(e.message)}
+}
+async function loadSubjects(){
+ const project=$("mv-project").value;currentProject=project;
+ $("mv-workspace").hidden=!project;
+ $("mv-subjects").replaceChildren();
+ if(!project){report(t("Choose a project to begin."));return}
+ try{
+  const data=await api(url(project,"/subjects"));
+  if(currentProject!==project)return;
+  allSubjects=data.subjects;renderSubjects();
+  report("");
+ }catch(e){report(e.message)}
+}
+function renderSubjects(){
+ const root=$("mv-subjects");root.replaceChildren();
+ const q=$("mv-subject-search").value.trim().toLocaleLowerCase();
+ const sort=$("mv-subject-sort").value;
+ const entries=allSubjects.filter(s=>(s.name+" "+s.notes).toLocaleLowerCase().includes(q));
+ entries.sort((a,b)=>sort==="name"?a.name.localeCompare(b.name):
+   sort==="count"?b.capture_count-a.capture_count||a.name.localeCompare(b.name):
+   b.updated_at.localeCompare(a.updated_at)||a.name.localeCompare(b.name));
+ $("mv-subject-count").textContent=entries.length+" / "+allSubjects.length+" "+t("subjects");
+ if(!entries.length)root.append(node("p",t(allSubjects.length?"No matching subjects":"Create a subject to begin."),"muted"));
+ for(const subject of entries){
+  const details=node("details",undefined,"subject");details.open=expandedSubjects.has(subject.id);
+  const summary=node("summary",subject.name);
+  summary.append(node("span",String(subject.capture_count)+" "+t("photographs")));
+  const body=node("div",undefined,"inner");details.append(summary,body);
+  let rendered=false;
+  async function populate(){
+   if(rendered)return;rendered=true;
+   body.append(node("p",subject.notes||t("No notes"),"muted"));
+   const actions=node("div",undefined,"row");
+   const remove=node("button",t("Remove subject"),"danger");remove.type="button";
+   remove.onclick=async()=>{
+    if(!confirm(t("Remove this subject and its photo references? Original images will not be deleted.")))return;
+    try{await api(url(currentProject,"/subjects/"+subject.id),{method:"DELETE"});expandedSubjects.delete(subject.id);await loadSubjects()}
+    catch(e){report(e.message)}
+   };
+   actions.append(remove);body.append(actions);
+   const captureTitle=node("h2",t("Add a photograph"));captureTitle.style.marginTop="18px";body.append(captureTitle);
+   const form=node("form");
+   const first=node("div",undefined,"row");
+   const [pathHolder,pathInput]=field("Absolute local image path");pathInput.required=true;
+   pathInput.placeholder="C:\\photos\\subject-front.jpg";pathHolder.style.flex="3 1 280px";
+   const [viewHolder,viewInput]=field("View name (optional)");
+   const [sourceHolder,sourceInput]=selector("Source type",sourceOptions,"real_photo");
+   first.append(pathHolder,viewHolder,sourceHolder);form.append(first);
+   const second=node("div",undefined,"row");
+   const [azHolder,az]=field("Azimuth (°)","","number");az.min="0";az.max="359.9999";az.step="any";
+   const [elHolder,el]=field("Elevation (°)","","number");el.min="-90";el.max="90";el.step="any";
+   const [distanceHolder,distance]=field("Distance (m)","","number");distance.min="0.0001";distance.step="any";
+   second.append(azHolder,elHolder,distanceHolder);form.append(second);
+   const submit=node("button",t("Add photograph"),"primary");submit.type="submit";submit.style.marginTop="12px";form.append(submit);
+   form.onsubmit=async event=>{
+    event.preventDefault();submit.disabled=true;
+    try{
+     await change(url(currentProject,"/subjects/"+subject.id+"/captures"),"POST",{
+      path:pathInput.value,view_name:viewInput.value,source_type:sourceInput.value,
+      provenance:"manual",azimuth_deg:optionalNumber(az),
+      elevation_deg:optionalNumber(el),distance_m:optionalNumber(distance)});
+     pathInput.value="";viewInput.value="";az.value="";el.value="";distance.value="";
+     capturePaging.set(subject.id,0);
+     await loadCaptures(subject.id,body);
+     report(t("Photograph reference saved. Original file unchanged."));
+    }catch(e){report(e.message)}finally{submit.disabled=false}
+   };
+   body.append(form);
+   const collection=node("section",undefined,"inner");collection.dataset.captures=subject.id;
+   collection.style.marginTop="20px";
+   collection.append(node("h2",t("Photographs")));
+   const filters=node("div",undefined,"row");
+   const [qHolder,search]=field("Search photographs","","search");
+   const [sourceFilterHolder,sourceFilter]=selector("Source filter",[["","All sources"],...sourceOptions],"");
+   const [orderHolder,order]=selector("Sort photographs",[["newest","Newest first"],["oldest","Oldest first"],["name","View name"],["azimuth","Azimuth"],["distance","Distance"]],"newest");
+   filters.append(qHolder,sourceFilterHolder,orderHolder);collection.append(filters);
+   const counter=node("p",undefined,"muted"),grid=node("div",undefined,"capture-grid");
+   const pages=node("div",undefined,"row");
+   const previous=node("button",t("Previous page")),next=node("button",t("Next page"));
+   for(const btn of [previous,next])btn.type="button";
+   pages.append(previous,next);collection.append(counter,grid,pages);body.append(collection);
+   let seq=0;
+   async function refresh(){
+    const project=currentProject,requestId=++seq;
+    const offset=capturePaging.get(subject.id)||0;
+    const params=new URLSearchParams({q:search.value,source:sourceFilter.value,sort:order.value,offset:String(offset)});
+    try{
+     const data=await api(url(project,"/subjects/"+subject.id+"/captures?"+params));
+     if(requestId!==seq||project!==currentProject)return;
+     counter.textContent=data.captures.length+" / "+data.total+" "+t("photographs");
+     grid.replaceChildren();
+     for(const capture of data.captures)grid.append(renderCapture(capture,subject.id,refresh));
+     previous.disabled=offset===0;next.disabled=offset+data.captures.length>=data.total;
+     if(!data.captures.length)grid.append(node("p",t("No matching photographs"),"muted"));
+    }catch(e){report(e.message)}
+   }
+   search.oninput=()=>{capturePaging.set(subject.id,0);refresh()};
+   sourceFilter.onchange=order.onchange=()=>{capturePaging.set(subject.id,0);refresh()};
+   previous.onclick=()=>{capturePaging.set(subject.id,Math.max(0,(capturePaging.get(subject.id)||0)-60));refresh()};
+   next.onclick=()=>{capturePaging.set(subject.id,(capturePaging.get(subject.id)||0)+60);refresh()};
+   collection._refresh=refresh;
+   await refresh();
+  }
+  details.addEventListener("toggle",()=>{
+   if(details.open){expandedSubjects.add(subject.id);populate().catch(e=>report(e.message))}
+   else expandedSubjects.delete(subject.id)
+  });
+  if(details.open)populate().catch(e=>report(e.message));
+  root.append(details);
+ }
+}
+function renderCapture(capture,subjectId,refresh){
+ const details=node("details",undefined,"capture"),key=capture.id;
+ details.open=expandedCaptures.has(key);
+ const summary=node("summary",capture.view_name||capture.name);
+ summary.append(node("span",t(sourceOptions.find(([id])=>id===capture.source_type)?.[1]||"Unknown origin")));
+ details.append(summary);
+ const container=node("div",undefined,"inner");details.append(container);
+ let loaded=false;
+ function expand(){
+  if(loaded)return;loaded=true;
+  const image=node("img");image.loading="lazy";
+  image.alt=capture.view_name||capture.name;
+  image.src=url(currentProject,"/captures/"+capture.id+"/preview");
+  image.onerror=()=>{image.alt=t("Image unavailable or changed")};
+  container.append(image);
+  container.append(node("p",capture.path,"muted"));
+  container.append(node("p",capture.width+" × "+capture.height+" · "+capture.bytes+" "+t("bytes"),"muted"));
+  const form=node("form"),row=node("div",undefined,"row");
+  const [viewHolder,view]=field("View name (optional)",capture.view_name);
+  const [azHolder,az]=field("Azimuth (°)",capture.azimuth_deg,"number");az.min="0";az.max="359.9999";az.step="any";
+  const [elHolder,el]=field("Elevation (°)",capture.elevation_deg,"number");el.min="-90";el.max="90";el.step="any";
+  const [distHolder,dist]=field("Distance (m)",capture.distance_m,"number");dist.min="0.0001";dist.step="any";
+  const [sourceHolder,source]=selector("Source type",sourceOptions,capture.source_type);
+  const [provHolder,prov]=selector("Metadata source",provenanceOptions,capture.provenance);
+  const [reviewHolder,review]=selector("Review",reviewOptions,capture.review);
+  const [notesHolder,notes]=field("Notes (optional)",capture.notes);
+  row.append(viewHolder,azHolder,elHolder,distHolder,sourceHolder,provHolder,reviewHolder,notesHolder);form.append(row);
+  const buttons=node("div",undefined,"row");buttons.style.marginTop="12px";
+  const save=node("button",t("Save metadata"),"primary");save.type="submit";
+  const remove=node("button",t("Remove reference"),"danger");remove.type="button";
+  buttons.append(save,remove);form.append(buttons);container.append(form);
+  form.onsubmit=async event=>{
+   event.preventDefault();save.disabled=true;
+   try{
+    await change(url(currentProject,"/captures/"+capture.id),"PATCH",{
+     view_name:view.value,azimuth_deg:optionalNumber(az),elevation_deg:optionalNumber(el),
+     distance_m:optionalNumber(dist),source_type:source.value,
+     provenance:prov.value,review:review.value,notes:notes.value});
+    report(t("Metadata saved."));await refresh();
+   }catch(e){report(e.message)}finally{save.disabled=false}
+  };
+  remove.onclick=async()=>{
+   if(!confirm(t("Remove this reference? The original image will remain untouched.")))return;
+   try{await api(url(currentProject,"/captures/"+capture.id),{method:"DELETE"});expandedCaptures.delete(capture.id);await refresh();await loadSubjects()}
+   catch(e){report(e.message)}
+  };
+ }
+ details.addEventListener("toggle",()=>{
+  if(details.open){expandedCaptures.add(key);expand()}
+  else expandedCaptures.delete(key)
+ });
+ if(details.open)expand();
+ return details;
+}
+$("mv-project").onchange=loadSubjects;
+$("mv-refresh").onclick=loadProjects;
+$("mv-subject-search").oninput=renderSubjects;
+$("mv-subject-sort").onchange=renderSubjects;
+$("mv-subject-form").onsubmit=async event=>{
+ event.preventDefault();
+ if(!currentProject)return;
+ const submit=event.submitter;submit.disabled=true;
+ try{
+  const result=await change(url(currentProject,"/subjects"),"POST",{
+   name:$("mv-subject-name").value,notes:$("mv-subject-notes").value});
+  $("mv-subject-name").value="";$("mv-subject-notes").value="";
+  expandedSubjects.add(result.id);await loadSubjects();report(t("Subject created."));
+ }catch(e){report(e.message)}finally{submit.disabled=false}
+};
+document.addEventListener("DOMContentLoaded",()=>{I18N.apply(document.body);loadProjects()});
+</script>
+<script src="/assets/orkilab/orkilab-shell.js"></script>
+</body></html>
