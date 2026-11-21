@@ -27,7 +27,7 @@ Windows and Linux automated tests, plus manual end-to-end testing on ComfyUI Des
 
 ## Review checkpoints and curate the trained-LoRA library
 
-In **ComfyUI Zone → LoRA Comparator → Project checkpoints**, rate each checkpoint from 1 to 5. Select **Best** for shortlisted variants or **Final model** for the chosen release candidate. Only these manually curated checkpoints appear in the **Trained LoRA library** on the **Projects** page. A project may have multiple Best models but only one Final model at a time.
+In **ComfyUI Zone → LoRA Comparator → Project checkpoints**, rate each checkpoint from 1 to 5. Select **Best** for shortlisted variants or **Final model** for the chosen release candidate. Only these manually curated checkpoints appear in the **Trained LoRA library**, a **separate section of the main training workspace** reached from the top training navigation (**My trained LoRAs / Mis LoRA entrenados**). Inside the library, **Back to training / Volver a entrenamiento** returns to the Training engines section. The library refreshes when opened and is no longer embedded in the Projects view. A project may have multiple Best models but only one Final model at a time.
 
 Each catalog card includes:
 - Project, training engine, final checkpoint step and file paths (automatically sourced from OrkiLab).
