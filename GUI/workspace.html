@@ -1363,7 +1363,7 @@ function routeHome(){
  for(const link of $("home-navigation").querySelectorAll("a[href^='#']")){
   if(link.hash==="#"+chosen)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current");
  }
- updateWorkspaceContext(chosen);gpuVisibility();controlVisibility();
+ updateWorkspaceContext(chosen);if(chosen==="trained-loras")loadTrainedLoras().catch(()=>{});gpuVisibility();controlVisibility();
  scrollWorkspaceTop();
 }
 $("gpu-refresh").onclick=refreshGpu;$("gpu-auto").onchange=gpuVisibility;
