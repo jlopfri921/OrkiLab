@@ -5,7 +5,7 @@ let native=false,settings=null,busy=false;
 const anchorText={es:"Guía y ayuda",en:"Guide & help",pt:"Guia e ajuda",fr:"Guide et aide",de:"Hilfe & Anleitung",it:"Guida e aiuto",ja:"ガイドとヘルプ",ko:"가이드 및 도움말"};
 function language(){const code=typeof I18N!=="undefined"?I18N.lang:"en";return anchorText[code]?code:"en"}
 function label(){return anchorText[language()]}
-function hide(node,on){if(!node)return;node.hidden=on;if(on)node.setAttribute("data-orki-native-hidden","");else node.removeAttribute("data-orki-native-hidden")}
+function hide(node,on){if(!node)return;if(node.hidden!==on)node.hidden=on;if(on){if(!node.hasAttribute("data-orki-native-hidden"))node.setAttribute("data-orki-native-hidden","");node.style.setProperty("display","none","important")}else{node.removeAttribute("data-orki-native-hidden");node.style.removeProperty("display")}}
 function reconcile(){
  if(busy)return;busy=true;
  try{
@@ -15,7 +15,7 @@ function reconcile(){
    if(!nav.querySelector('a[href="/workspace/guide"]')){
     const a=document.createElement("a");a.href="/workspace/guide";a.textContent=label();a.className="orki-guide-link";
     nav.append(a);
-   }else nav.querySelectorAll('a[href="/workspace/guide"]').forEach(a=>a.textContent=label());
+   }else nav.querySelectorAll('a[href="/workspace/guide"]').forEach(a=>{if(a.textContent!==label())a.textContent=label()});
   });
   document.querySelectorAll('a[href^="/workspace/comfyui"]').forEach(a=>hide(a,native));
   // Avoid hiding other controls in these cards; they are ComfyUI-only overview tiles.
