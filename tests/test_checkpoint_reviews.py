@@ -1,5 +1,6 @@
 """Curated LoRA library regression tests: only Best/Final, metadata and one final."""
 import sqlite3
+from contextlib import closing
 import sys
 import tempfile
 import unittest
@@ -20,14 +21,14 @@ class CheckpointReviewsTests(unittest.TestCase):
         self.project="d"*32
         settings=self.base/"settings"/"orkilab"
         settings.mkdir(parents=True)
-        with sqlite3.connect(settings/"projects.sqlite3") as con:
+        with closing(sqlite3.connect(settings/"projects.sqlite3")) as con, con:
             con.execute("CREATE TABLE projects(id TEXT PRIMARY KEY,name TEXT,engine TEXT,category TEXT,archived INTEGER)")
             con.execute("INSERT INTO projects VALUES (?,?,?,?,0)",(self.project,"Prueba","flux3klein","image"))
         output=self.base/"Outputs"/("flux3klein_lora_output_orkilab_"+self.project[:12])
         output.mkdir(parents=True)
         for step in (100,300):
             (output/f"Flux3Klein_LoRA_step_{step}.safetensors").write_bytes(b"checkpoint")
-        with sqlite3.connect(settings/"workflows.sqlite3") as con:
+        with closing(sqlite3.connect(settings/"workflows.sqlite3")) as con, con:
             con.execute("CREATE TABLE workflows(id TEXT PRIMARY KEY,name TEXT)")
             con.execute("INSERT INTO workflows VALUES ('wf1','Flux.3 comparison')")
         self.first="Flux3Klein_LoRA_step_100.safetensors"
