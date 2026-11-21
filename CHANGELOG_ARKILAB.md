@@ -7,6 +7,7 @@
 - Beta.1: opt-in ComfyUI generation from installed validated workflows, explicit capture registration and synthetic lineage tracking.
 - Beta.2: reproducible, non-destructive ZIP exports with SHA-256 manifest and subject-level train/validation grouping; excludes synthetic images unless approved and opted in.
 - RC.1: existing Workspace Image project discovery, Dataset Studio photo recovery/linking, project persistence and safety regression tests.
+- RC.1 usability improvements (under current PR): local `/workspace/guide` with architecture, step-by-step workflows and FAQ; native/stand-alone mode that hides ComfyUI-only navigation and panels while preserving trainers/data; a persistent mode switch in Workspace Settings; guided reference-conditioned missing-view generation using safe copies uploaded to ComfyUI, explicit LoadImage mapping and the existing job queue; synthetic output import with requested-view metadata and source-reference lineage without fabricated numeric camera angles.
 - On-device operator reports 7/7 functional checks passed on Windows with RTX 3090; these reports do not establish a complete training pass, broad workflow compatibility, final release CI or rollback acceptance. See [RC.1 readiness](docs/arkilab/RC_0_5_0_READINESS.md).
 - **Not yet released:** stable v0.5.0 remains gated on final SHA CI, named tested configuration, release review and documented limitations. 0.4 stable scope gaps are not silently considered completed.
 
