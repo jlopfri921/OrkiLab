@@ -24,7 +24,8 @@
         ["shutdown", "/workspace?dialog=shutdown", null],
         ["queue", "/queue", 6],
         ["comfy", "/workspace/comfyui", 7],
-        ["datasets", "/workspace/datasets", 4]
+        ["datasets", "/workspace/datasets", 4],
+        ["multiview", "/workspace/multiview", null]
     ];
     const names = {
         en: ["Workspace", "Dashboard", "Projects", "Training engines", "Dataset Studio", "GPU Manager", "Job queue", "ComfyUI Zone", "Local AI workspace", "Open-source · Local-first", "Support OrkiLab"],
@@ -35,6 +36,21 @@
         it: ["Spazio di lavoro", "Dashboard", "Progetti", "Trainer", "Dataset Studio", "Gestione GPU", "Coda lavori", "Zona ComfyUI", "Spazio IA locale", "Open source · Locale", "Sostieni OrkiLab"],
         ja: ["ワークスペース", "ダッシュボード", "プロジェクト", "トレーナー", "Dataset Studio", "GPU管理", "ジョブキュー", "ComfyUIゾーン", "ローカルAI", "オープンソース・ローカル", "OrkiLabを支援"],
         ko: ["작업 공간", "대시보드", "프로젝트", "트레이너", "Dataset Studio", "GPU 관리자", "작업 대기열", "ComfyUI 영역", "로컬 AI", "오픈 소스 · 로컬 우선", "OrkiLab 후원"]
+    };
+    const multiviewLabel = {
+        en:"Multiview Studio", es:"Estudio multivista", pt:"Estúdio multivista",
+        fr:"Studio multivues", de:"Multiview-Studio", it:"Studio multivista",
+        ja:"マルチビュースタジオ", ko:"멀티뷰 스튜디오"
+    };
+    const multiviewIntro = {
+        en:"Organize real and synthetic reference photographs of a subject by viewpoint, angle and distance. Sources stay untouched.",
+        es:"Organiza fotografías reales o sintéticas de un sujeto según vista, ángulo y distancia, sin modificar las imágenes originales.",
+        pt:"Organize fotografias reais e sintéticas por vista, ângulo e distância, sem alterar os originais.",
+        fr:"Classez des photographies réelles ou synthétiques par vue, angle et distance, sans modifier les originaux.",
+        de:"Reale und synthetische Referenzbilder nach Blickwinkel und Abstand ordnen, ohne die Originale zu verändern.",
+        it:"Organizza fotografie reali o sintetiche per vista, angolo e distanza senza modificare gli originali.",
+        ja:"元画像を変更せず、被写体の写真を視点・角度・距離ごとに整理します。",
+        ko:"원본을 수정하지 않고 실제·합성 사진을 시점, 각도, 거리별로 정리합니다."
     };
     function element(tag, cls, value) {
         const node = document.createElement(tag);
@@ -91,7 +107,7 @@
             renderWorkspaceChrome();
             return;
         }
-        const page = location.pathname === "/queue" ? "queue" : "datasets";
+        const page = location.pathname === "/queue" ? "queue" : location.pathname === "/workspace/multiview" ? "multiview" : "datasets";
         const nav = document.querySelector(page === "queue" ? ".queue-sidebar" : ".studio-navigation");
         const content = document.querySelector(page === "queue" ? ".queue-shell .wrap" : ".studio-content");
         const layout = document.querySelector(page === "queue" ? ".queue-shell" : ".studio-layout");
@@ -224,9 +240,9 @@
         };
         const words = help[locale] || help.en;
         context.classList.add("orki-app-context");
-        context.querySelector("#orki-shell-context-title").textContent = page === "queue" ? words[1] : words[3];
+        context.querySelector("#orki-shell-context-title").textContent = page === "queue" ? words[1] : page === "multiview" ? multiviewLabel[locale] : words[3];
         context.querySelector("#orki-shell-context-toggle-label").textContent = words[0];
-        context.querySelector("#orki-shell-context-description").textContent = page === "queue" ? words[2] : words[4];
+        context.querySelector("#orki-shell-context-description").textContent = page === "queue" ? words[2] : page === "multiview" ? multiviewIntro[locale] : words[4];
         // Canonical source of truth: read the real Workspace chrome instead of
         // reconstructing a similar-looking but divergent header and menu.
         syncCanonicalWorkspaceChrome(page, nav, content);
@@ -234,7 +250,7 @@
         // Complete fallback menu appears immediately, before /workspace is fetched.
         nav.replaceChildren();
         routes.forEach(([id, to, nameIndex]) => {
-            const label = id === "settings" ? (locale === "es" ? "Ajustes" : "Settings") :
+            const label = id === "multiview" ? multiviewLabel[locale] : id === "settings" ? (locale === "es" ? "Ajustes" : "Settings") :
                 id === "shutdown" ? (locale === "es" ? "Pausar todo y salir" : "Pause all and exit") :
                 t[nameIndex];
             const node = id === "settings" || id === "shutdown" ?
@@ -304,7 +320,8 @@
             for (const a of canonical.querySelectorAll("a[href^='#']"))
                 a.href = "/workspace" + a.getAttribute("href");
             const current = canonical.querySelector(page === "queue" ?
-                'a[href="/queue"]' : 'a[href="/workspace/datasets"]');
+                'a[href="/queue"]' : page === "multiview" ?
+                'a[href="/workspace/multiview"]' : 'a[href="/workspace/datasets"]');
             if (current) current.setAttribute("aria-current", "page");
             for (const button of canonical.querySelectorAll("button")) {
                 const mode = button.id === "settings-open" ? "settings" :
