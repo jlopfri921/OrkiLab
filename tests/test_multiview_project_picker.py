@@ -30,6 +30,18 @@ class MultiviewProjectPickerTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token,self.studio)
 
+    def test_project_loading_does_not_depend_on_optional_modules(self):
+        self.assertIn('loadProjects().catch(error=>warn("Project discovery",error));',self.studio)
+        start=self.studio.index('document.addEventListener("DOMContentLoaded",()=>{')
+        bootstrap=self.studio[start:]
+        self.assertLess(bootstrap.index('loadProjects().catch('),
+                        bootstrap.index('OrkiMultiviewExport.mount('))
+        self.assertLess(bootstrap.index('loadProjects().catch('),
+                        bootstrap.index('OrkiMultiviewRecovery.mount('))
+        self.assertIn('catch(error){warn("ZIP export module",error)}',bootstrap)
+        self.assertIn('catch(error){warn("Photo recovery module",error)}',bootstrap)
+        self.assertIn('catch(error){warn("Translation initialization",error)}',bootstrap)
+
     def test_workspace_links_to_exact_saved_project_id(self):
         self.assertIn('multiviewLink.href="/workspace/multiview?project="+encodeURIComponent(p.id)',self.workspace)
         self.assertIn('actions.append(multiviewLink)',self.workspace)
