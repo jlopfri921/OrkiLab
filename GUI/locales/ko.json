@@ -2079,5 +2079,16 @@
   "Only models marked Best or Final appear here. Your original training files remain unchanged.": "최고 또는 최종 모델로 지정한 항목만 표시됩니다. 원본 학습 파일은 변경되지 않습니다.",
   "Selected models": "선택한 모델",
   "Refresh library": "라이브러리 새로고침",
-  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "최고 또는 최종으로 선택한 LoRA의 학습 및 평가 정보를 확인하고 언제든 학습 화면으로 돌아갈 수 있습니다."
+  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "최고 또는 최종으로 선택한 LoRA의 학습 및 평가 정보를 확인하고 언제든 학습 화면으로 돌아갈 수 있습니다.",
+  "Search generations": "생성 기록 검색",
+  "Search by workflow, name or ID": "워크플로·이름·ID로 검색",
+  "Filter by status": "상태별 필터",
+  "All statuses": "모든 상태",
+  "Sort generations": "생성 기록 정렬",
+  "Newest first": "최신순",
+  "Oldest first": "오래된순",
+  "Name A–Z": "이름 A–Z",
+  "Name Z–A": "이름 Z–A",
+  "Clear filters": "필터 초기화",
+  "Cancelled": "취소됨"
 }
