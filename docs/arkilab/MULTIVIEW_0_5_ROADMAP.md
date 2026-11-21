@@ -1,6 +1,6 @@
 # OrkiLab 0.5.0 — Multiview Studio roadmap
 
-**Status:** alpha.1 (PR #80), alpha.2 (PR #81), beta.1 (PR #82), beta.2 (PR #83) and project selector fix (PR #84) merged to `main`; RC.1 persistence/recovery work under review. No 0.5.0 stable release/tag. 
+**Status:** alpha.1 (PR #80), alpha.2 (PR #81), beta.1 (PR #82), beta.2 (PR #83), project selector fix (PR #84) and RC.1 persistence/recovery (PR #85) merged to `main`. Operator reported all seven RC.1 UI/end-to-end checks passed on 2026-11-21; see [0.5 RC acceptance register](RC_0_5_0_READINESS.md) for exact scope and remaining release gates. No 0.5.0 stable release/tag. 
 **Baseline:** 0.4.0-rc.1 is available in `main` (release metadata); publication of a GitHub Release/tag and the 0.4.0 stable acceptance must be verified separately.
 **Owner workflow:** Projects → Dataset Studio → Multiview Studio → Training Engines / ComfyUI.
 
@@ -50,6 +50,10 @@
 - Repeated linking into the same subject is idempotent (unique subject/path). The project remains visible after a process restart because both project and photo references are stored in the same durable SQLite files used by the launcher's existing modules.
 - Tests cover save/reopen (simulated application restart), project isolation, archive/restore, missing files, cross-origin/remote restrictions, duplicate linking and original photo integrity. Remaining gates: actual Windows filesystem installation, real photo collection, real ComfyUI GPU workflow, ZIP open/retraining acceptance and mobile browser review.
 - If the selector is still empty, inspect `GET /api/workspace/projects` locally and ensure the project is active and `category=image`; archived or non-image projects are intentionally not selectable. Never recreate or erase saved work to troubleshoot.
+
+## 2026-11-21 RC.1 acceptance update
+
+The operator reports seven successful on-device checks: saved project discovery, saved photo recovery/linking, restart persistence, ComfyUI generation on an RTX 3090, ZIP export/integrity, trainer dataset import and desktop/mobile layout. **This is operator-reported functional acceptance, not proof of a successful complete trainer run or universal model compatibility.** The exact trainer and workflow identifiers, independent CI evidence on the final release SHA, release metadata, supported combinations and rollback/security signoff remain to be recorded. See [release acceptance register](RC_0_5_0_READINESS.md). Do not tag stable v0.5.0 until these gates are resolved.
 
 ## Product goal
 
