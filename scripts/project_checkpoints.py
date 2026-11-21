@@ -17,11 +17,11 @@ def inventory(base, project_id):
     if not database.is_file():
         raise LookupError("Project not found")
     with closing(sqlite3.connect(database)) as conn:
-        row = conn.execute("SELECT engine,category FROM projects WHERE id=? AND archived=0",
+        row = conn.execute("SELECT engine,category,name FROM projects WHERE id=? AND archived=0",
                            (project_id,)).fetchone()
     if not row:
         raise LookupError("Project not found")
-    engine, category = row
+    engine, category, display_name = row
     if category != "image":
         raise ValueError("Checkpoint comparison currently supports image projects")
     # Exact output layout used by the project-scoped trainer drafts.
@@ -29,7 +29,7 @@ def inventory(base, project_id):
     folder = base / "Outputs" / (engine + "_lora_output_" + project_name)
     resolved_root = (base / "Outputs").resolve()
     if folder.is_symlink() or not folder.is_dir():
-        return {"engine": engine, "checkpoints": [], "output_folder": str(folder), "truncated": False}
+        return {"engine": engine, "project_name": display_name, "checkpoints": [], "output_folder": str(folder), "truncated": False}
     if not folder.resolve().is_relative_to(resolved_root):
         raise ValueError("Output directory is not inside OrkiLab")
     items = []
@@ -48,7 +48,7 @@ def inventory(base, project_id):
         items.append({"step": int(match.group(1)), "name": file.name,
                       "size_bytes": size})
     items.sort(key=lambda item: (item["step"], item["name"].lower()))
-    return {"engine": engine, "checkpoints": items[:MAX_FILES],
+    return {"engine": engine, "project_name": display_name, "checkpoints": items[:MAX_FILES],
             "output_folder": str(folder), "truncated": len(items) > MAX_FILES}
 
 def register(app, base):
