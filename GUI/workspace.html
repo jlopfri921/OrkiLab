@@ -1399,7 +1399,9 @@ function routeWorkspace(){
  const hash=location.hash.slice(1);
  const onZone=location.pathname.replace(/\/$/,"")==="/workspace/comfyui";
  if(!onZone&&comfyModules.includes(hash)){location.replace("/workspace/comfyui#"+hash);return;}
- $("home-navigation").hidden=onZone;$("home-zone").hidden=onZone;
+ const versionIndicator=$("version");
+  if(versionIndicator)(onZone?$("comfy-navigation"):$("home-navigation")).append(versionIndicator);
+  $("home-navigation").hidden=onZone;$("home-zone").hidden=onZone;
  $("comfy-navigation").hidden=!onZone;$("comfy-zone").hidden=!onZone;
  if(onZone){
   let selected=comfyModules.includes(hash)?hash:"welcome";
