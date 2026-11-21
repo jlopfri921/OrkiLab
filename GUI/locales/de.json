@@ -2079,5 +2079,16 @@
   "Only models marked Best or Final appear here. Your original training files remain unchanged.": "Hier erscheinen nur als Beste oder Endgültig markierte Modelle. Die ursprünglichen Trainingsdateien bleiben unverändert.",
   "Selected models": "Ausgewählte Modelle",
   "Refresh library": "Bibliothek aktualisieren",
-  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "Trainierte LoRAs mit Trainings- und Bewertungsdaten anzeigen. Sie können jederzeit zum Training zurückkehren."
+  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "Trainierte LoRAs mit Trainings- und Bewertungsdaten anzeigen. Sie können jederzeit zum Training zurückkehren.",
+  "Search generations": "Generierungen durchsuchen",
+  "Search by workflow, name or ID": "Nach Workflow, Name oder ID suchen",
+  "Filter by status": "Nach Status filtern",
+  "All statuses": "Alle Status",
+  "Sort generations": "Generierungen sortieren",
+  "Newest first": "Neueste zuerst",
+  "Oldest first": "Älteste zuerst",
+  "Name A–Z": "Name A–Z",
+  "Name Z–A": "Name Z–A",
+  "Clear filters": "Filter zurücksetzen",
+  "Cancelled": "Abgebrochen"
 }
