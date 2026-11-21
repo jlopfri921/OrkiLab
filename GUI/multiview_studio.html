@@ -192,7 +192,7 @@ function renderSubjects(){
    const assistant=OrkiMultiviewAssist.mount(assistHost,()=>currentProject,subject.id,api,report,async()=>{
      await refresh();
      await coverage.refresh();
-     await loadSubjects();
+     // Keep the completed job and its other output cards available for import.
    });
    details._assistant=assistant;
    const captureTitle=node("h2",t("Add a photograph"));captureTitle.style.marginTop="18px";body.append(captureTitle);
