@@ -11,7 +11,8 @@ from contextlib import closing
 from pathlib import Path
 
 from flask import jsonify, request, send_file
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, ImageFilter, ImageStat, UnidentifiedImageError
+from multiview_analysis import analyze
 from dataset_studio import valid_origin
 
 MAX_IMAGE_BYTES = 20 * 1024 * 1024
@@ -84,6 +85,23 @@ def inspect_image(source):
             "bytes": source.stat().st_size, "format": fmt}
 
 
+def sharpness_score(source):
+    """Conservative edge-contrast heuristic on a bounded 512px thumbnail."""
+    try:
+        with Image.open(source) as opened:
+            opened.thumbnail((512, 512))
+            grayscale = opened.convert("L")
+            if grayscale.width < 3 or grayscale.height < 3:
+                return 0.0
+            edges = grayscale.filter(ImageFilter.FIND_EDGES)
+            # Ignore artificial high-contrast image boundary pixels.
+            values = ImageStat.Stat(edges.crop((1, 1, edges.width - 1, edges.height - 1)))
+            return round(float(values.stddev[0]), 3)
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError,
+            Image.DecompressionBombWarning) as exc:
+        raise ValueError("Unable to analyze image sharpness") from exc
+
+
 def register(app, base):
     base = Path(base)
     database = base / "settings" / "orkilab" / "multiview.sqlite3"
@@ -106,6 +124,7 @@ def register(app, base):
             sha256 TEXT NOT NULL, bytes INTEGER NOT NULL,
             width INTEGER NOT NULL, height INTEGER NOT NULL, format TEXT NOT NULL,
             view_name TEXT NOT NULL DEFAULT '',
+            sharpness_score REAL,
             azimuth_deg REAL, elevation_deg REAL, distance_m REAL,
             source_type TEXT NOT NULL DEFAULT 'unknown',
             provenance TEXT NOT NULL DEFAULT 'unknown',
@@ -115,6 +134,10 @@ def register(app, base):
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(subject_id) REFERENCES mv_subjects(id) ON DELETE CASCADE,
             UNIQUE(subject_id, path))""")
+        # Existing alpha.1 databases must upgrade without losing a capture.
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(mv_captures)")}
+        if "sharpness_score" not in columns:
+            conn.execute("ALTER TABLE mv_captures ADD COLUMN sharpness_score REAL")
         conn.execute("CREATE INDEX IF NOT EXISTS mv_subject_project ON mv_subjects(project_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS mv_capture_subject ON mv_captures(project_id, subject_id)")
         return conn
@@ -224,6 +247,26 @@ def register(app, base):
         except ValueError as exc:
             return jsonify(error=str(exc)), 400
 
+    @app.get("/api/workspace/multiview/projects/<project_id>/subjects/<subject_id>/coverage")
+    def multiview_coverage(project_id, subject_id):
+        if not allowed():
+            return jsonify(error="Local-only coverage report"), 403
+        if not active_project(project_id) or not identifier(subject_id):
+            return not_found()
+        with closing(connect()) as conn:
+            exists = conn.execute(
+                "SELECT 1 FROM mv_subjects WHERE id=? AND project_id=?",
+                (subject_id, project_id)).fetchone()
+            if not exists:
+                return not_found()
+            rows = conn.execute(
+                "SELECT id,name,view_name,azimuth_deg,elevation_deg,distance_m,"
+                "source_type,review,sha256,width,height,sharpness_score "
+                "FROM mv_captures WHERE project_id=? AND subject_id=? "
+                "ORDER BY created_at ASC,id ASC",
+                (project_id, subject_id)).fetchall()
+        return jsonify(analyze(rows))
+
     @app.route("/api/workspace/multiview/projects/<project_id>/subjects/<subject_id>/captures",
                methods=["GET", "POST"])
     def multiview_captures(project_id, subject_id):
@@ -275,9 +318,11 @@ def register(app, base):
             source = source_path(body.get("path"))
             meta = validate_fields(body, creation=True)
             props = inspect_image(source)
+            sharpness = sharpness_score(source)
             capture_id = uuid.uuid4().hex
             fields = dict(id=capture_id, project_id=project_id, subject_id=subject_id,
-                          path=str(source), name=source.name, **props, **meta)
+                          path=str(source), name=source.name,
+                          sharpness_score=sharpness, **props, **meta)
             with closing(connect()) as conn, conn:
                 keys = ",".join(fields)
                 conn.execute("INSERT INTO mv_captures("+keys+") VALUES ("+

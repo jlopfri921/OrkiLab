@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OrkiLab — Multiview Studio 0.5 alpha</title>
+<title>OrkiLab — Multiview Studio 0.5 alpha.2</title>
 <link rel="icon" href="/assets/orkilab/orkilab-icon.svg">
 <script src="/i18n.js"></script>
 <style>
@@ -25,6 +25,31 @@ summary{cursor:pointer;font-weight:700;line-height:1.5}summary span{font-weight:
 small{font-size:12px}.source-tag{color:#beddee}
 [hidden]{display:none!important}
 @media(max-width:900px){.studio-layout{grid-template-columns:1fr}.studio-navigation{flex-direction:row;flex-wrap:wrap}.studio-navigation a{flex:1 1 135px}}
+
+/* 0.5 alpha.2: bounded keyboard-focusable coverage diagram and comparer. */
+.mv-coverage-panel{background:#0d1a2c;border:1px solid #354b66;border-radius:12px;padding:16px;margin:18px 0}
+.mv-coverage-panel h2{margin:14px 0 10px}.mv-coverage-panel h2:first-child{margin-top:0}
+.mv-coverage-layout{display:grid;grid-template-columns:minmax(220px,320px) minmax(0,1fr);gap:22px;align-items:center}
+.mv-coverage-wheel{position:relative;width:100%;max-width:320px;aspect-ratio:1;border-radius:50%;border:2px solid #93b9c5;isolation:isolate;box-shadow:0 4px 20px #0006}
+.mv-wheel-center{position:absolute;inset:24%;background:#101d30;border-radius:50%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:8px;z-index:1;border:1px solid #6589a0;box-shadow:0 0 12px #06101b}
+.mv-wheel-center strong{font-size:30px}.mv-wheel-center small{font-size:11px;color:#b9d4df}
+.mv-sector-button{position:absolute;transform:translate(-50%,-50%);min-width:38px;min-height:32px;padding:4px;border-radius:9px;background:#0b1425e8;color:#f8fafc;border:1px solid #93b9c5;font-size:11px;font-weight:700;z-index:2}
+.mv-sector-button:focus-visible,.mv-sector-button[aria-pressed="true"]{outline:3px solid #5eead4;outline-offset:2px}
+.mv-coverage-aside p{line-height:1.5;overflow-wrap:anywhere}
+.mv-quality-candidates{display:grid;gap:8px;margin-top:10px;max-height:450px;overflow:auto}
+.mv-quality-item{padding:12px;background:#14263c;border:1px solid #3a536b;border-radius:10px;display:grid;gap:9px;overflow-wrap:anywhere}
+.mv-review-actions{display:flex;flex-wrap:wrap;gap:6px}
+.mv-review-actions button{font-size:12px;padding:8px;min-height:38px}
+.mv-comparison-controls{align-items:end}
+.mv-compare-dialog{width:min(96vw,1120px);max-height:90dvh;background:#0c1728;color:#e8f0fb;border:1px solid #4b7290;border-radius:16px;padding:20px;overflow:auto}
+.mv-compare-dialog::backdrop{background:rgba(1,6,15,.85)}
+.mv-compare-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mv-compare-top h2{margin:0}.mv-compare-zoom{display:flex;flex-direction:row;align-items:center;gap:14px;margin:12px 0}
+.mv-compare-zoom input{width:180px;flex:none}
+.mv-compare-images{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.mv-compare-images img{width:100%;height:min(60dvh,540px);object-fit:contain;background:#020617;border-radius:10px;transform-origin:center center}
+.mv-compare-images{overflow:hidden}
+@media(max-width:760px){.mv-coverage-layout{grid-template-columns:1fr}.mv-coverage-wheel{margin:auto}.mv-compare-images{grid-template-columns:1fr}.mv-compare-images img{height:32dvh}.mv-compare-dialog{padding:12px}.mv-coverage-panel{padding:12px}.mv-compare-zoom input{min-width:110px;width:45vw}}
 </style>
 <link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css">
 <link rel="stylesheet" href="/assets/orkilab/orkilab-shell.css">
@@ -38,7 +63,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 <a href="/workspace#gpu-manager">GPU Manager</a><a href="/queue">Job queue</a>
 <a href="/workspace/comfyui">ComfyUI Zone</a></nav>
 <main class="studio-content">
-<h1>Multiview Studio <small class="muted">0.5.0-alpha.1</small></h1>
+<h1>Multiview Studio <small class="muted">0.5.0-alpha.2</small></h1>
 <p>Organize multiple photographs of a subject by viewpoint, angle and distance. Real and synthetic sources are clearly distinguished. Your original files are never changed.</p>
 <section class="panel" aria-labelledby="project-heading">
 <h2 id="project-heading">Project</h2>
@@ -56,6 +81,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 </section>
 <p id="mv-status" class="status muted no-i18n" role="status" aria-live="polite"></p>
 </main></div>
+<script src="/assets/orkilab/multiview-alpha2.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -116,7 +142,9 @@ async function loadSubjects(){
  }catch(e){report(e.message)}
 }
 function renderSubjects(){
- const root=$("mv-subjects");root.replaceChildren();
+ const root=$("mv-subjects");
+ for(const old of root.querySelectorAll("details.subject"))old._updates?.abort();
+ root.replaceChildren();
  const q=$("mv-subject-search").value.trim().toLocaleLowerCase();
  const sort=$("mv-subject-sort").value;
  const entries=allSubjects.filter(s=>(s.name+" "+s.notes).toLocaleLowerCase().includes(q));
@@ -142,6 +170,9 @@ function renderSubjects(){
     catch(e){report(e.message)}
    };
    actions.append(remove);body.append(actions);
+   const coverageHost=node("div");body.append(coverageHost);
+   const coverage=OrkiMultiviewCoverage.mount(coverageHost,()=>currentProject,subject.id,api,report);
+   coverage.refresh();
    const captureTitle=node("h2",t("Add a photograph"));captureTitle.style.marginTop="18px";body.append(captureTitle);
    const form=node("form");
    const first=node("div",undefined,"row");
@@ -165,7 +196,8 @@ function renderSubjects(){
       elevation_deg:optionalNumber(el),distance_m:optionalNumber(distance)});
      pathInput.value="";viewInput.value="";az.value="";el.value="";distance.value="";
      capturePaging.set(subject.id,0);
-     await loadCaptures(subject.id,body);
+     await refresh();
+     await coverage.refresh();
      report(t("Photograph reference saved. Original file unchanged."));
     }catch(e){report(e.message)}finally{submit.disabled=false}
    };
@@ -203,6 +235,14 @@ function renderSubjects(){
    previous.onclick=()=>{capturePaging.set(subject.id,Math.max(0,(capturePaging.get(subject.id)||0)-60));refresh()};
    next.onclick=()=>{capturePaging.set(subject.id,(capturePaging.get(subject.id)||0)+60);refresh()};
    collection._refresh=refresh;
+   const updates=new AbortController();
+   details._updates=updates;
+   document.addEventListener("orkilab:multiview-review-updated",event=>{
+     if(event.detail?.subjectId===subject.id && event.detail?.project===currentProject)refresh();
+   },{signal:updates.signal});
+   document.addEventListener("orkilab:multiview-capture-updated",event=>{
+     if(event.detail?.subjectId===subject.id)coverage.refresh();
+   },{signal:updates.signal});
    await refresh();
   }
   details.addEventListener("toggle",()=>{
@@ -252,11 +292,12 @@ function renderCapture(capture,subjectId,refresh){
      distance_m:optionalNumber(dist),source_type:source.value,
      provenance:prov.value,review:review.value,notes:notes.value});
     report(t("Metadata saved."));await refresh();
+    document.dispatchEvent(new CustomEvent("orkilab:multiview-capture-updated",{detail:{subjectId}}));
    }catch(e){report(e.message)}finally{save.disabled=false}
   };
   remove.onclick=async()=>{
    if(!confirm(t("Remove this reference? The original image will remain untouched.")))return;
-   try{await api(url(currentProject,"/captures/"+capture.id),{method:"DELETE"});expandedCaptures.delete(capture.id);await refresh();await loadSubjects()}
+   try{await api(url(currentProject,"/captures/"+capture.id),{method:"DELETE"});expandedCaptures.delete(capture.id);await refresh();await loadSubjects();document.dispatchEvent(new CustomEvent("orkilab:multiview-capture-updated",{detail:{subjectId}}))}
    catch(e){report(e.message)}
   };
  }

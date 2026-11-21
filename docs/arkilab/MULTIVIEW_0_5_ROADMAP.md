@@ -1,6 +1,6 @@
 # OrkiLab 0.5.0 — Multiview Studio roadmap
 
-**Status:** 0.5.0-alpha.1 implemented on a feature branch, pending final Windows/Linux CI and on-device browser acceptance; no 0.5 tag/release published. 
+**Status:** alpha.1 merged to `main` in PR #80, Windows/Linux checks passed; alpha.2 implementation on feature branch, pending CI and merge. No 0.5 tag/release published. 
 **Baseline:** 0.4.0-rc.1 is available in `main` (release metadata); publication of a GitHub Release/tag and the 0.4.0 stable acceptance must be verified separately.
 **Owner workflow:** Projects → Dataset Studio → Multiview Studio → Training Engines / ComfyUI.
 
@@ -10,6 +10,15 @@
 - Read-only local image previews with image validation, SHA-256 checks, size/pixel limits and symlink rejection. Removing a capture or subject removes references, never source files.
 - Search/sort by name, angle and distance; local pagination. Separate on-device validation is needed for native Windows/mobile presentation and real image collections.
 - Responsive mobile navigation is shared across Workspace, ComfyUI Zone, Dataset Studio, Queue and Multiview: four bottom tabs with an accessible **More** sheet; desktop retains the left sidebar.
+
+## Alpha.2 implementation (development)
+
+- Read-only, project-scoped `GET .../subjects/<id>/coverage` returns a deterministic twelve-sector azimuth ring (30° sectors), provisional/approved counts, explicit missing sectors and unknown/rejected capture totals.
+- Rejected images never count as valid angle coverage. Unknown azimuths remain unknown; estimated or manual angles must never be mistaken for measured 3D geometry.
+- Image quality hints: short edge below 512 px, exact content-hash duplicates, and an optional conservative edge-contrast sharpness score computed from a bounded thumbnail when a new reference is added. Existing alpha.1 references show **not assessed** rather than fabricated sharpness; SQLite migration adds a nullable column without rewriting originals.
+- Localized keyboard-focusable 360° interactive angle diagram, quality candidate review buttons, and a two-image comparison dialog with shared zoom slider. Retains the mobile bottom nav and eight languages.
+- Comparer lists the first 5000 references (if more); sector totals and quality counters include every saved capture. No automatic rejection or generation.
+- Real-image and mobile-browser acceptance must be completed before the 0.5.0 stable release.
 
 ## Product goal
 
