@@ -2,10 +2,10 @@
 
 **Prepared:** 2026-11-21
 **Version target:** `0.4.0-rc.1`
-**Release state:** NOT TAGGED / NOT PUBLISHED
-**Source:** `release/0.4.0-rc.1` (PR to `main`)
+**Release state:** SOURCE AVAILABLE IN `main` (PR #76 merged); GITHUB RELEASE/TAG NOT VERIFIED OR PUBLISHED
+**Source:** `main` after PR #76; subsequent Dataset Studio hardening in PR #77 (commit `0cd98ebbb91c7b380a40b5366ccc3aa4d17f9451`).
 **Previous published prerelease:** `v0.3.0-rc.1`
-**Automated validation:** foundation run `44917024684` — SUCCESS; RC validation run `44917024693` — SUCCESS on candidate commit `45a10106be00492ab16a106503ab3b48b601ff22` (before updating this evidence register). Both include Windows and Ubuntu. The RC run completed **231 tests per platform, zero failures**, and checked version metadata. This evidence-update commit requires a fresh final CI pass before merge/tag.
+**Automated validation:** foundation run `44917024684` — SUCCESS; RC validation run `44917024693` — SUCCESS on candidate commit `45a10106be00492ab16a106503ab3b48b601ff22` (before updating this evidence register). Both include Windows and Ubuntu. The RC run completed **231 tests per platform, zero failures**, and checked version metadata. A further CI run on the final PR #76 commit passed before its merge; PR #77 subsequently passed 238 tests on both Windows and Ubuntu with zero failures.
 
 This register distinguishes automated evidence, user-reported tests, and hardware checks not yet confirmed. Do **not** describe `0.4.0` as stable simply because `0.4.0-rc.1` has passed CI.
 
@@ -19,7 +19,7 @@ This register distinguishes automated evidence, user-reported tests, and hardwar
 | Project & curated LoRA | Checkpoint ratings, Best/Final, persistence and image reference | REPORTED | Operator reported OrkiLab functioning; repeat the relevant cases on candidate |
 | ComfyUI comparison | Project checkpoint 100 vs later steps, fixed seed/workflow, installed paths | REPORTED | Project 'Prueba' comparison was exercised earlier; record candidate evidence separately |
 | Generation history | Collapsible records and server search/filter/sort, page boundaries | PASS CI | Unit tests and local UI smoke |
-| Dataset Studio | Image import, duplicate analysis, captions, prepared folder, no source mutation | NOT VERIFIED END TO END | Real Windows images and dataset preparation |
+| Dataset Studio | Image import, duplicate analysis, captions, prepared folder, no source mutation | PASS AUTOMATED FIXTURES; REAL END TO END NOT VERIFIED | PR #77 added seven checks for hash preservation, manifest round-trip, modified/rejected images, symlink boundaries and prepared-dataset validation. 238 tests per platform, Windows/Ubuntu; real Windows images and dataset preparation still pending. |
 | Project → training | Prepared image dataset in isolated trainer settings, successful real GPU pre-cache/train | NOT VERIFIED END TO END | At least one supported image trainer |
 | Local Ollama | Caption preview/batch, cancellation and VRAM/resource behavior | NOT VERIFIED END TO END | Real installed vision-capable Ollama model |
 | Navigation/version/footer | Version below sidebar, GitHub footer, i18n | PASS CI; VISUAL PENDING | Browser view on Windows |

@@ -6,7 +6,7 @@
 | 0.2 Workspace | SQLite library, project registry, read-only inventory | index synthetic data; no destructive writes |
 | 0.3 Connect | ComfyUI API adapter, workflow validation, explicit submission | mock API tests; real local inference |
 | 0.4 Dataset | quality checks, dedup, captions, split; [Dataset Studio delivery scope](DATASET_STUDIO_0_4_SCOPE.md) | reproducible manifest and non-destructive edits |
-| 0.5 Multiview | angle metadata, reference/synthetic distinction | all views individually validated |
+| 0.5 Multiview | subject/view library, camera coverage, reference/synthetic provenance, optional ComfyUI generation and grouped export; [full 0.5 roadmap](MULTIVIEW_0_5_ROADMAP.md) | measured/unknown viewpoints clear, immutable originals, supported workflows and real GPU acceptance |
 | 0.6 Benchmark | paired prompts/seeds, comparable performance | reproducible report and held-out evaluation |
 | 0.7 Copilot | Ollama suggestions, logs | user confirmation for mutations |
 | 0.8 Hub | HF/Civitai integration | license/token checks and explicit downloads/uploads |
@@ -15,13 +15,17 @@
 
 ## Current milestone: 0.4.0-rc.1 — integrated dataset and curated LoRA candidate
 
-**Status:** version and docs prepared on `release/0.4.0-rc.1`; not a published tag or a claim of 0.4.0 stable acceptance. The last published prerelease remains `v0.3.0-rc.1` until GitHub Releases confirms otherwise.
+**Status:** `0.4.0-rc.1` source is merged in `main` via PR #76. It is available for git-based installations, but a GitHub Release/tag has not been verified; this is not 0.4.0 stable. The Dataset Studio hardening checks (PR #77) were also merged after Windows/Linux CI. The last published prerelease remains `v0.3.0-rc.1` until GitHub Releases confirms otherwise.
 
 **In candidate:** project-linked Dataset Studio, captions, non-destructive derived export, optional local Ollama preview, project-specific trainer draft handoff, named ComfyUI checkpoint management and comparison, human LoRA ratings and a searchable curated library, collapsible and searchable generation history, common footer and sidebar version.
 
 **Release candidate gate:** Windows/Linux unit tests and frontend syntax; launch the Windows app and verify existing data/weights, one representative project dataset/caption/train handoff, one ComfyUI comparison workflow, persistence and reference images. Document skipped/on-device-only checks explicitly in [the acceptance register](RC_0_4_0_READINESS.md).
 
 **Stable 0.4.0 gate (not yet met):** complete documented supported-engine export profiles, train/validation reproducibility and round-trip manifests, GPU/Windows acceptance across a supported matrix, rollback/no-data-loss update and addressed release blockers. These remain planned, not hidden by a version number.
+
+## Planned milestone: 0.5.0 — Multiview Studio
+
+See [the detailed 0.5.0 delivery and acceptance plan](MULTIVIEW_0_5_ROADMAP.md). It covers subjects/captures/view metadata, source provenance, visual coverage, optional controlled ComfyUI view generation, group-aware exports, multilingual UI, and Windows/Linux plus GPU acceptance. The 0.5 milestone does not waive unfinished 0.4 stable release gates.
 
 ## Immediate milestone: 0.3.0-rc.1 — ComfyUI integration candidate
 

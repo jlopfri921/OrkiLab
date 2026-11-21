@@ -13,9 +13,9 @@
 
 # OrkiLab — LoRA Trainer Studio
 
-Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, local-first workspace for adapting generative models with LoRA. Workspace is the default interface. **The 0.4.0-rc.1 release candidate is being prepared; it is not yet a tagged/published release or a stable 0.4.0.** The latest previously published prerelease is [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1). See the [0.4 candidate readiness register](docs/arkilab/RC_0_4_0_READINESS.md) for verified and pending acceptance.
+Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, local-first workspace for adapting generative models with LoRA. Workspace is the default interface. **OrkiLab 0.4.0-rc.1 is available on the `main` branch (source-code distribution); the GitHub tag/release has not yet been verified or published, and this is not a stable 0.4.0.** The latest previously published prerelease is [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1). See the [0.4 candidate readiness register](docs/arkilab/RC_0_4_0_READINESS.md) for verified and pending acceptance.
 
-## OrkiLab 0.4.0-rc.1 — release candidate (not yet published)
+## OrkiLab 0.4.0-rc.1 — available in main, GitHub Release pending
 
 **Candidate scope:** a searchable and multilingual training Workspace, Dataset Studio (image library, quality/duplicate review, manually approved captions and optional local vision suggestions), project-aware prepared dataset handoff, managed ComfyUI checkpoints, and a curated **My trained LoRAs / Mis LoRA entrenados** catalog. The catalog supports 1–5 star ratings, Best/Final flags, optional reference images, collapsed model cards, and local SQLite metadata. ComfyUI Generation history also offers collapsed, searchable and sortable jobs.
 
@@ -25,7 +25,7 @@ The main application's version is read from `VERSION_ARKILAB` and shown beneath 
 
 **Updating from an earlier installation:** back up `settings/orkilab/`, your project datasets, trainer configurations and ComfyUI workflows before updating. Pull the tagged release only after it is actually published, or test the candidate branch separately. Existing `.safetensors` and original image folders must not be deleted by the update.
 
-## Dataset Studio 0.4 development — manual Caption Studio (candidate scope; see limits above)
+## Dataset Studio 0.4 — manual Caption Studio (candidate scope; see limits above)
 
 Current 0.4 candidate development, following the published 0.3.0-rc.1 prerelease, includes a project-linked Dataset Studio under **Workspace → Dataset Studio**. Import references to local image files, review them, scan for exact/possible visual duplicates and blur, and compare pairs. Images remain at their original locations.
 
@@ -44,6 +44,10 @@ When a generated caption is in progress, the **Cancel generation** button sends 
 In **Dataset Studio → Edit caption → Local AI suggestion**, you may choose a **previously installed image-capable Ollama model** and explicitly click **Generate preview locally**. Ollama must already be running on this computer at `127.0.0.1:11434`; OrkiLab does **not** install Ollama, download or select a model for you, or enable cloud inference. The model name is entered manually (for example, `qwen3-vl:8b` if you have actually installed it). The selected source image is sent only to the local loopback Ollama endpoint. The request is capped at 12 MB and 120 seconds, performs no redirects and asks Ollama to unload the model afterward with `keep_alive: 0` (subject to Ollama's behavior).
 
 The suggestion appears in a separate **read-only preview**. Only **Use suggestion in editor** copies it into the editable text box; only the existing **Save caption** action writes the reviewed text to OrkiLab's local SQLite metadata. No original images, sidecars or caption history are changed just by generating a preview. Generating uses GPU memory and can contend with ComfyUI or training; run it only when resources are available. One preview is processed at a time. This is an **experimental development integration**, not a verified 0.4 release or a substitute for the training captioner already used by individual trainers. The official image-captioning acceptance still requires a real Windows/GPU test.
+
+## Next milestone: OrkiLab 0.5.0 — Multiview Studio
+
+The proposed 0.5.0 milestone is [Multiview Studio](docs/arkilab/MULTIVIEW_0_5_ROADMAP.md): organize front, side, rear, oblique and different-distance photographs of the same subject with explicit view metadata, camera coverage diagrams, source-versus-generated provenance and controlled dataset exports. Proposed stages are alpha.1 capture library, alpha.2 coverage checks, beta.1 optional ComfyUI-generated views, beta.2 dataset export, RC integration testing and stable acceptance. This is a **roadmap**, not implemented 0.5 features. The 0.4 stable release remains gated on separate acceptance work.
 
 ## Ecosystem spotlight — owner-managed announcement
 

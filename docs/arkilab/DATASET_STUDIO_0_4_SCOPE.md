@@ -1,6 +1,6 @@
 # OrkiLab 0.4.0 — Dataset Studio: initial scope and acceptance
 
-**Status:** 0.4.0-rc.1 release-preparation branch contains the accumulated Dataset Studio development. **This is a release candidate in preparation, not a tagged 0.4.0 release.** Local Windows/Ollama/GPU and complete per-trainer dataset acceptance are not certified by CPU-only CI. The original alpha.1 closeout is retained as historical evidence ([alpha.1 register](DATASET_STUDIO_0_4_ALPHA1_CLOSEOUT.md)); the current gate is [RC 0.4.0 readiness](RC_0_4_0_READINESS.md). The published 0.3.0-rc.1 tag remains immutable.
+**Status:** Dataset Studio source is available in `main` as part of `0.4.0-rc.1`; publication of the prerelease is tracked separately. This is **not** certified stable `0.4.0`. Local Windows/Ollama/GPU and complete per-trainer dataset acceptance are not certified by CPU-only CI. PR #77 added seven safety/manifest/handoff regression checks, passing 238 tests on both Windows and Linux with no failures. The original alpha.1 closeout is retained as historical evidence ([alpha.1 register](DATASET_STUDIO_0_4_ALPHA1_CLOSEOUT.md)); the current gate is [RC 0.4.0 readiness](RC_0_4_0_READINESS.md). The published 0.3.0-rc.1 tag remains immutable.
 
 ## Goal and workflow
 
@@ -96,3 +96,9 @@ The project metadata's optional `dataset` text field is **not** automatically po
 ### Batch captions via local Ollama (development)
 
 Dataset Studio has a **Generate AI captions** action for selected images. The dialog discovers installed **local vision-capable** Ollama models, preferring `gemma4:26b` when present, then generates suggestions **sequentially** using the already supported local vision endpoint. A live counter/progress bar, per-image results, editable previews and per-image approval checkboxes are shown. Existing saved captions are skipped and never overwritten by batch generation; errors on one image do not discard successful proposals. Users must explicitly click **Save approved captions**, which uses revision-checked updates. Original image files and existing sidecar files remain untouched. Generation can be cancelled, including the active server request. This feature is opt-in, not a background job, and requires Ollama running on the launcher PC. The generation itself is GPU-dependent and needs manual acceptance with actual local models before release.
+
+## Acceptance update — PR #77 (2026-11-21)
+
+**PASS (automated Windows and Linux):** 238 tests per platform (231 previous + seven new); source checksums unchanged after repeated preparation, manifest contents and paired images/captions consistent, changed or rejected images excluded, managed destination symlink rejected, tampered manifest paths/missing captions/symlinked files rejected before launch, and previous project-launch behaviour preserved.
+
+**Still NOT VERIFIED on real hardware:** Windows native folder-picker end-to-end, real photos including corrupted/special-format media, large-library/performance/low-disk behaviour, real GPU pre-cache/train for each supported engine, Ollama vision inference/cancellation/VRAM, and reproducible train/validation split with validated per-engine profiles. These cannot be marked PASS from mocked CPU tests; they remain blockers for declaring **stable** 0.4.0.

@@ -1,0 +1,59 @@
+name: Publish OrkiLab 0.4.0-rc.1 prerelease
+
+on:
+  workflow_run:
+    workflows: ["OrkiLab RC validation"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    # Never publish from a pull request or a non-main branch. An explicit
+    # manual dispatch on main is also allowed for recovery/retry.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout verified source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact candidate metadata
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          version = Path('VERSION_ARKILAB').read_text(encoding='utf-8').strip()
+          launcher = json.loads(Path('GUI/launcher.json').read_text(encoding='utf-8'))
+          assert version == '0.4.0-rc.1', version
+          assert launcher['arkilab_version'] == version
+          assert Path('.github/RELEASE_0_4_0_RC_1.md').is_file()
+          print('Prerelease version verified:', version)
+      - name: Publish source prerelease (idempotent)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v0.4.0-rc.1"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists; leaving it unchanged."
+            exit 0
+          fi
+          gh release create "$tag" \
+            --target "$RELEASE_SHA" \
+            --title "OrkiLab v0.4.0-rc.1" \
+            --notes-file .github/RELEASE_0_4_0_RC_1.md \
+            --prerelease
+          gh release view "$tag" --json isPrerelease,url,tagName
