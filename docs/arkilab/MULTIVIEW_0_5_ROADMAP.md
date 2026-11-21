@@ -1,6 +1,6 @@
 # OrkiLab 0.5.0 — Multiview Studio roadmap
 
-**Status:** alpha.1 merged in PR #80, alpha.2 merged in PR #81 with Windows/Linux checks passing; beta.1 under review, no 0.5 tag/release published. 
+**Status:** alpha.1 (PR #80), alpha.2 (PR #81) and beta.1 (PR #82) merged to `main`; beta.2 implementation under review, without a published 0.5 release/tag. 
 **Baseline:** 0.4.0-rc.1 is available in `main` (release metadata); publication of a GitHub Release/tag and the 0.4.0 stable acceptance must be verified separately.
 **Owner workflow:** Projects → Dataset Studio → Multiview Studio → Training Engines / ComfyUI.
 
@@ -30,6 +30,16 @@
 - This phase uses the existing **launcher-local-only** generation endpoints. A phone browser on the LAN can open the shell, but generation/import actions cannot run from a remote IP. Expanding this safely is separately gated behind authenticated remote API review.
 - Generation is not an automatically managed multiview batch, nor a claim of 3D reconstruction; multiple views can be run one-at-a-time and manually associated with the subject.
 - Before a stable release, test with a real multiview-capable workflow installed on the user's GPU, a real subject collection, cancellation and import, and verify output quality on desktop and mobile.
+
+## Beta.2 implementation (feature branch; operator acceptance pending)
+
+- Project-wide, **explicit** preview/download workflow accessible inside Multiview Studio. Exports only **approved** captures; synthetic captures are excluded by default and can be included as an explicit opt-in.
+- Builds a portable **ZIP** with `manifest.json`, `checksums.sha256`, and exact source image bytes under `images/train/<subject_id>/<capture_id>.<extension>` or the equivalent `validation` path. Source type, approved review, angles and optionally synthetic lineage are preserved in the manifest.
+- Deterministic subject-level train/validation splits use SHA-256 of a fixed namespace, user seed and subject ID. **All views of a subject remain in one split**, including real and generated views. With few subjects, the actual fraction may differ from the selected validation percentage.
+- Reproducibility: stable capture ordering, stable manifest serialization, fixed ZIP entry timestamps, and SHA-256 verification against indexed originals both before and during archive creation. A second export of unchanged records and settings yields identical ZIP bytes.
+- Safety: access restricted to launcher-loopback, same-origin checks on both requests, project-scoped SQL, strict path/symlink validation, per-image hash verification and bounded export sizes (500 captures / 350 MiB uncompressed originals / 400 MiB final ZIP). A temporary archive exists only during download; never overwrites or deletes the source images.
+- This is a **generic multiview manifest**, not a guaranteed direct training adapter for every LoRA engine. Automatic handoff and per-engine profile compatibility still require dedicated validation.
+- No date-dependent field is embedded in the manifest; preview and download never start training or generate images.
 
 ## Product goal
 
