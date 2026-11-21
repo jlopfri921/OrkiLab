@@ -45,7 +45,9 @@
 .orki-header-kofi:focus-visible{outline:2px solid #3cdbd0;outline-offset:3px}
 @media(max-width:650px){.orki-header-kofi{font-size:12px;padding:8px 9px;white-space:normal;text-align:center}}
 #settings-dialog .settings-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:3;background:var(--panel);padding:10px 0;border-bottom:1px solid #30445e;margin-bottom:16px}#settings-dialog .settings-dialog-head h2{margin:0}#settings-close-top{display:inline-flex;gap:8px;align-items:center;justify-content:center;border:1px solid var(--accent);background:#15313e;color:var(--text);font-weight:700;flex-shrink:0}#settings-dialog{max-height:88vh;overflow:auto}
-#workflow-details{width:min(720px,calc(100vw - 32px));max-height:min(82vh,850px);overflow-y:auto;color:var(--text);background:var(--panel);border:1px solid #3a536d;border-radius:14px;padding:20px;box-shadow:0 18px 60px #0008}#workflow-details::backdrop{background:rgba(1,8,19,.72)}#workflow-inspection{overflow-wrap:anywhere}#workflow-inspection p{margin:9px 0}#workflow-close{flex-shrink:0}\n</style><link rel="stylesheet" href="/assets/orkilab/orkilab-ui.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-app-shell.css">
+#workflow-details{width:min(720px,calc(100vw - 32px));max-height:min(82vh,850px);overflow-y:auto;color:var(--text);background:var(--panel);border:1px solid #3a536d;border-radius:14px;padding:20px;box-shadow:0 18px 60px #0008}#workflow-details::backdrop{background:rgba(1,8,19,.72)}#workflow-inspection{overflow-wrap:anywhere}#workflow-inspection p{margin:9px 0}#workflow-close{flex-shrink:0}\n
+.history-entry{margin-bottom:10px}.history-entry-summary{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;cursor:pointer;list-style-position:inside}.history-entry-summary strong{overflow-wrap:anywhere}.history-entry-summary .muted{font-size:12px}.history-entry-content{padding-top:12px;border-top:1px solid #34455c;margin-top:12px}.history-entry-summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+</style><link rel="stylesheet" href="/assets/orkilab/orkilab-ui.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-app-shell.css">
 </head><body class="orki-queue-theme">
 <header><a href="/workspace"><img src="/assets/orkilab/orkilab-logo-dark.svg" alt="OrkiLab"></a><div class="row"><label><span>Language</span><select id="workspace-language" class="no-i18n"></select></label><span id="version" class="muted no-i18n">OrkiLab</span><a class="orki-header-kofi no-i18n" href="https://ko-fi.com/jorgelf" target="_blank" rel="noopener noreferrer" title="Voluntary support for the open-source OrkiLab project">♡ Ko-fi · Support OrkiLab</a></div></header>
 <main><nav id="home-navigation" aria-label="Workspace sections"><a href="#overview">Dashboard</a><a href="#projects">Projects</a><a href="#engines">Training engines</a><a href="#trained-loras" id="trained-loras-nav">My trained LoRAs</a><a href="#gpu-manager">GPU Manager</a><button type="button" id="settings-open">Settings</button><button type="button" id="shutdown-open">Pause all and exit</button><a href="/queue">Job queue</a><a href="/workspace/comfyui" class="zone-entry">ComfyUI Zone</a><a href="/workspace/datasets" class="zone-entry">Dataset Studio <small>0.4 alpha</small></a></nav><nav id="comfy-navigation" aria-label="ComfyUI sections" hidden><a href="/workspace" class="zone-entry">← <span>Main dashboard</span></a><a href="#welcome">Welcome</a><a href="#comfyui">ComfyUI Connect</a><a href="#models" data-requires-comfy="true" hidden>Model library</a><a href="#nodes" data-requires-comfy="true" hidden>ComfyUI nodes</a><a href="#workflows" data-requires-comfy="true" hidden>Workflow library</a><a href="#generation" data-requires-comfy="true" hidden>Generation Studio</a><a href="#history" data-requires-comfy="true" hidden>Generation history</a><a href="#compare" data-requires-comfy="true" hidden>LoRA Comparator</a></nav>
@@ -609,7 +611,75 @@ loadWorkflowFolder().catch(e=>$("workflow-folder-status").textContent=e.message)
 const generationStates={queued:"Queued",running:"Running",completed:"Completed",error:"Generation failed",unknown:"Status unknown"};
 function renderGenerationMedia(root,token,outputs){root.replaceChildren();for(const [i,item] of (outputs||[]).entries()){const card=el("article",undefined,"panel");const url="/api/workspace/generation/media/"+encodeURIComponent(token)+"/"+i;let media=null;if(item.mime?.startsWith("image/")){media=el("img");media.loading="lazy";media.alt=item.filename;}else if(item.mime?.startsWith("video/")){media=el("video");media.controls=true;media.preload="metadata";}else if(item.mime?.startsWith("audio/")){media=el("audio");media.controls=true;media.preload="none";}if(media){media.src=url;media.addEventListener("error",()=>{if(!card.querySelector(".media-error"))card.append(el("p",t("Media unavailable on ComfyUI"),"muted media-error"));},{once:true});card.append(media);}card.append(el("p",item.filename));const link=el("a",t("Download"));link.href=url+"?download=1";card.append(link);root.append(card);}}
 let historyOffset=0,historyLoading=false;
-async function loadGenerationHistory(){if(historyLoading)return;historyLoading=true;const root=$("history-list"),status=$("history-status");$("history-refresh").disabled=$("history-prev").disabled=$("history-next").disabled=true;try{const data=await api("/api/workspace/generation/history?offset="+historyOffset,{cache:"no-store"});root.replaceChildren();status.textContent=data.jobs.length?t("Showing {count} generations",{count:data.jobs.length}):t("No generations recorded");for(const job of data.jobs){const card=el("article",undefined,"panel history-job"),heading=el("div",undefined,"row");heading.append(el("strong",job.name),el("span",t(generationStates[job.state]||"Status unknown"),"muted"));card.append(heading,el("p",new Date(job.created*1000).toLocaleString(),"muted"));const details=el("details"),summary=el("summary",t("Saved generation parameters")),pre=el("pre"),dl=el("button",t("Download API JSON"));dl.type="button";let graph=null;async function fetchGraph(){if(!graph){const d=await api("/api/workspace/generation/history/"+encodeURIComponent(job.id));graph=d.graph;}return graph;}details.ontoggle=async()=>{if(details.open)try{pre.textContent=JSON.stringify(await fetchGraph(),null,2);}catch(e){pre.textContent=e.message;}};dl.onclick=async()=>{try{const blob=new Blob([JSON.stringify(await fetchGraph(),null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=el("a");a.href=url;a.download="generation-"+job.id+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){status.textContent=e.message;}};details.append(summary,pre,dl);card.append(details);const media=el("div",undefined,"media-grid");renderGenerationMedia(media,job.id,job.outputs);card.append(media);if(!["completed","error"].includes(job.state)){const refresh=el("button",t("Check generation status"));refresh.type="button";refresh.onclick=async()=>{refresh.disabled=true;try{await api("/api/workspace/generation/"+encodeURIComponent(job.id),{cache:"no-store"});await loadGenerationHistory();}catch(e){status.textContent=e.message;}finally{refresh.disabled=false;}};card.append(refresh);}root.append(card);}$("history-prev").disabled=historyOffset===0;$("history-next").disabled=data.jobs.length<100;}catch(e){status.textContent=e.message;$("history-prev").disabled=historyOffset===0;}finally{historyLoading=false;$("history-refresh").disabled=false;}}
+const expandedHistoryIds=new Set();
+async function loadGenerationHistory(){
+ if(historyLoading)return;
+ historyLoading=true;
+ const root=$("history-list"),status=$("history-status");
+ $("history-refresh").disabled=$("history-prev").disabled=$("history-next").disabled=true;
+ try{
+  const data=await api("/api/workspace/generation/history?offset="+historyOffset,{cache:"no-store"});
+  root.replaceChildren();
+  status.textContent=data.jobs.length?t("Showing {count} generations",{count:data.jobs.length}):t("No generations recorded");
+  for(const job of data.jobs){
+   const card=el("details",undefined,"panel history-job history-entry");
+   card.open=expandedHistoryIds.has(job.id);
+   const heading=el("summary",undefined,"history-entry-summary");
+   const title=el("strong",job.name||t("Generation"));
+   const info=el("span",new Date(job.created*1000).toLocaleString()+" · "+t(generationStates[job.state]||"Status unknown")+" · "+(job.outputs||[]).length+" "+(I18N.lang==="es"?"archivos":"files"),"muted");
+   heading.append(title,info);
+   const content=el("div",undefined,"history-entry-content");
+   card.append(heading,content);
+   let rendered=false;
+   function renderExpanded(){
+    if(rendered)return;
+    rendered=true;
+    const details=el("details"),summary=el("summary",t("Saved generation parameters")),pre=el("pre"),dl=el("button",t("Download API JSON"));
+    dl.type="button";
+    let graph=null;
+    async function fetchGraph(){
+     if(!graph){const d=await api("/api/workspace/generation/history/"+encodeURIComponent(job.id));graph=d.graph;}
+     return graph;
+    }
+    details.ontoggle=async()=>{
+     if(details.open)try{pre.textContent=JSON.stringify(await fetchGraph(),null,2)}catch(e){pre.textContent=e.message}
+    };
+    dl.onclick=async()=>{
+     try{
+      const blob=new Blob([JSON.stringify(await fetchGraph(),null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=el("a");
+      a.href=url;a.download="generation-"+job.id+".json";a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+     }catch(e){status.textContent=e.message}
+    };
+    details.append(summary,pre,dl);
+    content.append(details);
+    const media=el("div",undefined,"media-grid");
+    renderGenerationMedia(media,job.id,job.outputs);
+    content.append(media);
+    if(!["completed","error"].includes(job.state)){
+     const refresh=el("button",t("Check generation status"));
+     refresh.type="button";
+     refresh.onclick=async()=>{
+      refresh.disabled=true;
+      try{await api("/api/workspace/generation/"+encodeURIComponent(job.id),{cache:"no-store"});await loadGenerationHistory()}
+      catch(e){status.textContent=e.message}
+      finally{refresh.disabled=false}
+     };
+     content.append(refresh);
+    }
+   }
+   card.addEventListener("toggle",()=>{
+    if(card.open){expandedHistoryIds.add(job.id);renderExpanded()}
+    else expandedHistoryIds.delete(job.id);
+   });
+   if(card.open)renderExpanded();
+   root.append(card);
+  }
+  $("history-prev").disabled=historyOffset===0;
+  $("history-next").disabled=data.jobs.length<100;
+ }catch(e){status.textContent=e.message;$("history-prev").disabled=historyOffset===0}
+ finally{historyLoading=false;$("history-refresh").disabled=false}
+}
 $("history-refresh").onclick=loadGenerationHistory;$("history-prev").onclick=()=>{historyOffset=Math.max(0,historyOffset-100);loadGenerationHistory();};$("history-next").onclick=()=>{historyOffset+=100;loadGenerationHistory();};
 
 function compareCompatibility(w){
