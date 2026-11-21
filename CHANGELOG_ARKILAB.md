@@ -1,6 +1,8 @@
 # OrkiLab changelog
 
-## 0.4.0-rc.1 — source candidate merged into main (GitHub Release/tag not verified; 2026-11-21)
+## 0.4.0-rc.1 — published GitHub prerelease (2026-11-21)
+
+- Published source prerelease [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1). Windows/Linux automated gates passed; remaining real-device and stable-release limitations are documented separately.
 
 - Expand Dataset Studio: project-linked image inventory, duplicate/quality diagnostics, manual captions with revision history, export of captions in ZIP format, optional opt-in local Ollama vision previews and batch caption review.
 - Prepare separate image-and-caption training folders without modifying original sources, and connect project-specific prepared datasets to isolated trainer drafts where supported. Engine-specific dataset formats still require verification.
