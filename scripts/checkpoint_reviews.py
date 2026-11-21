@@ -84,9 +84,9 @@ def reference_file(base, project_id, filename, extension):
     return Path(base) / "settings" / "orkilab" / "lora_references" / (key + extension)
 
 def image_extension(data):
-    if data.startswith(b"\\x89PNG\\r\\n\\x1a\\n") and len(data) >= 24:
+    if data.startswith(b"\x5cx89PNG\x5cr\x5cn\x5cx1a\x5cn") and len(data) >= 24:
         return ".png"
-    if data.startswith(b"\\xff\\xd8\\xff") and data.endswith(b"\\xff\\xd9"):
+    if data.startswith(b"\x5cxff\x5cxd8\x5cxff") and data.endswith(b"\x5cxff\x5cxd9"):
         return ".jpg"
     if len(data) >= 16 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return ".webp"
