@@ -91,8 +91,8 @@ class BetaOneTests(unittest.TestCase):
     def test_explicit_confirmation_and_completed_job_required(self):
         self.assertEqual(self.client.post(self.endpoint,json={
             "generation_id":self.job,"output_index":0}).status_code,400)
-        self.assertEqual(self.client.post(self.endpoint,json=self.import_body(confirm=False))
-                         .status_code,400) if False else None
+        no_confirm=self.import_body();no_confirm["confirm"]=False
+        self.assertEqual(self.client.post(self.endpoint,json=no_confirm).status_code,400)
         from generation_history import GenerationHistory
         history=GenerationHistory(self.root)
         waiting=uuid.uuid4().hex
