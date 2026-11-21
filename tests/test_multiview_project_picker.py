@@ -14,7 +14,7 @@ class MultiviewProjectPickerTests(unittest.TestCase):
 
     def test_select_only_active_image_projects_from_canonical_registry(self):
         self.assertIn('api("/api/workspace/projects?archived=0")',self.studio)
-        self.assertIn('all.filter(p=>p.category==="image")',self.studio)
+        self.assertIn('all.filter(p=>String(p.category||"").toLowerCase()==="image")',self.studio)
         self.assertIn('api("/api/workspace/projects?archived=1")',self.studio)
         self.assertIn('if(available)select.value=previous;',self.studio)
         self.assertIn('else if(images.length===1)select.value=images[0].id;',self.studio)
