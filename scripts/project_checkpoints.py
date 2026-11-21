@@ -1,6 +1,7 @@
 """Read-only, project-scoped checkpoint inventory. No trainer files are changed."""
 import re
 import sqlite3
+import unicodedata
 from contextlib import closing
 from pathlib import Path
 from flask import jsonify, request
@@ -8,6 +9,19 @@ from flask import jsonify, request
 HEX = frozenset("0123456789abcdef")
 STEP = re.compile(r"_step_(\d{1,9})\.safetensors$", re.IGNORECASE)
 MAX_FILES = 300
+
+def installed_model_name(project_name, filename):
+    """File name used when a project checkpoint is copied to ComfyUI."""
+    if not isinstance(project_name, str):
+        raise ValueError("Invalid project name")
+    label = unicodedata.normalize("NFKD", project_name)
+    label = "".join(c for c in label if not unicodedata.combining(c))
+    label = re.sub(r"[^A-Za-z0-9_-]+", "_", label).strip("_-")[:64]
+    if not label:
+        raise ValueError("Project name cannot be converted to a safe filename")
+    if not isinstance(filename, str) or Path(filename).name != filename or not filename.lower().endswith(".safetensors"):
+        raise ValueError("Invalid checkpoint filename")
+    return f"OrkiLab_{label}_{filename}"
 
 def inventory(base, project_id):
     if not isinstance(project_id, str) or len(project_id) != 32 or not set(project_id) <= HEX:
@@ -17,11 +31,11 @@ def inventory(base, project_id):
     if not database.is_file():
         raise LookupError("Project not found")
     with closing(sqlite3.connect(database)) as conn:
-        row = conn.execute("SELECT engine,category FROM projects WHERE id=? AND archived=0",
+        row = conn.execute("SELECT engine,category,name FROM projects WHERE id=? AND archived=0",
                            (project_id,)).fetchone()
     if not row:
         raise LookupError("Project not found")
-    engine, category = row
+    engine, category, display_name = row
     if category != "image":
         raise ValueError("Checkpoint comparison currently supports image projects")
     # Exact output layout used by the project-scoped trainer drafts.
@@ -29,7 +43,7 @@ def inventory(base, project_id):
     folder = base / "Outputs" / (engine + "_lora_output_" + project_name)
     resolved_root = (base / "Outputs").resolve()
     if folder.is_symlink() or not folder.is_dir():
-        return {"engine": engine, "checkpoints": [], "output_folder": str(folder), "truncated": False}
+        return {"engine": engine, "project_name": display_name, "checkpoints": [], "output_folder": str(folder), "truncated": False}
     if not folder.resolve().is_relative_to(resolved_root):
         raise ValueError("Output directory is not inside OrkiLab")
     items = []
@@ -46,9 +60,10 @@ def inventory(base, project_id):
         if not 0 < size < 100 * 1024**3:
             continue
         items.append({"step": int(match.group(1)), "name": file.name,
-                      "size_bytes": size})
+                      "size_bytes": size,
+                      "comfy_name": installed_model_name(display_name, file.name)})
     items.sort(key=lambda item: (item["step"], item["name"].lower()))
-    return {"engine": engine, "checkpoints": items[:MAX_FILES],
+    return {"engine": engine, "project_name": display_name, "checkpoints": items[:MAX_FILES],
             "output_folder": str(folder), "truncated": len(items) > MAX_FILES}
 
 def register(app, base):

@@ -24,8 +24,8 @@ class ProjectCheckpointInventoryTests(unittest.TestCase):
         db = self.base / "settings" / "orkilab" / "projects.sqlite3"
         db.parent.mkdir(parents=True)
         with closing(sqlite3.connect(db)) as conn, conn:
-            conn.execute("CREATE TABLE projects(id TEXT PRIMARY KEY, engine TEXT, category TEXT, archived INTEGER)")
-            conn.execute("INSERT INTO projects VALUES (?,?,?,0)", (self.project, "flux3klein", "image"))
+            conn.execute("CREATE TABLE projects(id TEXT PRIMARY KEY, engine TEXT, category TEXT, name TEXT, archived INTEGER)")
+            conn.execute("INSERT INTO projects VALUES (?,?,?,?,0)", (self.project, "flux3klein", "image", "Prueba"))
         self.output = self.base / "Outputs" / ("flux3klein_lora_output_orkilab_" + self.project[:12])
         self.output.mkdir(parents=True)
         for step in (500, 100, 300, 700, 1000):
@@ -36,6 +36,8 @@ class ProjectCheckpointInventoryTests(unittest.TestCase):
     def test_sorted_project_scoped_checkpoints(self):
         result = project_checkpoints.inventory(self.base, self.project)
         self.assertEqual(result["engine"], "flux3klein")
+        self.assertEqual(result["project_name"], "Prueba")
+        self.assertTrue(all(c["comfy_name"].startswith("OrkiLab_Prueba_") for c in result["checkpoints"]))
         self.assertEqual([c["step"] for c in result["checkpoints"]], [100, 300, 500, 700, 1000])
         self.assertEqual(len(result["checkpoints"]), 5)
         self.assertTrue(all(c["size_bytes"] > 0 for c in result["checkpoints"]))
@@ -82,18 +84,39 @@ class ProjectCheckpointUiTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.html)
 
+    def test_curated_library_has_separate_translated_training_route(self):
+        self.assertIn('id="trained-loras-nav"', self.html)
+        self.assertIn('href="#trained-loras"', self.html)
+        self.assertIn('data-home="trained-loras"', self.html)
+        self.assertIn('href="#engines" class="back-link"', self.html)
+        self.assertIn('if(chosen==="trained-loras")loadTrainedLoras()', self.html)
+        self.assertEqual(self.html.count('id="trained-loras-refresh"'), 1)
+        self.assertIn('"trained-loras":["Trained LoRA library"', self.html)
+        import json
+        for lang in ("es", "pt", "fr", "de", "it", "ja", "ko"):
+            translations = json.loads((ROOT / "GUI" / "locales" / (lang + ".json")).read_text(encoding="utf-8"))
+            for key in ("My trained LoRAs", "Trained LoRA library", "← Back to training",
+                        "Selected models", "Refresh library"):
+                with self.subTest(lang=lang, key=key):
+                    self.assertTrue(translations.get(key), f"Missing translation: {lang} {key}")
+        es = json.loads((ROOT / "GUI" / "locales" / "es.json").read_text(encoding="utf-8"))
+        self.assertEqual(es["Trained LoRA library"], "Biblioteca de LoRA entrenados")
+        self.assertEqual(es["← Back to training"], "Volver a entrenamiento")
+
     def test_backend_ensures_only_lora_filename_changes(self):
         for marker in (
             'def compare_project_checkpoints():',
             'project_checkpoints.inventory(base, project_id)',
             'node.get("class_type") not in ("LoraLoader", "LoraLoaderModelOnly")',
-            'f["name"]=="lora_name"', '"name":"lora_name","value":name',
-            'validate_prompt(graph,item[6])',
+            'f["name"]=="lora_name"', '"name":"lora_name","value":selected_models[name]',
+            'validate_prompt(graph,schemas)',
             'Checkpoints not installed in ComfyUI/models/loras',
+            'fresh_schema = node_schema(cfg["url"], node["class_type"], get_json)',
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.code)
         self.assertIn("project_checkpoints.register(app, base)", self.routes)
+        self.assertIn('entry.comfy_name||entry.name', self.html)
 
 
 if __name__ == "__main__":

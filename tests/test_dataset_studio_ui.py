@@ -75,7 +75,7 @@ class DatasetStudioUiChecks(unittest.TestCase):
         parser = HomeMenu()
         parser.feed(self.workspace)
         expected = [
-            "#overview", "#projects", "#engines", "#gpu-manager",
+            "#overview", "#projects", "#engines", "trained-loras-nav", "#gpu-manager",
             "settings-open", "shutdown-open", "/queue",
             "/workspace/comfyui", "/workspace/datasets"
         ]

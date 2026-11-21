@@ -32,10 +32,39 @@ class GenerationHistory:
             row = con.execute("SELECT * FROM generations WHERE id=?", (token,)).fetchone()
             return dict(row) if row else None
 
-    def list(self, limit=100, offset=0):
+    def search(self, limit=100, offset=0, query="", state="", sort="newest"):
+        """Filter before pagination, using only whitelisted SQL ordering."""
+        orders = {
+            "newest": "created DESC, id DESC",
+            "oldest": "created ASC, id ASC",
+            "name_asc": "name COLLATE NOCASE ASC, created DESC, id DESC",
+            "name_desc": "name COLLATE NOCASE DESC, created DESC, id DESC",
+        }
+        if sort not in orders or state not in ("", "queued", "running", "completed", "error", "cancelled"):
+            raise ValueError("Invalid history filter")
+        if not isinstance(query,str) or len(query)>120:
+            raise ValueError("Invalid history search")
+        # Search by name/ID/workflow. Escape wildcard characters for literal matching.
+        safe = query.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        where = ["1=1"]
+        params = []
+        if safe:
+            where.append("(name LIKE ? ESCAPE '\\' OR id LIKE ? ESCAPE '\\' OR workflow_id LIKE ? ESCAPE '\\')")
+            params.extend(["%"+safe+"%"]*3)
+        if state:
+            where.append("state=?")
+            params.append(state)
+        clause = " AND ".join(where)
         with closing(self.connect()) as con:
-            rows = con.execute("SELECT id,prompt_id,workflow_id,name,created,updated,state,outputs FROM generations ORDER BY created DESC LIMIT ? OFFSET ?",(limit,offset)).fetchall()
-        return [{**dict(row),"outputs":json.loads(row["outputs"])} for row in rows]
+            total = con.execute("SELECT COUNT(*) FROM generations WHERE "+clause, params).fetchone()[0]
+            rows = con.execute(
+                "SELECT id,prompt_id,workflow_id,name,created,updated,state,outputs FROM generations WHERE "+
+                clause+" ORDER BY "+orders[sort]+" LIMIT ? OFFSET ?",
+                [*params, limit, offset]).fetchall()
+        return {"jobs":[{**dict(row),"outputs":json.loads(row["outputs"])} for row in rows],"total":total}
+
+    def list(self, limit=100, offset=0):
+        return self.search(limit,offset)["jobs"]
 
     def update(self, token, state, outputs):
         with closing(self.connect()) as con, con:

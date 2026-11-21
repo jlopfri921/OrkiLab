@@ -247,10 +247,29 @@ def register(app, base):
                 if not lora_field or lora_field.get("kind")!="choice":
                     return jsonify(error="The workflow LoRA filename is not editable"),409
                 choices = set(x for x in lora_field["choices"] if isinstance(x, str))
-                missing = [name for name in names if name not in choices]
+                from managed_checkpoints import model_name
+                # Compare against the installed, human-readable project alias, not the internal UUID.
+                # Read current ComfyUI choices rather than the stale list captured before installation.
+                fresh_schema = node_schema(cfg["url"], node["class_type"], get_json)
+                from workflow_conversion import combo_choices
+                inputs = fresh_schema.get("input", {})
+                descriptor = inputs.get("required", {}).get("lora_name", inputs.get("optional", {}).get("lora_name"))
+                available = combo_choices(descriptor)
+                if available is None:
+                    return jsonify(error="Unable to read current LoRA options from ComfyUI"), 409
+                choices = {choice for choice in available if isinstance(choice, str)}
+                selected_models = {}
+                for name in names:
+                    alias = model_name(discovered["project_name"], name)
+                    selected_models[name] = alias if alias in choices else name
+                # Refresh only this node schema so edit/validation accepts freshly installed LoRAs.
+                schemas = dict(item[6])
+                schemas[node["class_type"]] = fresh_schema
+                fields = [dict(f, choices=available) if f["node"]==node_id and f["name"]=="lora_name" else f for f in item[5]]
+                missing = [name for name in names if selected_models[name] not in choices]
                 if missing:
                     return jsonify(error="Checkpoints not installed in ComfyUI/models/loras",
-                                   detail="Copy the project checkpoint files into ComfyUI's LoRA folder and refresh ComfyUI model lists: "+", ".join(missing)[:300]),409
+                                   detail="ComfyUI does not recognize: "+", ".join(model_name(discovered["project_name"], name) for name in missing)[:300]+". Refresh its models or restart ComfyUI."),409
                 if len(prepared)+len(names)>20:
                     for key in list(prepared):
                         if key != token and len(prepared)+len(names)>20:
@@ -259,12 +278,12 @@ def register(app, base):
                     return jsonify(error="Too many pending comparison variants"),409
                 variants=[]
                 for name in names:
-                    graph=apply_edits(item[4],item[5],[{"node":node_id,"name":"lora_name","value":name}])
-                    validate_prompt(graph,item[6])
+                    graph=apply_edits(item[4],fields,[{"node":node_id,"name":"lora_name","value":selected_models[name]}])
+                    validate_prompt(graph,schemas)
                     key=uuid.uuid4().hex
-                    prepared[key]=(time.monotonic(),*item[1:4],graph,editable_fields(graph,item[6]),item[6])
+                    prepared[key]=(time.monotonic(),*item[1:4],graph,editable_fields(graph,schemas),schemas)
                     step=next(x["step"] for x in discovered["checkpoints"] if x["name"]==name)
-                    variants.append({"step":step,"name":name,"token":key})
+                    variants.append({"step":step,"name":name,"comfy_name":selected_models[name],"token":key})
             return jsonify(workflow_id=item[1], variants=variants)
         except LookupError as exc:
             return jsonify(error=str(exc)),404
@@ -452,9 +471,12 @@ def register(app, base):
             return jsonify(error="Manage workflows on the launcher PC"), 403
         try:
             offset = max(0,min(100000,int(request.args.get("offset",0))))
-        except ValueError:
-            return jsonify(error="Invalid request"),400
-        return jsonify(jobs=records.list(100,offset))
+            query = request.args.get("q","")
+            state = request.args.get("state","")
+            sort = request.args.get("sort","newest")
+            return jsonify(records.search(100,offset,query,state,sort))
+        except (ValueError,TypeError):
+            return jsonify(error="Invalid history filter"),400
 
     @app.get("/api/workspace/generation/history/<token>")
     def generation_history_detail(token):

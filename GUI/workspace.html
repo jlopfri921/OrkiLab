@@ -45,12 +45,15 @@
 .orki-header-kofi:focus-visible{outline:2px solid #3cdbd0;outline-offset:3px}
 @media(max-width:650px){.orki-header-kofi{font-size:12px;padding:8px 9px;white-space:normal;text-align:center}}
 #settings-dialog .settings-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:3;background:var(--panel);padding:10px 0;border-bottom:1px solid #30445e;margin-bottom:16px}#settings-dialog .settings-dialog-head h2{margin:0}#settings-close-top{display:inline-flex;gap:8px;align-items:center;justify-content:center;border:1px solid var(--accent);background:#15313e;color:var(--text);font-weight:700;flex-shrink:0}#settings-dialog{max-height:88vh;overflow:auto}
-#workflow-details{width:min(720px,calc(100vw - 32px));max-height:min(82vh,850px);overflow-y:auto;color:var(--text);background:var(--panel);border:1px solid #3a536d;border-radius:14px;padding:20px;box-shadow:0 18px 60px #0008}#workflow-details::backdrop{background:rgba(1,8,19,.72)}#workflow-inspection{overflow-wrap:anywhere}#workflow-inspection p{margin:9px 0}#workflow-close{flex-shrink:0}\n</style><link rel="stylesheet" href="/assets/orkilab/orkilab-ui.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-app-shell.css">
+#workflow-details{width:min(720px,calc(100vw - 32px));max-height:min(82vh,850px);overflow-y:auto;color:var(--text);background:var(--panel);border:1px solid #3a536d;border-radius:14px;padding:20px;box-shadow:0 18px 60px #0008}#workflow-details::backdrop{background:rgba(1,8,19,.72)}#workflow-inspection{overflow-wrap:anywhere}#workflow-inspection p{margin:9px 0}#workflow-close{flex-shrink:0}\n
+.history-entry{margin-bottom:10px}.history-entry-summary{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;cursor:pointer;list-style-position:inside}.history-entry-summary strong{overflow-wrap:anywhere}.history-entry-summary .muted{font-size:12px}.history-entry-content{padding-top:12px;border-top:1px solid #34455c;margin-top:12px}.history-entry-summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.trained-lora-card{margin:10px 0}.trained-lora-summary{display:flex;flex-wrap:wrap;align-items:center;gap:10px;cursor:pointer;list-style-position:inside}.trained-lora-summary strong{flex:1;min-width:200px;overflow-wrap:anywhere}.trained-lora-summary .muted{font-size:12px}.trained-lora-stars{color:#f5cb6a;letter-spacing:.08em;font-weight:700;white-space:nowrap}.trained-lora-content{border-top:1px solid #34455c;margin-top:14px;padding-top:12px}.trained-lora-reference{max-width:620px;margin-bottom:14px}.trained-lora-reference>img{display:block;max-width:100%;max-height:420px;object-fit:contain;border-radius:10px;background:#0b1221;margin-bottom:12px}.trained-lora-summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+</style><link rel="stylesheet" href="/assets/orkilab/orkilab-ui.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css"><link rel="stylesheet" href="/assets/orkilab/orkilab-app-shell.css">
 </head><body class="orki-queue-theme">
 <header><a href="/workspace"><img src="/assets/orkilab/orkilab-logo-dark.svg" alt="OrkiLab"></a><div class="row"><label><span>Language</span><select id="workspace-language" class="no-i18n"></select></label><span id="version" class="muted no-i18n">OrkiLab</span><a class="orki-header-kofi no-i18n" href="https://ko-fi.com/jorgelf" target="_blank" rel="noopener noreferrer" title="Voluntary support for the open-source OrkiLab project">♡ Ko-fi · Support OrkiLab</a></div></header>
-<main><nav id="home-navigation" aria-label="Workspace sections"><a href="#overview">Dashboard</a><a href="#projects">Projects</a><a href="#engines">Training engines</a><a href="#gpu-manager">GPU Manager</a><button type="button" id="settings-open">Settings</button><button type="button" id="shutdown-open">Pause all and exit</button><a href="/queue">Job queue</a><a href="/workspace/comfyui" class="zone-entry">ComfyUI Zone</a><a href="/workspace/datasets" class="zone-entry">Dataset Studio <small>0.4 alpha</small></a></nav><nav id="comfy-navigation" aria-label="ComfyUI sections" hidden><a href="/workspace" class="zone-entry">← <span>Main dashboard</span></a><a href="#welcome">Welcome</a><a href="#comfyui">ComfyUI Connect</a><a href="#models" data-requires-comfy="true" hidden>Model library</a><a href="#nodes" data-requires-comfy="true" hidden>ComfyUI nodes</a><a href="#workflows" data-requires-comfy="true" hidden>Workflow library</a><a href="#generation" data-requires-comfy="true" hidden>Generation Studio</a><a href="#history" data-requires-comfy="true" hidden>Generation history</a><a href="#compare" data-requires-comfy="true" hidden>LoRA Comparator</a></nav>
+<main><nav id="home-navigation" aria-label="Workspace sections"><a href="#overview">Dashboard</a><a href="#projects">Projects</a><a href="#engines">Training engines</a><a href="#trained-loras" id="trained-loras-nav">My trained LoRAs</a><a href="#gpu-manager">GPU Manager</a><button type="button" id="settings-open">Settings</button><button type="button" id="shutdown-open">Pause all and exit</button><a href="/queue">Job queue</a><a href="/workspace/comfyui" class="zone-entry">ComfyUI Zone</a><a href="/workspace/datasets" class="zone-entry">Dataset Studio <small>0.4 alpha</small></a></nav><nav id="comfy-navigation" aria-label="ComfyUI sections" hidden><a href="/workspace" class="zone-entry">← <span>Main dashboard</span></a><a href="#welcome">Welcome</a><a href="#comfyui">ComfyUI Connect</a><a href="#models" data-requires-comfy="true" hidden>Model library</a><a href="#nodes" data-requires-comfy="true" hidden>ComfyUI nodes</a><a href="#workflows" data-requires-comfy="true" hidden>Workflow library</a><a href="#generation" data-requires-comfy="true" hidden>Generation Studio</a><a href="#history" data-requires-comfy="true" hidden>Generation history</a><a href="#compare" data-requires-comfy="true" hidden>LoRA Comparator</a></nav>
 <div id="workspace-body"><div id="workspace-context" class="workspace-context"><div class="row"><strong id="context-title" class="no-i18n"></strong><button type="button" id="context-toggle" aria-expanded="false" aria-controls="context-description"><span>What can I do here?</span> <span aria-hidden="true">ⓘ</span></button></div><p id="context-description" class="muted no-i18n" hidden></p></div><section id="home-zone"><div class="workspace-section" data-home="overview"><section class="orki-hero" aria-labelledby="overview"><div class="orki-hero-copy"><div class="orki-eyebrow">ORKILAB / CREATIVE AI WORKSPACE</div><h1 id="overview">Create. Train. Explore.</h1><p>Everything you need for LoRA training and generative AI in one workspace. Choose an engine, manage your projects and monitor your GPU.</p><div class="orki-hero-actions"><a class="orki-action-primary" href="#engines">Explore training engines <span aria-hidden="true">↗</span></a><a class="orki-action-secondary" href="#projects">Your projects</a></div></div><div class="orki-hero-art" aria-hidden="true"><span class="orki-orb orki-orb-one"></span><span class="orki-orb orki-orb-two"></span><span class="orki-orb orki-orb-three"></span><div class="orki-art-label">AI / LoRA / GPU</div></div></section><div class="orki-section-head"><div><span class="orki-kicker">LIVE OVERVIEW</span><h2>Workspace status</h2></div><a href="#gpu-manager">Open GPU Manager <span aria-hidden="true">↗</span></a></div><div id="metrics" class="metrics orki-metrics"></div><section class="orki-command" aria-label="OrkiLab control center"><div class="orki-command-head"><div><span class="orki-kicker">ORKILAB CONTROL CENTER</span><h2>Everything at a glance</h2><p class="muted">Live workspace summary from existing services. Unavailable data is never treated as zero.</p></div><div class="row"><span id="control-updated" class="muted no-i18n" role="status">Not yet checked</span><button type="button" id="control-refresh">Refresh</button></div></div><div class="orki-command-grid"><article class="orki-command-card"><div class="row"><strong>Training and queue</strong><a href="/queue">View queue ↗</a></div><div class="orki-big-number" id="control-training">—</div><p id="control-queue" class="no-i18n muted">Checking training activity...</p><p id="control-trainers" class="no-i18n muted">—</p></article><article class="orki-command-card"><div class="row"><strong>Projects</strong><a href="#projects">Manage ↗</a></div><div class="orki-big-number" id="control-projects">—</div><p id="control-project-names" class="no-i18n muted">Checking projects...</p></article><article class="orki-command-card"><div class="row"><strong>GPU and resources</strong><a href="#gpu-manager">Details ↗</a></div><div class="orki-big-number" id="control-gpu">—</div><p id="control-vram" class="no-i18n muted">Checking hardware...</p><div class="orki-command-track"><span id="control-gpu-fill"></span></div></article><article class="orki-command-card"><div class="row"><strong>ComfyUI connection</strong><a href="/workspace/comfyui#comfyui">Configure ↗</a></div><div class="orki-big-number" id="control-comfy">—</div><p id="control-comfy-detail" class="no-i18n muted">Checking connection...</p></article><article class="orki-command-card"><div class="row"><strong>Workflows</strong><a href="/workspace/comfyui#workflows">Library ↗</a></div><div class="orki-big-number" id="control-workflows">—</div><p class="muted">Workflows registered in OrkiLab</p></article><article class="orki-command-card"><div class="row"><strong>LoRA models</strong><a href="/workspace/comfyui#models">Model library ↗</a></div><div class="orki-big-number" id="control-loras">Inventory on demand</div><p class="muted">Use Model library to scan installed models. No automatic disk scan.</p></article></div></section><div class="orki-section-head"><div><span class="orki-kicker">START CREATING</span><h2>Training engines</h2><p class="muted">Choose a model family to open its dedicated trainer.</p></div><a href="#engines">View all engines <span aria-hidden="true">↗</span></a></div><div id="overview-engine-list" class="engines orki-featured-engines"></div><aside id="orki-promotion" class="orki-promotion" aria-label="OrkiLab ecosystem" hidden><div class="orki-promo-mark" aria-hidden="true">◈</div><div class="orki-promo-content"><div class="orki-promo-label">FROM THE ORKILAB ECOSYSTEM · PROJECT SPOTLIGHT</div><strong id="orki-promo-title" class="no-i18n"></strong><p id="orki-promo-description" class="no-i18n"></p></div><a id="orki-promo-link" href="#" target="_blank" rel="noopener noreferrer" class="orki-promo-link">Discover project ↗</a><button id="orki-promo-dismiss" type="button" class="orki-promo-dismiss" aria-label="Dismiss announcement" title="Dismiss announcement">×</button></aside><div class="orki-quick-grid"><a href="#projects"><strong>Projects</strong><span>Organize your training work and datasets <span aria-hidden="true">↗</span></span></a><a href="#gpu-manager"><strong>GPU Manager</strong><span>Keep VRAM, utilization and temperature in view <span aria-hidden="true">↗</span></span></a><a href="/workspace/comfyui"><strong>ComfyUI Zone</strong><span>Models, workflows and generation tools <span aria-hidden="true">↗</span></span></a></div><p id="notice" role="status"></p></div>
-<div class="workspace-section" data-home="projects" hidden><section class="projects-intro" aria-labelledby="projects"><span class="orki-kicker">ORKILAB / YOUR WORKSPACE</span><h1 id="projects">Your AI training projects</h1><p>Keep each LoRA training idea organized in one place. Name the project, select a training engine, and note where your dataset lives. Open the matching trainer whenever you are ready to work.</p><div class="projects-steps"><article><strong>1. Create a project</strong><p>Choose a meaningful name and the image, video or audio training engine that fits your goal.</p></article><article><strong>2. Keep your context</strong><p>Save a dataset path and notes as references so you remember what belongs to each experiment.</p></article><article><strong>3. Train and revisit</strong><p>Open the relevant trainer from your project card. Archive completed ideas without deleting their files.</p></article></div><p class="projects-disclaimer">Projects link datasets and detect saved training checkpoints. Checkpoint comparison requires a compatible workflow and LoRA files available to ComfyUI; OrkiLab never copies them automatically.</p></section><div class="row projects-toolbar"><div><h2>Your projects</h2><p class="muted">Create, reopen or archive your project references.</p></div><button class="primary" id="new">New project</button><label class="row"><input type="checkbox" id="archived"> Show archived</label></div><div id="projects-empty" class="projects-empty" hidden><span class="projects-empty-symbol" aria-hidden="true">◇</span><h3 id="projects-empty-heading"></h3><p id="projects-empty-detail"></p><button type="button" id="projects-empty-create" class="primary">Create my first project</button></div><div id="project-list"></div></div>
+<div class="workspace-section" data-home="projects" hidden><section class="projects-intro" aria-labelledby="projects"><span class="orki-kicker">ORKILAB / YOUR WORKSPACE</span><h1 id="projects">Your AI training projects</h1><p>Keep each LoRA training idea organized in one place. Name the project, select a training engine, and note where your dataset lives. Open the matching trainer whenever you are ready to work.</p><div class="projects-steps"><article><strong>1. Create a project</strong><p>Choose a meaningful name and the image, video or audio training engine that fits your goal.</p></article><article><strong>2. Keep your context</strong><p>Save a dataset path and notes as references so you remember what belongs to each experiment.</p></article><article><strong>3. Train and revisit</strong><p>Open the relevant trainer from your project card. Archive completed ideas without deleting their files.</p></article></div><p class="projects-disclaimer">Projects link datasets and detect saved training checkpoints. Checkpoint comparison requires a compatible workflow and LoRA files available to ComfyUI; OrkiLab never copies them automatically.</p></section><div class="row projects-toolbar"><div><h2>Your projects</h2><p class="muted">Create, reopen or archive your project references.</p></div><button class="primary" id="new">New project</button><label class="row"><input type="checkbox" id="archived"> Show archived</label></div><div class="row" aria-label="Project search and sorting"><label><span>Search projects</span><input type="search" id="projects-search" maxlength="120" placeholder="Name, engine, notes"></label><label><span>Project category</span><select id="projects-category"><option value="">All categories</option><option value="image">Image</option><option value="video">Video</option><option value="audio">Audio</option><option value="multimodal">Multimodal</option></select></label><label><span>Training engine filter</span><select id="projects-engine"><option value="">All engines</option></select></label><label><span>Sort projects</span><select id="projects-sort"><option value="recent">Recently updated</option><option value="oldest">Oldest first</option><option value="name_asc">Name A–Z</option><option value="name_desc">Name Z–A</option></select></label><button type="button" id="projects-clear">Clear filters</button></div><p id="projects-filter-status" class="muted no-i18n" role="status"></p><div id="projects-empty" class="projects-empty" hidden><span class="projects-empty-symbol" aria-hidden="true">◇</span><h3 id="projects-empty-heading"></h3><p id="projects-empty-detail"></p><button type="button" id="projects-empty-create" class="primary">Create my first project</button></div><div id="project-list"></div></div><div class="workspace-section" data-home="trained-loras" hidden><div class="row" style="justify-content:space-between;align-items:center"><div><span class="orki-kicker">ORKILAB / TRAINING STUDIO</span><h1 id="trained-loras">Trained LoRA library</h1><p class="muted">Only models marked Best or Final appear here. Your original training files remain unchanged.</p></div><a href="#engines" class="back-link">← Back to training</a></div><section class="panel"><div class="row"><h2>Selected models</h2><button type="button" id="trained-loras-refresh">Refresh library</button></div><div class="row" aria-label="Trained LoRA search and sorting"><label><span>Search trained LoRAs</span><input type="search" id="trained-loras-search" maxlength="120" placeholder="Project, model, workflow, GPU"></label><label><span>Model designation</span><select id="trained-loras-designation"><option value="">All selected models</option><option value="final">Final models</option><option value="best">Best models</option></select></label><label><span>Training engine filter</span><select id="trained-loras-engine"><option value="">All engines</option></select></label><label><span>Sort trained LoRAs</span><select id="trained-loras-sort"><option value="newest">Recently rated</option><option value="oldest">Oldest first</option><option value="score">Highest rated</option><option value="steps_asc">Fewest steps</option><option value="steps_desc">Most steps</option><option value="name_asc">Project A–Z</option></select></label><button type="button" id="trained-loras-clear">Clear filters</button></div><p id="trained-loras-status" class="muted no-i18n" role="status"></p><div id="trained-loras-list" class="no-i18n"></div></section></div>
 <section id="gpu-manager" class="panel" hidden><div class="row"><h2>GPU Manager</h2><span class="muted">Read-only monitoring</span></div><p class="muted">Monitor GPU memory, load and temperature. This tool does not close programs or release memory.</p><div class="row"><button id="gpu-refresh" type="button">Refresh now</button><label class="row"><input type="checkbox" id="gpu-auto" checked> Automatic refresh</label><button id="gpu-choose" type="button">Choose training GPU</button><span id="gpu-updated" class="muted no-i18n"></span></div><p id="gpu-notice" role="status" class="no-i18n"></p><div id="gpu-overview" class="gpu-overview" aria-live="polite"></div><section class="panel" aria-label="Resource history"><div class="row"><h3>Resource history</h3><button type="button" id="gpu-history-clear">Clear chart</button><span class="muted">Last 10 minutes while this screen is open · local session only</span></div><div id="gpu-history-summary" class="gpu-stats no-i18n"></div><div id="gpu-history-charts" class="gpu-history-charts no-i18n"></div><p class="muted">RAM is system-wide available memory, not only ComfyUI. VRAM and GPU readings include all processes; missing samples are not treated as zero.</p></section><div id="gpu-cards" class="gpu-cards no-i18n"></div><details><summary>How does GPU monitoring work?</summary><p>VRAM is video memory occupied by all GPU programs. GPU utilization is activity rather than free memory. Metrics are estimates reported by the NVIDIA driver.</p></details></section><div class="workspace-section" data-home="engines" hidden><section class="engine-intro" aria-labelledby="engines"><span class="orki-kicker">ORKILAB / TRAINING STUDIO</span><h1 id="engines">Choose your training engine</h1><p>Train a LoRA to adapt a compatible base model to your images, clips or audio. Start with the type of media you want to teach the model, then select the training engine that matches its architecture.</p><div class="engine-guides"><article><h3>Image LoRA</h3><p>Teach compatible image models a visual style, subject or concept with a prepared image dataset and captions.</p><button type="button" data-engine-filter="image">Explore image trainers</button></article><article><h3>Video LoRA</h3><p>Use a video-focused training engine for motion and temporal examples. Video training may require substantial GPU memory.</p><button type="button" data-engine-filter="video">Explore video trainers</button></article><article><h3>Audio and music</h3><p>Work with compatible audio or music training engines. Dataset format and model requirements vary by engine.</p><button type="button" data-engine-filter="audio">Explore audio trainers</button></article></div><p class="muted">Each engine has its own dataset, model and hardware requirements. The category filters are a guide, not a guarantee of compatibility. Multimodal engines are listed separately.</p></section><div class="engine-browser"><div><h2>Browse available engines</h2><p class="muted">Filter the trainers, inspect their descriptions and open the one you need.</p></div><div class="row tabs" id="filters" aria-label="Training engine categories"></div><p id="engine-filter-summary" class="muted no-i18n" role="status"></p><div id="engine-list" class="engines"></div></div></div>
 </section><section id="comfy-zone" hidden><div class="row zone-heading"><h1>ComfyUI Zone</h1></div><p class="muted">Manage your ComfyUI connection, models, nodes, workflows and generation in one place.</p><div class="comfy-module" data-module="welcome"><section class="comfy-welcome"><p class="orki-kicker">ORKILAB / COMFYUI ZONE</p><h2 id="welcome">Discover ComfyUI in OrkiLab</h2><p>ComfyUI is a node-based environment for building AI generation workflows. OrkiLab brings its models, nodes, workflows, generation and results into a guided workspace without replacing ComfyUI.</p><div class="comfy-welcome-grid"><article><h3>Generate and experiment</h3><p>Work with images, video, audio and compatible 3D workflows according to the models and custom nodes installed on your ComfyUI server.</p></article><article><h3>Organize your workflows</h3><p>Import, search and inspect saved workflows; prepare complex visual graphs with the OrkiLab Bridge before submitting them.</p></article><article><h3>Control and compare</h3><p>Review parameters, follow execution, cancel OrkiLab jobs safely, inspect outputs and compare compatible LoRA strengths.</p></article><article><h3>Monitor resources</h3><p>Explore GPU use and optionally unload cached models after generation. ComfyUI must be running to use the connected tools.</p></article></div><div class="panel"><h3>Start here</h3><p id="comfy-welcome-status" role="status" class="no-i18n">Checking your saved connection...</p><p>1. Start ComfyUI Desktop or your private ComfyUI server. 2. Set its address in ComfyUI Connect. 3. Save and test the connection to unlock the tools.</p><div class="row"><a class="comfy-welcome-action" href="#comfyui">Configure ComfyUI connection</a><button id="comfy-welcome-recheck" type="button">Check connection again</button></div><p class="muted">No connection? You can still read this introduction and change connection settings. Other ComfyUI tools remain hidden until a successful connection test.</p></div></section></div><div class="comfy-module" data-module="comfyui"><h2 id="comfyui">ComfyUI Connect</h2><div class="panel"><p class="muted">Connect to ComfyUI on this PC or a private network. No generation jobs are submitted.</p><form id="comfy-form"><label><span>Engine mode</span><select id="engine-mode"><option value="native">OrkiLab native</option><option value="comfy">ComfyUI connected</option><option value="hybrid">Hybrid</option></select></label><p id="engine-mode-help" class="muted no-i18n"></p><label><span>Shared model folder (optional)</span><input id="model-folder" maxlength="1024" placeholder="D:\\Models"></label><p class="muted">Model folder is saved as a reference only. Training engines remain unchanged.</p><button type="button" id="comfy-save">Save settings</button><label><span>ComfyUI address</span><input type="url" id="comfy-url" required maxlength="200" placeholder="http://127.0.0.1:8188"></label><p class="muted">Use a local or private IP address and port. Configure ComfyUI on the launcher PC.</p><div class="row"><button class="primary" type="submit">Save and test connection</button><button type="button" id="comfy-test">Test saved connection</button></div><p id="comfy-result" role="status" class="no-i18n" aria-live="polite"></p></form></div>
 </div><div class="comfy-module" data-module="models" hidden><h2 id="models">Model library</h2><div class="panel"><p class="muted">Read-only inventory of model files and ComfyUI resources. Save connection settings before refreshing. Matching names do not prove identical contents or compatibility.</p><div class="row"><button id="models-refresh" type="button" class="primary">Refresh inventory</button><input id="models-search" type="search" placeholder="Search models" aria-label="Search models"><select id="models-source" aria-label="Source"><option value="">All sources</option><option value="OrkiLab">OrkiLab</option><option value="OrkiLab outputs">OrkiLab outputs</option><option value="Shared folder">Shared folder</option><option value="ComfyUI">ComfyUI</option></select><select id="models-category" aria-label="Category"><option value="">All categories</option></select></div><p id="models-status" role="status" class="no-i18n"></p><div id="models-warnings" class="muted no-i18n"></div><div style="overflow:auto;max-height:540px"><table style="width:100%;text-align:left;border-collapse:collapse"><thead><tr><th>Name</th><th>Source</th><th>Category</th><th>Format</th><th>Size</th></tr></thead><tbody id="models-list" class="no-i18n"></tbody></table></div></div>
@@ -58,7 +61,7 @@
 </div><div class="comfy-module" data-module="workflows" hidden><details id="workflows" class="panel"><summary><span>Workflow library</span><small id="workflow-count" class="muted no-i18n"></small></summary><div class="workflow-content"><p class="muted">Import ComfyUI workflow JSON or API JSON. Imports are stored locally and never executed.</p><details class="workflow-tools"><summary>Link workflow folder</summary><p class="muted">Select a folder on the launcher PC. Synchronization imports JSON files recursively without modifying originals.</p><form id="workflow-folder-form"><label><span>Workflow folder path</span><input id="workflow-folder" maxlength="1024" required placeholder="D:\ComfyUI\user\default\workflows"></label><button type="submit" class="primary">Synchronize folder</button></form><p id="workflow-folder-status" role="status" class="no-i18n"></p></details><details class="workflow-tools"><summary>Import workflow</summary><form id="workflow-import"><label><span>Workflow file</span><input type="file" id="workflow-file" accept=".json,application/json" required></label><label><span>Name</span><input id="workflow-name" maxlength="120" required></label><label><span>Category</span><select id="workflow-category"><option value="image">Image</option><option value="video">Video</option><option value="audio">Audio</option><option value="music">Music</option><option value="3d">3D</option><option value="other">Other</option></select></label><button type="submit" class="primary">Import workflow</button></form></details><div class="row" style="margin-top:16px"><input type="search" id="workflow-search" placeholder="Search workflows"><select id="workflow-filter"><option value="">All categories</option><option value="image">Image</option><option value="video">Video</option><option value="audio">Audio</option><option value="music">Music</option><option value="3d">3D</option><option value="other">Other</option></select><label class="row"><input type="checkbox" id="workflow-favorites"> Favorites only</label></div><p id="workflow-status" role="status" class="no-i18n"></p><div id="workflow-list"></div></div></details>
 
 </div><div class="comfy-module" data-module="generation" hidden><h2 id="generation">Generation Studio</h2><div class="panel"><p class="muted">Select a saved workflow, prepare it, review the API graph and confirm execution. Custom nodes execute on the ComfyUI server.</p><div class="panel"><div class="row"><strong>ComfyUI memory</strong><button id="comfy-release-memory" type="button">Release models and cache</button><label class="row"><input type="checkbox" id="comfy-auto-release"> Automatically release after generation</label></div><p class="muted">Unloads cached ComfyUI models from RAM/VRAM when its queue is empty. Does not restart ComfyUI or guarantee all Python memory is returned. The automatic option affects only generations started here.</p><p id="comfy-memory-status" class="no-i18n" role="status"></p></div><details><summary>OrkiLab Bridge</summary><p class="muted">Install the bridge into the ComfyUI custom_nodes folder, then restart ComfyUI. Visual workflows can be converted in a dedicated ComfyUI browser tab.</p><label><span>ComfyUI custom_nodes folder</span><input id="bridge-folder" placeholder="D:\\ComfyUI\\custom_nodes"></label><button type="button" id="bridge-install">Install or update Bridge</button><p id="bridge-status" role="status" class="no-i18n"></p></details><form id="generation-form"><label><span>Search workflows</span><input type="search" id="generation-search" placeholder="Search workflows"></label><label><span>Category</span><select id="generation-category"><option value="">All categories</option><option value="image">Image</option><option value="video">Video</option><option value="audio">Audio</option><option value="music">Music</option><option value="3d">3D</option><option value="other">Other</option></select></label><label><span>Workflow</span><select id="generation-workflow" required></select></label><p id="generation-summary" class="muted no-i18n"></p><div class="row"><button type="button" id="generation-prepare">Prepare workflow</button><button type="button" id="generation-bridge">Prepare with Bridge</button><button type="button" id="generation-download">Download original JSON</button><a id="generation-comfy" target="_blank" rel="noopener noreferrer" hidden>Open ComfyUI</a></div><section id="generation-parameters" hidden style="margin:16px 0"><h3>Generation parameters</h3><p class="muted">Edit the available inputs, then apply changes and review the graph. Linked inputs and original files remain unchanged.</p><div class="panel"><div class="row"><label><span>Preset name</span><input id="gen-preset-name" maxlength="80"></label><button type="button" id="gen-preset-save">Save preset</button></div><div class="row"><select id="gen-preset-select" aria-label="Preset"></select><button type="button" id="gen-preset-load">Load preset</button><button type="button" id="gen-preset-delete">Delete preset</button></div><p class="muted">Presets are stored in this browser for the selected workflow. Loading a preset does not generate anything.</p></div><div id="generation-fields" class="no-i18n"></div><div class="row"><button type="button" id="generation-apply">Apply parameter changes</button><button type="button" id="generation-reset">Reset unapplied changes</button></div><p id="generation-parameter-status" role="status" class="no-i18n"></p></section><button type="button" id="gen-open-compare" disabled>Compare LoRA strengths</button><details id="generation-review" hidden><summary>Review prepared API graph</summary><pre id="generation-graph" class="no-i18n" style="max-height:320px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere"></pre></details><label class="row"><input id="generation-confirm" type="checkbox" required> I have reviewed this workflow and want to execute it.</label><button class="primary" type="submit" disabled>Generate with ComfyUI</button></form><div id="bridge-progress" class="bridge-progress" role="status" aria-live="polite" hidden><div class="row"><strong id="bridge-progress-label" class="no-i18n"></strong><span id="bridge-progress-count" class="muted no-i18n"></span><button id="bridge-cancel" type="button">Cancel preparation</button></div><div class="bridge-progress-track"><span id="bridge-progress-fill"></span></div><p id="bridge-progress-detail" class="muted no-i18n"></p></div><div id="execution-progress" class="bridge-progress" hidden><div class="row"><strong id="execution-progress-label" class="no-i18n" role="status"></strong><button id="generation-cancel" type="button">Cancel generation</button></div><div class="bridge-progress-track"><span id="execution-progress-fill"></span></div><p id="execution-progress-detail" class="muted no-i18n"></p></div><p id="generation-status" role="status" class="no-i18n"></p><section id="generation-resource-diagnostics" class="panel" hidden><h3>Generation memory diagnostics</h3><p class="muted">System-wide RAM and VRAM; this cannot identify the exact process or prove a memory leak. Short peaks may be missed.</p><div id="generation-resource-readings" class="gpu-stats no-i18n" role="status"></div></section><div id="generation-output" class="media-grid no-i18n"></div></div>
-</div><div class="comfy-module" data-module="history" hidden><h2 id="history">Generation history</h2><div class="panel"><p class="muted">Review saved generation parameters and outputs. Original media remains on ComfyUI.</p><div class="row"><button type="button" id="history-refresh">Refresh history</button><button type="button" id="history-prev">Previous page</button><button type="button" id="history-next">Next page</button></div><p id="history-status" class="no-i18n" role="status"></p><div id="history-list" class="no-i18n"></div></div></div><div class="comfy-module" data-module="compare" hidden><h2 id="compare">LoRA Comparator</h2><div class="panel"><p class="muted">Choose a saved workflow, prepare it and compare LoRA strengths without leaving this page. The prompt, seed and other settings remain unchanged.</p><div class="compare-step"><h3>1. Choose a workflow</h3><label><span>Find a workflow</span><input id="compare-search" type="search" placeholder="Search by name or folder"></label><label class="row"><input type="checkbox" id="compare-show-all"> Show workflows without verified compatibility</label><p id="compare-compat-status" role="status" class="muted no-i18n"></p><label><span>Workflow</span><select id="compare-workflow"></select></label><p id="compare-workflow-help" class="muted no-i18n" role="status"></p><div class="row"><button type="button" id="compare-inspect">Inspeccionar workflow</button><button type="button" id="compare-prepare" class="primary">Prepare selected workflow</button><a href="#workflows">Browse workflow library</a></div><p id="compare-prepare-status" role="status" class="no-i18n"></p><div id="compare-bridge-progress" class="bridge-progress" hidden role="status" aria-live="polite"><div class="row"><strong id="compare-bridge-step" class="no-i18n"></strong><span id="compare-bridge-count" class="muted no-i18n"></span><button id="compare-bridge-cancel" type="button">Cancelar preparación</button></div><div class="bridge-progress-track"><span id="compare-bridge-fill"></span></div><p id="compare-bridge-detail" class="muted no-i18n"></p></div></div><div class="compare-step"><h3>2. Select LoRA and strengths</h3><p id="compare-source" class="muted no-i18n"></p><label><span>LoRA to compare</span><select id="compare-node"></select></label><label><span>Comparison type</span><select id="compare-mode"><option value="weights">LoRA strengths</option><option value="checkpoints">Project checkpoints</option></select></label><div id="compare-weights-group"><label><span>LoRA weights</span><input id="compare-weights" value="0, 0.5, 0.8, 1.0" title="Enter two to six distinct weights separated by commas, using decimal points."></label></div><div id="compare-checkpoint-group" hidden><label><span>Project</span><select id="compare-checkpoint-project"><option value="">Select image project</option></select></label><div class="row"><button type="button" id="compare-checkpoint-refresh">Refresh checkpoints</button></div><p class="muted">Select 2–6 checkpoints. To generate images, copy their .safetensors files into ComfyUI/models/loras and refresh ComfyUI. All variants use the unchanged workflow prompt and seed. Generation is blocked during training.</p><p id="compare-checkpoint-status" role="status" class="muted no-i18n"></p><div id="compare-checkpoint-list" class="no-i18n"></div></div><p class="muted">The selected LoRA strength or checkpoint is the only setting that changes. Prompt, seed and all other settings remain unchanged. Runs are sequential; Stop prevents new submissions but does not interrupt the current job.</p></div><div class="compare-step"><h3>3. Run and compare results</h3><label class="row"><input type="checkbox" id="compare-confirm"> Confirm comparison</label><div class="row"><button type="button" id="compare-run" class="primary">Run comparison</button><button type="button" id="compare-stop" disabled>Stop after current</button></div><p id="compare-status" role="status" class="no-i18n"></p><div id="compare-results" class="media-grid no-i18n"></div></div></div></div></section></div></main>
+</div><div class="comfy-module" data-module="history" hidden><h2 id="history">Generation history</h2><div class="panel"><p class="muted">Review saved generation parameters and outputs. Original media remains on ComfyUI.</p><div class="row"><label><span>Search generations</span><input id="history-search" type="search" maxlength="120" placeholder="Search by workflow, name or ID"></label><label><span>Filter by status</span><select id="history-state"><option value="">All statuses</option><option value="completed">Completed</option><option value="running">Running</option><option value="queued">Queued</option><option value="error">Failed</option><option value="cancelled">Cancelled</option></select></label><label><span>Sort generations</span><select id="history-sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name_asc">Name A–Z</option><option value="name_desc">Name Z–A</option></select></label><button type="button" id="history-clear">Clear filters</button></div><div class="row"><button type="button" id="history-refresh">Refresh history</button><button type="button" id="history-prev">Previous page</button><button type="button" id="history-next">Next page</button></div><p id="history-status" class="no-i18n" role="status"></p><div id="history-list" class="no-i18n"></div></div></div><div class="comfy-module" data-module="compare" hidden><h2 id="compare">LoRA Comparator</h2><div class="panel"><p class="muted">Choose a saved workflow, prepare it and compare LoRA strengths without leaving this page. The prompt, seed and other settings remain unchanged.</p><div class="compare-step"><h3>1. Choose a workflow</h3><label><span>Find a workflow</span><input id="compare-search" type="search" placeholder="Search by name or folder"></label><label class="row"><input type="checkbox" id="compare-show-all"> Show workflows without verified compatibility</label><p id="compare-compat-status" role="status" class="muted no-i18n"></p><label><span>Workflow</span><select id="compare-workflow"></select></label><p id="compare-workflow-help" class="muted no-i18n" role="status"></p><div class="row"><button type="button" id="compare-inspect">Inspeccionar workflow</button><button type="button" id="compare-prepare" class="primary">Prepare selected workflow</button><a href="#workflows">Browse workflow library</a></div><p id="compare-prepare-status" role="status" class="no-i18n"></p><div id="compare-bridge-progress" class="bridge-progress" hidden role="status" aria-live="polite"><div class="row"><strong id="compare-bridge-step" class="no-i18n"></strong><span id="compare-bridge-count" class="muted no-i18n"></span><button id="compare-bridge-cancel" type="button">Cancelar preparación</button></div><div class="bridge-progress-track"><span id="compare-bridge-fill"></span></div><p id="compare-bridge-detail" class="muted no-i18n"></p></div></div><div class="compare-step"><h3>2. Select LoRA and strengths</h3><p id="compare-source" class="muted no-i18n"></p><label><span>LoRA to compare</span><select id="compare-node"></select></label><label><span>Comparison type</span><select id="compare-mode"><option value="weights">LoRA strengths</option><option value="checkpoints">Project checkpoints</option></select></label><div id="compare-weights-group"><label><span>LoRA weights</span><input id="compare-weights" value="0, 0.5, 0.8, 1.0" title="Enter two to six distinct weights separated by commas, using decimal points."></label></div><div id="compare-checkpoint-group" hidden><label><span>Project</span><select id="compare-checkpoint-project"><option value="">Select image project</option></select></label><div class="row"><button type="button" id="compare-checkpoint-refresh">Refresh checkpoints</button></div><div class="panel"><h4>OrkiLab checkpoint manager</h4><label><span>ComfyUI/models/loras folder (on this PC)</span><input id="compare-checkpoint-folder" maxlength="1024" placeholder="D:\\ComfyUI\\models\\loras"></label><p class="muted">Selected checkpoints are copied as OrkiLab_ProjectName_Checkpoint.safetensors. Training originals are never changed. Uninstall removes only verified OrkiLab-managed copies.</p><div class="row"><button type="button" id="compare-checkpoint-install">Install selected</button><button type="button" id="compare-checkpoint-uninstall">Uninstall selected</button><button type="button" id="compare-checkpoint-check">Check installed</button></div><p id="compare-checkpoint-manage-status" role="status" class="muted no-i18n"></p></div><p class="muted">Select 2–6 checkpoints. After installation, refresh ComfyUI models or restart ComfyUI and prepare the workflow again. All variants use the unchanged prompt and seed. Generation is blocked during training.</p><p id="compare-checkpoint-status" role="status" class="muted no-i18n"></p><div id="compare-checkpoint-list" class="no-i18n"></div><section class="panel"><h4>Checkpoint ratings</h4><p class="muted">Select Best or Final to add a checkpoint to the trained LoRA library.</p><p id="compare-review-status" role="status" class="muted no-i18n"></p><div id="compare-review-list" class="no-i18n"></div></section></div><p class="muted">The selected LoRA strength or checkpoint is the only setting that changes. Prompt, seed and all other settings remain unchanged. Runs are sequential; Stop prevents new submissions but does not interrupt the current job.</p></div><div class="compare-step"><h3>3. Run and compare results</h3><label class="row"><input type="checkbox" id="compare-confirm"> Confirm comparison</label><div class="row"><button type="button" id="compare-run" class="primary">Run comparison</button><button type="button" id="compare-stop" disabled>Stop after current</button></div><p id="compare-status" role="status" class="no-i18n"></p><div id="compare-results" class="media-grid no-i18n"></div></div></div></div></section></div></main>
 <dialog id="workflow-details" aria-labelledby="workflow-details-title"><div class="row" style="justify-content:space-between;align-items:center;gap:16px"><h2 id="workflow-details-title" style="margin:0">Workflow details</h2><button type="button" id="workflow-close">Close</button></div><div id="workflow-inspection" class="no-i18n"></div></dialog>
 <dialog id="editor"><form id="create"><h2>New project</h2><label>Name<input name="name" required maxlength="120"></label><label>Category<select name="category"><option value="image">image</option><option value="video">video</option><option value="audio">audio</option><option value="multimodal">multimodal</option></select></label><label>Engine<select name="engine" required></select></label><label>Dataset reference (optional)<input name="dataset" maxlength="1024" placeholder="Stored as metadata only"></label><label>Notes<textarea name="notes" maxlength="4000" rows="3"></textarea></label><p class="muted">Creating a project does not start training or modify existing datasets.</p><p id="form-error" role="alert"></p><div class="row"><button class="primary" type="submit">Create project</button><button type="button" id="cancel">Cancel</button></div></form></dialog>
 <dialog id="switch-trainer" aria-labelledby="switch-heading" aria-describedby="switch-message"><h2 id="switch-heading">Switch trainer</h2><p id="switch-message" class="no-i18n"></p><p id="switch-protected" class="muted no-i18n" hidden></p><div class="row"><button type="button" class="primary" id="switch-parallel">Open alongside</button><button type="button" id="switch-close">Close and open</button><button type="button" id="switch-cancel">Cancel</button></div></dialog>
@@ -211,7 +214,21 @@ function renderEngines(){const selected=engines.filter(x=>filter==="all"||catego
 function selectEngineFilter(next){filter=next;for(const button of $("filters").children)button.setAttribute("aria-pressed",String(button.dataset.filter===next));renderEngines();}
 for(const f of ["all","image","video","audio","multimodal"]){const b=el("button",t(f[0].toUpperCase()+f.slice(1)),"no-i18n");b.dataset.filter=f;b.setAttribute("aria-pressed",String(f==="all"));b.onclick=()=>selectEngineFilter(f);$("filters").append(b);}
 for(const button of document.querySelectorAll("[data-engine-filter]"))button.onclick=()=>{selectEngineFilter(button.dataset.engineFilter);$("engine-list").scrollIntoView({behavior:"smooth",block:"start"});};
-async function projects(){const archived=$("archived").checked;const d=await api("/api/workspace/projects?archived="+Number(archived));$("project-list").replaceChildren();const empty=$("projects-empty"),isEmpty=d.projects.length===0;empty.hidden=!isEmpty;$("projects-empty-create").hidden=archived;$("projects-empty-heading").textContent=t(archived?"No archived projects yet":"Your first project starts here");$("projects-empty-detail").textContent=t(archived?"Projects you archive will appear here.":"Give your idea a name, choose an engine and keep your dataset reference together.");for(const p of d.projects){const x=el("article",undefined,"project"),info=el("div");info.append(el("strong",p.name,"no-i18n"),el("p",t(p.category)+" · "+(engines.find(e=>e.id===p.engine)?.name||p.engine),"muted no-i18n"));const dsLabels=({es:["Carpeta configurada: ","Carpetas de origen en Dataset Studio: ","Dataset preparado para entrenar: ","Dataset Studio todavía no tiene imágenes asociadas."],en:["Configured folder: ","Source folders indexed in Dataset Studio: ","Prepared training dataset: ","No images indexed in Dataset Studio yet."],pt:["Pasta configurada: ","Pastas de origem no Dataset Studio: ","Dataset preparado: ","Ainda sem imagens no Dataset Studio."],fr:["Dossier configuré : ","Dossiers indexés dans Dataset Studio : ","Dataset préparé : ","Aucune image indexée."],de:["Konfigurierter Ordner: ","Indexierte Quellordner in Dataset Studio: ","Vorbereiteter Datensatz: ","Noch keine Bilder indiziert."],it:["Cartella configurata: ","Cartelle di origine in Dataset Studio: ","Dataset preparato: ","Nessuna immagine indicizzata."],ja:["設定済みフォルダー: ","Dataset Studioの元フォルダー: ","準備済みデータセット: ","画像がまだ登録されていません。"],ko:["설정된 폴더: ","Dataset Studio 원본 폴더: ","준비된 데이터셋: ","등록된 이미지가 없습니다."]}[I18N.lang]||["Configured folder: ","Source folders indexed in Dataset Studio: ","Prepared training dataset: ","No images indexed in Dataset Studio yet."]);
+let cachedProjectData=null,cachedProjectArchived=null;
+async function projects(fromCache=false){
+ const archived=$("archived").checked;
+ const d=fromCache&&cachedProjectData&&cachedProjectArchived===archived?cachedProjectData:await api("/api/workspace/projects?archived="+Number(archived));
+ cachedProjectData=d;cachedProjectArchived=archived;
+ const all=d.projects||[];
+ const engineFilter=$("projects-engine"),oldEngine=engineFilter.value;
+ engineFilter.replaceChildren(new Option(t("All engines"),""));
+ for(const id of [...new Set(all.map(p=>p.engine))].sort())engineFilter.add(new Option(engines.find(e=>e.id===id)?.name||id,id));
+ if([...engineFilter.options].some(o=>o.value===oldEngine))engineFilter.value=oldEngine;
+ const query=$("projects-search").value.trim().toLocaleLowerCase(),cat=$("projects-category").value,engine=engineFilter.value,sort=$("projects-sort").value;
+ const matched=all.filter(p=>(!query||[p.name,p.engine,p.dataset,p.notes].some(v=>String(v||"").toLocaleLowerCase().includes(query)))&&(!cat||p.category===cat)&&(!engine||p.engine===engine));
+ matched.sort((a,b)=>sort==="oldest"?String(a.created_at||"").localeCompare(String(b.created_at||"")):sort==="name_asc"?a.name.localeCompare(b.name):sort==="name_desc"?b.name.localeCompare(a.name):String(b.updated_at||"").localeCompare(String(a.updated_at||"")));
+ $("projects-filter-status").textContent=matched.length+" / "+all.length+" "+(I18N.lang==="es"?"proyectos":"projects");
+ $("project-list").replaceChildren();const empty=$("projects-empty"),isEmpty=matched.length===0;empty.hidden=!isEmpty;$("projects-empty-create").hidden=archived||all.length>0;$("projects-empty-heading").textContent=all.length?t("No matching projects"):t(archived?"No archived projects yet":"Your first project starts here");$("projects-empty-detail").textContent=all.length?t("Try another search or clear the filters."):t(archived?"Projects you archive will appear here.":"Give your idea a name, choose an engine and keep your dataset reference together.");for(const p of matched){const x=el("article",undefined,"project"),info=el("div");info.append(el("strong",p.name,"no-i18n"),el("p",t(p.category)+" · "+(engines.find(e=>e.id===p.engine)?.name||p.engine),"muted no-i18n"));const dsLabels=({es:["Carpeta configurada: ","Carpetas de origen en Dataset Studio: ","Dataset preparado para entrenar: ","Dataset Studio todavía no tiene imágenes asociadas."],en:["Configured folder: ","Source folders indexed in Dataset Studio: ","Prepared training dataset: ","No images indexed in Dataset Studio yet."],pt:["Pasta configurada: ","Pastas de origem no Dataset Studio: ","Dataset preparado: ","Ainda sem imagens no Dataset Studio."],fr:["Dossier configuré : ","Dossiers indexés dans Dataset Studio : ","Dataset préparé : ","Aucune image indexée."],de:["Konfigurierter Ordner: ","Indexierte Quellordner in Dataset Studio: ","Vorbereiteter Datensatz: ","Noch keine Bilder indiziert."],it:["Cartella configurata: ","Cartelle di origine in Dataset Studio: ","Dataset preparato: ","Nessuna immagine indicizzata."],ja:["設定済みフォルダー: ","Dataset Studioの元フォルダー: ","準備済みデータセット: ","画像がまだ登録されていません。"],ko:["설정된 폴더: ","Dataset Studio 원본 폴더: ","준비된 데이터셋: ","등록된 이미지가 없습니다."]}[I18N.lang]||["Configured folder: ","Source folders indexed in Dataset Studio: ","Prepared training dataset: ","No images indexed in Dataset Studio yet."]);
 if(p.dataset)info.append(el("p",dsLabels[0]+p.dataset,"muted no-i18n"));
 if(p.category==="image"){
  const linkedFolders=Array.isArray(p.dataset_source_folders)?p.dataset_source_folders:[];
@@ -238,6 +255,8 @@ if(p.category==="image"){
  };
  actions.append(checkpoints);info.append(status,list);
 }if(!archived&&engines.some(e=>e.id===p.engine))actions.append(launchButton(p.engine,p.id));actions.append(b);x.append(info,actions);$("project-list").append(x);}}
+for(const id of ["projects-search","projects-category","projects-engine","projects-sort"])$(id).addEventListener(id==="projects-search"?"input":"change",()=>projects(true).catch(e=>notice(e.message)));
+$("projects-clear").onclick=()=>{$("projects-search").value="";$("projects-category").value="";$("projects-engine").value="";$("projects-sort").value="recent";projects(true).catch(e=>notice(e.message))};
 $("new").onclick=()=>{$("form-error").textContent="";$("editor").showModal();};$("projects-empty-create").onclick=()=>$("new").click();$("cancel").onclick=()=>$("editor").close();$("archived").onchange=()=>projects().catch(e=>notice(e.message));$("create").onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{await post("/api/workspace/projects",Object.fromEntries(new FormData(e.target)));$("editor").close();e.target.reset();await projects();}catch(err){$("form-error").textContent=err.message;}finally{b.disabled=false;}};
 const lang=$("workspace-language");for(const [code,name] of I18N.languages)lang.add(new Option(name,code));lang.value=I18N.lang;lang.onchange=async()=>{lang.disabled=true;try{await post("/api/i18n",{language:lang.value});location.reload();}catch(e){notice(e.message);lang.value=I18N.lang;lang.disabled=false;}};
 
@@ -266,7 +285,7 @@ function updateComfyAccess(verified){
  $("comfy-welcome-status").textContent=t(verified?"ComfyUI is connected. All tools are available.":"ComfyUI is not connected. Configure and test the connection to unlock the tools.");
  if(location.pathname.replace(/\/$/,"")==="/workspace/comfyui")routeWorkspace();
 }
-function fillComfy(d){$("comfy-url").value=d.url;$("engine-mode").value=d.mode;$("model-folder").value=d.model_folder;syncEngineMode();}
+function fillComfy(d){$("comfy-url").value=d.url;$("engine-mode").value=d.mode;$("model-folder").value=d.model_folder;$("compare-checkpoint-folder").value=d.lora_folder||"";syncEngineMode();}
 async function loadComfy(){
  try{
   const settings=await api("/api/workspace/comfyui");fillComfy(settings);
@@ -276,7 +295,7 @@ async function loadComfy(){
  }catch{updateComfyAccess(false);}
  finally{comfyConnectionReady=true;updateComfyAccess(comfyConnectionVerified);}
 }
-async function saveComfy(){updateComfyAccess(false);fillComfy(await post("/api/workspace/comfyui",{url:$("comfy-url").value,mode:$("engine-mode").value,model_folder:$("model-folder").value}));}
+async function saveComfy(){updateComfyAccess(false);fillComfy(await post("/api/workspace/comfyui",{url:$("comfy-url").value,mode:$("engine-mode").value,model_folder:$("model-folder").value,lora_folder:$("compare-checkpoint-folder").value}));}
 $("engine-mode").onchange=syncEngineMode;
 $("comfy-save").onclick=async()=>{const b=$("comfy-save");b.disabled=true;try{await saveComfy();$("comfy-result").textContent=t("Saved");}catch(e){$("comfy-result").textContent=e.message;}finally{b.disabled=false;}};
 async function checkComfy(save){const buttons=$("comfy-form").querySelectorAll("button");buttons.forEach(b=>b.disabled=true);const out=$("comfy-result");out.textContent=t("Checking connection...");try{if(save){await saveComfy();}const d=await post("/api/workspace/comfyui/check",{});updateComfyAccess(true);out.textContent=t("Connected to ComfyUI")+(d.version?" · "+d.version:"")+(d.devices.length?" · "+d.devices.join(", "):"");}catch(e){updateComfyAccess(false);out.textContent=e.message;}finally{buttons.forEach(b=>b.disabled=false);syncEngineMode();}}
@@ -609,7 +628,93 @@ loadWorkflowFolder().catch(e=>$("workflow-folder-status").textContent=e.message)
 const generationStates={queued:"Queued",running:"Running",completed:"Completed",error:"Generation failed",unknown:"Status unknown"};
 function renderGenerationMedia(root,token,outputs){root.replaceChildren();for(const [i,item] of (outputs||[]).entries()){const card=el("article",undefined,"panel");const url="/api/workspace/generation/media/"+encodeURIComponent(token)+"/"+i;let media=null;if(item.mime?.startsWith("image/")){media=el("img");media.loading="lazy";media.alt=item.filename;}else if(item.mime?.startsWith("video/")){media=el("video");media.controls=true;media.preload="metadata";}else if(item.mime?.startsWith("audio/")){media=el("audio");media.controls=true;media.preload="none";}if(media){media.src=url;media.addEventListener("error",()=>{if(!card.querySelector(".media-error"))card.append(el("p",t("Media unavailable on ComfyUI"),"muted media-error"));},{once:true});card.append(media);}card.append(el("p",item.filename));const link=el("a",t("Download"));link.href=url+"?download=1";card.append(link);root.append(card);}}
 let historyOffset=0,historyLoading=false;
-async function loadGenerationHistory(){if(historyLoading)return;historyLoading=true;const root=$("history-list"),status=$("history-status");$("history-refresh").disabled=$("history-prev").disabled=$("history-next").disabled=true;try{const data=await api("/api/workspace/generation/history?offset="+historyOffset,{cache:"no-store"});root.replaceChildren();status.textContent=data.jobs.length?t("Showing {count} generations",{count:data.jobs.length}):t("No generations recorded");for(const job of data.jobs){const card=el("article",undefined,"panel history-job"),heading=el("div",undefined,"row");heading.append(el("strong",job.name),el("span",t(generationStates[job.state]||"Status unknown"),"muted"));card.append(heading,el("p",new Date(job.created*1000).toLocaleString(),"muted"));const details=el("details"),summary=el("summary",t("Saved generation parameters")),pre=el("pre"),dl=el("button",t("Download API JSON"));dl.type="button";let graph=null;async function fetchGraph(){if(!graph){const d=await api("/api/workspace/generation/history/"+encodeURIComponent(job.id));graph=d.graph;}return graph;}details.ontoggle=async()=>{if(details.open)try{pre.textContent=JSON.stringify(await fetchGraph(),null,2);}catch(e){pre.textContent=e.message;}};dl.onclick=async()=>{try{const blob=new Blob([JSON.stringify(await fetchGraph(),null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=el("a");a.href=url;a.download="generation-"+job.id+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){status.textContent=e.message;}};details.append(summary,pre,dl);card.append(details);const media=el("div",undefined,"media-grid");renderGenerationMedia(media,job.id,job.outputs);card.append(media);if(!["completed","error"].includes(job.state)){const refresh=el("button",t("Check generation status"));refresh.type="button";refresh.onclick=async()=>{refresh.disabled=true;try{await api("/api/workspace/generation/"+encodeURIComponent(job.id),{cache:"no-store"});await loadGenerationHistory();}catch(e){status.textContent=e.message;}finally{refresh.disabled=false;}};card.append(refresh);}root.append(card);}$("history-prev").disabled=historyOffset===0;$("history-next").disabled=data.jobs.length<100;}catch(e){status.textContent=e.message;$("history-prev").disabled=historyOffset===0;}finally{historyLoading=false;$("history-refresh").disabled=false;}}
+const expandedHistoryIds=new Set();
+async function loadGenerationHistory(){
+ if(historyLoading)return;
+ historyLoading=true;
+ const root=$("history-list"),status=$("history-status");
+ $("history-refresh").disabled=$("history-prev").disabled=$("history-next").disabled=true;
+ try{
+  const params=new URLSearchParams({offset:String(historyOffset),q:$("history-search").value.trim(),state:$("history-state").value,sort:$("history-sort").value});
+  const data=await api("/api/workspace/generation/history?"+params.toString(),{cache:"no-store"});
+  root.replaceChildren();
+  status.textContent=(I18N.lang==="es"?"Mostrando ":"Showing ")+data.jobs.length+" "+(I18N.lang==="es"?"de ":"of ")+data.total+" "+(I18N.lang==="es"?"generaciones":"generations")+(data.total?" · "+(I18N.lang==="es"?"Página ":"Page ")+(Math.floor(historyOffset/100)+1):"");
+  for(const job of data.jobs){
+   const card=el("details",undefined,"panel history-job history-entry");
+   card.open=expandedHistoryIds.has(job.id);
+   const heading=el("summary",undefined,"history-entry-summary");
+   const title=el("strong",job.name||t("Generation"));
+   const info=el("span",new Date(job.created*1000).toLocaleString()+" · "+t(generationStates[job.state]||"Status unknown")+" · "+(job.outputs||[]).length+" "+(I18N.lang==="es"?"archivos":"files"),"muted");
+   heading.append(title,info);
+   const content=el("div",undefined,"history-entry-content");
+   card.append(heading,content);
+   let rendered=false;
+   function renderExpanded(){
+    if(rendered)return;
+    rendered=true;
+    const details=el("details"),summary=el("summary",t("Saved generation parameters")),pre=el("pre"),dl=el("button",t("Download API JSON"));
+    dl.type="button";
+    let graph=null;
+    async function fetchGraph(){
+     if(!graph){const d=await api("/api/workspace/generation/history/"+encodeURIComponent(job.id));graph=d.graph;}
+     return graph;
+    }
+    details.ontoggle=async()=>{
+     if(details.open)try{pre.textContent=JSON.stringify(await fetchGraph(),null,2)}catch(e){pre.textContent=e.message}
+    };
+    dl.onclick=async()=>{
+     try{
+      const blob=new Blob([JSON.stringify(await fetchGraph(),null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=el("a");
+      a.href=url;a.download="generation-"+job.id+".json";a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+     }catch(e){status.textContent=e.message}
+    };
+    details.append(summary,pre,dl);
+    content.append(details);
+    const media=el("div",undefined,"media-grid");
+    renderGenerationMedia(media,job.id,job.outputs);
+    content.append(media);
+    if(!["completed","error"].includes(job.state)){
+     const refresh=el("button",t("Check generation status"));
+     refresh.type="button";
+     refresh.onclick=async()=>{
+      refresh.disabled=true;
+      try{await api("/api/workspace/generation/"+encodeURIComponent(job.id),{cache:"no-store"});await loadGenerationHistory()}
+      catch(e){status.textContent=e.message}
+      finally{refresh.disabled=false}
+     };
+     content.append(refresh);
+    }
+   }
+   card.addEventListener("toggle",()=>{
+    if(card.open){expandedHistoryIds.add(job.id);renderExpanded()}
+    else expandedHistoryIds.delete(job.id);
+   });
+   if(card.open)renderExpanded();
+   root.append(card);
+  }
+  $("history-prev").disabled=historyOffset===0;
+  $("history-next").disabled=historyOffset+data.jobs.length>=data.total;
+ }catch(e){status.textContent=e.message;$("history-prev").disabled=historyOffset===0}
+ finally{historyLoading=false;$("history-refresh").disabled=false;if(historyQueuedRefresh){historyQueuedRefresh=false;loadGenerationHistory()}}
+}
+let historySearchDelay=null,historyQueuedRefresh=false;
+function refreshHistoryFilters(){
+ historyOffset=0;
+ if(historyLoading){historyQueuedRefresh=true;return}
+ loadGenerationHistory();
+}
+$("history-search").addEventListener("input",()=>{
+ clearTimeout(historySearchDelay);
+ historySearchDelay=setTimeout(refreshHistoryFilters,250);
+});
+$("history-state").onchange=refreshHistoryFilters;
+$("history-sort").onchange=refreshHistoryFilters;
+$("history-clear").onclick=()=>{
+ $("history-search").value="";$("history-state").value="";$("history-sort").value="newest";
+ clearTimeout(historySearchDelay);
+ refreshHistoryFilters();
+};
 $("history-refresh").onclick=loadGenerationHistory;$("history-prev").onclick=()=>{historyOffset=Math.max(0,historyOffset-100);loadGenerationHistory();};$("history-next").onclick=()=>{historyOffset+=100;loadGenerationHistory();};
 
 function compareCompatibility(w){
@@ -772,13 +877,14 @@ async function loadProjectCheckpoints(){
   const data=await api("/api/workspace/projects/"+encodeURIComponent(id)+"/checkpoints");
   if(id!==$("compare-checkpoint-project").value)return;
   checkpointList=data.checkpoints;
+   await loadCheckpointReviews(id);
   const suggested=new Set([300,500,700,1000]);
   for(const entry of checkpointList){
    const row=el("label",undefined,"row");
    const check=el("input");check.type="checkbox";check.value=entry.name;check.checked=suggested.has(entry.step);
    check.dataset.checkpoint="true";
    check.onchange=()=>{$("compare-confirm").checked=false;updateCheckpointCount()};
-   row.append(check,document.createTextNode((I18N.lang==="es"?"Paso ":"Step ")+entry.step+" · "+entry.name+" · "+(entry.size_bytes/1048576).toFixed(1)+" MiB"));
+   row.append(check,document.createTextNode((I18N.lang==="es"?"Paso ":"Step ")+entry.step+" · "+(entry.comfy_name||entry.name)+" · "+(entry.size_bytes/1048576).toFixed(1)+" MiB"));
    root.append(row);
   }
   $("compare-checkpoint-status").textContent=checkpointList.length
@@ -787,6 +893,210 @@ async function loadProjectCheckpoints(){
   updateCheckpointCount();
  }catch(error){$("compare-checkpoint-status").textContent=error.message}
 }
+async function rememberComfyLoraFolder(folder){
+ // Preserve the other saved connection fields instead of writing stale form values.
+ const settings=await api("/api/workspace/comfyui");
+ if(settings.lora_folder===folder)return;
+ await post("/api/workspace/comfyui",{...settings,lora_folder:folder});
+}
+async function manageSelectedCheckpoints(action){
+ const project=$("compare-checkpoint-project").value,folder=$("compare-checkpoint-folder").value.trim(),names=chosenCheckpoints(),status=$("compare-checkpoint-manage-status");
+ if(!project||!folder||!names.length){status.textContent=I18N.lang==="es"?"Selecciona un proyecto, la carpeta de LoRA y al menos un checkpoint.":"Choose a project, LoRA folder and at least one checkpoint.";return;}
+ if(action==="uninstall"&&!window.confirm(I18N.lang==="es"?"¿Desinstalar copias de ComfyUI? Los originales permanecerán intactos.":"Uninstall ComfyUI copies? Training originals remain intact."))return;
+ const ids=["compare-checkpoint-install","compare-checkpoint-uninstall","compare-checkpoint-check"];
+ for(const id of ids)$(id).disabled=true;
+ status.textContent=I18N.lang==="es"?"Procesando checkpoints…":"Processing checkpoints…";
+ try{
+  const result=await post("/api/workspace/projects/"+encodeURIComponent(project)+"/checkpoints/manage",{action,directory:folder,checkpoints:names});
+  await rememberComfyLoraFolder(result.directory);
+  const installed=result.checkpoints.filter(x=>x.installed).length;
+  status.textContent=(I18N.lang==="es"?"Copias instaladas: ":"Installed copies: ")+installed+"/"+result.checkpoints.length+". "+result.checkpoints.map(x=>x.comfy_name+": "+(x.installed?"✓":"—")).join(" · ")+(action==="status"?"":I18N.lang==="es"?" · Actualiza modelos en ComfyUI y prepara de nuevo el workflow.":" · Refresh models in ComfyUI and prepare the workflow again.");
+  if(action!=="status")$("compare-confirm").checked=false;
+  updateCompareRunState();
+ }catch(error){status.textContent=error.message}
+ finally{for(const id of ids)$(id).disabled=false}
+}
+$("compare-checkpoint-install").onclick=()=>manageSelectedCheckpoints("install");
+$("compare-checkpoint-uninstall").onclick=()=>manageSelectedCheckpoints("uninstall");
+$("compare-checkpoint-check").onclick=()=>manageSelectedCheckpoints("status");
+
+let checkpointReviews={},checkpointReviewProject="";
+const revLang=(en,es)=>I18N.lang==="es"?es:en;
+const revNumber=v=>String(v).trim()===""?null:Number(v);
+async function loadCheckpointReviews(project){
+ checkpointReviewProject=project;checkpointReviews={};$("compare-review-list").replaceChildren();
+ if(!project)return;
+ const status=$("compare-review-status");status.textContent=revLang("Loading reviews…","Cargando valoraciones…");
+ try{
+  const d=await api("/api/workspace/projects/"+encodeURIComponent(project)+"/checkpoints/reviews");
+  if(project!==checkpointReviewProject)return;
+  checkpointReviews=d.reviews||{};renderCheckpointReviews();status.textContent="";
+ }catch(e){status.textContent=e.message}
+}
+function reviewField(name,value){
+ const label=el("label"),input=el("input");input.value=value??"";input.placeholder=revLang("Not recorded","No registrado");
+ label.append(el("span",name),input);return {label,input};
+}
+function renderCheckpointReviews(){
+ const root=$("compare-review-list");root.replaceChildren();const project=checkpointReviewProject;
+ for(const entry of checkpointList){
+  const data=checkpointReviews[entry.name]||{},box=el("article",undefined,"panel");
+  box.append(el("strong",revLang("Step ","Paso ")+entry.step+" · "+entry.comfy_name,"no-i18n"));
+  const options=el("div",undefined,"row"),rating=el("select");rating.add(new Option(t("Unrated"),""));
+  for(let i=1;i<=5;i++)rating.add(new Option("★".repeat(i)+"☆".repeat(5-i),String(i)));
+  rating.value=data.rating==null?"":String(data.rating);
+  const best=el("input"),final=el("input");best.type=final.type="checkbox";best.checked=!!data.is_best;final.checked=!!data.is_final;
+  const mark=(control,label)=>{const x=el("label",undefined,"row");x.append(control,document.createTextNode(label));return x};
+  options.append(mark(rating,revLang("Rating","Puntuación")),mark(best,revLang("Best","Mejor")),mark(final,revLang("Final model","Modelo definitivo")));
+  const details=el("details");details.append(el("summary",revLang("Training and testing details","Datos de entrenamiento y pruebas")));
+  const fields=[
+   reviewField(revLang("Base model","Modelo base"),data.base_model),
+   reviewField(revLang("Duration (minutes)","Duración (minutos)"),data.duration_minutes),
+   reviewField("GPU",data.gpu_name),
+   reviewField("GPU VRAM (GB)",data.gpu_vram_gb),
+   reviewField(revLang("Peak VRAM (GB)","Pico VRAM (GB)"),data.peak_vram_gb),
+   reviewField(revLang("Peak RAM (GB)","Pico RAM (GB)"),data.peak_ram_gb)
+  ];
+  for(const f of fields)details.append(f.label);
+  details.append(el("p",revLang("Test workflow: ","Workflow de prueba: ")+(data.workflow_name||revLang("Not recorded","No registrado")),"muted no-i18n"));
+  const useWorkflow=el("input");useWorkflow.type="checkbox";
+  details.append(mark(useWorkflow,revLang("Save currently selected comparator workflow as the test workflow","Guardar el workflow seleccionado como workflow de prueba")));
+  const notes=el("textarea");notes.maxLength=1000;notes.rows=2;notes.value=data.notes||"";
+  const noteLabel=el("label");noteLabel.append(el("span",revLang("Observations","Observaciones")),notes);details.append(noteLabel);
+  details.append(el("p",revLang("Unknown GPU and memory metrics can remain blank. Manual entries are labeled as such.","Deja en blanco las métricas que desconozcas; se indicará que son datos manuales."),"muted"));
+  const status=el("small","","muted no-i18n"),save=el("button",revLang("Save rating","Guardar valoración"),"primary");
+  save.type="button";
+  save.onclick=async()=>{
+   const numbers=[fields[1],fields[3],fields[4],fields[5]].map(f=>revNumber(f.input.value));
+   if(numbers.some(v=>v!==null&&(!Number.isFinite(v)||v<0))){status.textContent=revLang("Invalid number","Número incorrecto");return}
+   const payload={filename:entry.name,rating:rating.value?Number(rating.value):null,
+    is_best:best.checked,is_final:final.checked,base_model:fields[0].input.value,
+    duration_minutes:numbers[0],gpu_name:fields[2].input.value,gpu_vram_gb:numbers[1],
+    peak_vram_gb:numbers[2],peak_ram_gb:numbers[3],notes:notes.value,
+    workflow_id:useWorkflow.checked?$("compare-workflow").value:(data.workflow_id||"")};
+   save.disabled=true;
+   try{
+    const d=await post("/api/workspace/projects/"+encodeURIComponent(project)+"/checkpoints/reviews",payload);
+    checkpointReviews=d.reviews||{};renderCheckpointReviews();loadTrainedLoras().catch(()=>{});
+    $("compare-review-status").textContent=revLang("Saved","Guardado");
+   }catch(e){status.textContent=e.message;save.disabled=false}
+  };
+  const actions=el("div",undefined,"row");actions.append(save,status);box.append(options,details,actions);root.append(box);
+ }
+}
+let trainedLoraCache=null;
+const expandedTrainedLoraIds=new Set();
+function renderTrainedLoras(models){
+ const root=$("trained-loras-list"),status=$("trained-loras-status");root.replaceChildren();
+ const engineFilter=$("trained-loras-engine"),oldEngine=engineFilter.value;
+ engineFilter.replaceChildren(new Option(t("All engines"),""));
+ for(const id of [...new Set(models.map(m=>m.engine))].sort())engineFilter.add(new Option(engines.find(e=>e.id===id)?.name||id,id));
+ if([...engineFilter.options].some(o=>o.value===oldEngine))engineFilter.value=oldEngine;
+ const q=$("trained-loras-search").value.trim().toLocaleLowerCase(),designation=$("trained-loras-designation").value,engine=engineFilter.value,sort=$("trained-loras-sort").value;
+ const selected=models.filter(m=>
+  (!q||[m.project_name,m.engine,m.base_model,m.workflow_name,m.gpu_name,m.comfy_name,m.notes,m.filename,m.step].some(v=>String(v??"").toLocaleLowerCase().includes(q)))&&
+  (!engine||m.engine===engine)&&(designation===""||(designation==="final"?m.is_final:m.is_best)));
+ selected.sort((a,b)=>{
+  if(sort==="oldest")return String(a.updated_at||"").localeCompare(String(b.updated_at||""));
+  if(sort==="score")return (b.rating||0)-(a.rating||0)||Number(b.is_final)-Number(a.is_final);
+  if(sort==="steps_asc")return a.step-b.step;
+  if(sort==="steps_desc")return b.step-a.step;
+  if(sort==="name_asc")return String(a.project_name).localeCompare(String(b.project_name));
+  return String(b.updated_at||"").localeCompare(String(a.updated_at||""));
+ });
+ status.textContent=selected.length+" / "+models.length+" "+revLang("selected models","modelos seleccionados");
+ if(!selected.length)root.append(el("p",models.length?revLang("No LoRA matches your search or filters.","Ningún LoRA coincide con los filtros."):revLang("No models marked Best or Final yet","Aún no hay modelos marcados como Mejor o Definitivo"),"muted no-i18n"));
+ for(const m of selected){
+   const card=el("details",undefined,"panel trained-lora-card");
+   const key=m.project_id+":"+m.filename;
+   card.open=expandedTrainedLoraIds.has(key);
+   const summary=el("summary",undefined,"trained-lora-summary");
+   const title=el("strong",m.project_name+" · "+revLang("Step ","Paso ")+m.step,"no-i18n");
+   const small=el("span",(m.is_final?t("Final model"):t("Best model"))+" · "+m.engine,"muted no-i18n");
+   const stars=el("span",m.rating==null?t("Unrated"):"★".repeat(m.rating)+"☆".repeat(5-m.rating),"trained-lora-stars no-i18n");
+   stars.setAttribute("aria-label",m.rating==null?t("Unrated"):String(m.rating)+"/5");
+   summary.append(title,small,stars);
+   const content=el("div",undefined,"trained-lora-content");
+   card.append(summary,content);
+   let rendered=false;
+   function renderExpanded(){
+    if(rendered)return;
+    rendered=true;
+    const reference=el("section",undefined,"trained-lora-reference");
+    const image=el("img");
+    image.alt=t("Reference image")+": "+m.project_name;
+    image.loading="lazy";
+    if(m.reference_url){
+     image.src=m.reference_url+"?v="+encodeURIComponent(m.updated_at||"");
+     reference.append(image);
+    }else reference.append(el("p",t("No reference image uploaded yet."),"muted no-i18n"));
+    const input=el("input");input.type="file";input.accept="image/png,image/jpeg,image/webp";
+    const upload=el("button",t("Save reference image"));
+    upload.type="button";
+    const message=el("small","","muted no-i18n");
+    upload.onclick=async()=>{
+     const file=input.files?.[0];
+     if(!file){message.textContent=t("Select an image first.");return}
+     if(file.size>2000000){message.textContent=t("Maximum size: 2 MB.");return}
+     if(!["image/png","image/jpeg","image/webp"].includes(file.type)){message.textContent=t("Use PNG, JPEG or WebP.");return}
+     upload.disabled=true;
+     try{
+      const bytes=new Uint8Array(await file.arrayBuffer());
+      let binary="";
+      for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+      await post("/api/workspace/trained-loras/reference/"+encodeURIComponent(m.project_id),{
+       filename:m.filename,image_base64:btoa(binary)
+      });
+      message.textContent=t("Image saved.");
+      const data=await api("/api/workspace/trained-loras");
+      trainedLoraCache=data.models||[];
+      expandedTrainedLoraIds.add(key);
+      renderTrainedLoras(trainedLoraCache);
+     }catch(e){message.textContent=e.message}
+     finally{upload.disabled=false}
+    };
+    const imageActions=el("div",undefined,"row");imageActions.append(input,upload,message);
+    reference.append(imageActions);
+    content.append(reference);
+   const pairs=[["Engine",m.engine],[revLang("Base model","Modelo base"),m.base_model],
+    [revLang("Test workflow","Workflow de prueba"),m.workflow_name],["Rating",m.rating==null?null:m.rating+"/5"],
+    [revLang("Training duration (minutes)","Duración del entrenamiento (minutos)"),m.duration_minutes],["GPU",m.gpu_name],
+    ["GPU VRAM (GB)",m.gpu_vram_gb],[revLang("Peak VRAM (GB)","Pico de VRAM (GB)"),m.peak_vram_gb],
+    [revLang("Peak RAM (GB)","Pico de RAM (GB)"),m.peak_ram_gb],
+    [revLang("Metrics source","Origen de métricas"),m.metrics_source==="user_supplied"?revLang("Manual","Manual"):revLang("Not recorded","No registrado")],
+    [revLang("Installed filename","Nombre en ComfyUI"),m.comfy_name],
+    [revLang("Original file","Archivo original"),m.source_path],[revLang("Notes","Observaciones"),m.notes]];
+   for(const [label,value] of pairs)content.append(el("p",label+": "+(value==null||value===""?revLang("Not recorded","No registrado"):value),"muted no-i18n"));
+   const link=el("a",revLang("Open in comparator","Abrir en comparador"),"no-i18n");link.href="/workspace/comfyui?checkpoint_project="+encodeURIComponent(m.project_id)+"#compare";
+   content.append(link);
+   }
+   card.addEventListener("toggle",()=>{
+    if(card.open){expandedTrainedLoraIds.add(key);renderExpanded()}
+    else expandedTrainedLoraIds.delete(key);
+   });
+   if(card.open)renderExpanded();
+   root.append(card);
+ }
+}
+async function loadTrainedLoras(fromCache=false){
+ const status=$("trained-loras-status");
+ if(fromCache&&trainedLoraCache!==null){renderTrainedLoras(trainedLoraCache);return}
+ status.textContent=revLang("Loading…","Cargando…");
+ try{
+  const d=await api("/api/workspace/trained-loras");
+  trainedLoraCache=d.models||[];
+  renderTrainedLoras(trainedLoraCache);
+ }catch(e){status.textContent=e.message}
+}
+for(const id of ["trained-loras-search","trained-loras-designation","trained-loras-engine","trained-loras-sort"]){
+ $(id).addEventListener(id==="trained-loras-search"?"input":"change",()=>loadTrainedLoras(true));
+}
+$("trained-loras-clear").onclick=()=>{
+ $("trained-loras-search").value="";$("trained-loras-designation").value="";$("trained-loras-engine").value="";$("trained-loras-sort").value="newest";
+ loadTrainedLoras(true);
+};
+$("trained-loras-refresh").onclick=loadTrainedLoras;
+loadTrainedLoras().catch(()=>{});
 function chosenCheckpoints(){return [...$("compare-checkpoint-list").querySelectorAll('input[data-checkpoint]:checked')].map(x=>x.value)}
 function updateCheckpointCount(){updateCompareRunState();}
 function updateCheckpointMode(){
@@ -1048,12 +1358,12 @@ function routeHome(){
  // The launcher serves this same Workspace at /, /legacy and /workspace.
  if(!["/","/workspace","/legacy"].includes(location.pathname.replace(/\/$/,"")||"/"))return;
  const hash=location.hash.slice(1);
- const chosen=["overview","projects","engines","gpu-manager"].includes(hash)?hash:"overview";
+ const chosen=["overview","projects","engines","trained-loras","gpu-manager"].includes(hash)?hash:"overview";
  for(const section of $("home-zone").children)section.hidden=(section.dataset.home||section.id)!==chosen;
  for(const link of $("home-navigation").querySelectorAll("a[href^='#']")){
   if(link.hash==="#"+chosen)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current");
  }
- updateWorkspaceContext(chosen);gpuVisibility();controlVisibility();
+ updateWorkspaceContext(chosen);if(chosen==="trained-loras")loadTrainedLoras().catch(()=>{});gpuVisibility();controlVisibility();
  scrollWorkspaceTop();
 }
 $("gpu-refresh").onclick=refreshGpu;$("gpu-auto").onchange=gpuVisibility;
@@ -1064,6 +1374,7 @@ window.addEventListener("hashchange",routeHome);
 const workspaceHelp={
  overview:["Dashboard","View your system, storage, trainer count and current queue. Choose a section on the left to continue."],
  projects:["Projects","Organize training project metadata. Archiving hides a project without deleting the underlying training files."],
+ "trained-loras":["Trained LoRA library","Browse curated Best and Final LoRA models, ratings and reference pictures."],
  engines:["Training engines","Select a model family, then open the trainer to configure your training. Each trainer has its own requirements."],
  "gpu-manager":["GPU Manager","Monitor video memory, GPU utilization and temperature without closing or changing running programs. ComfyUI is not required."],
  welcome:["Welcome to ComfyUI Zone","Discover what ComfyUI can do and connect your server to unlock workflow and generation tools."],
