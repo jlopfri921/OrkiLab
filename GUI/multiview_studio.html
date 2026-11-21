@@ -133,7 +133,8 @@ small{font-size:12px}.source-tag{color:#beddee}
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
-const t=key=>(typeof I18N!=="undefined"?I18N.translate(key):key);
+// The shared /i18n.js already defines global function t(key, vars).
+// Declaring a top-level const t here prevents this entire script from parsing.
 const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=text;if(cls)n.className=cls;return n};
 const url=(project,tail="")=>"/api/workspace/multiview/projects/"+encodeURIComponent(project)+tail;
 const SOURCE_TYPES=["real_photo","video_frame","synthetic","unknown"];
