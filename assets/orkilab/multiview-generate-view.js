@@ -81,7 +81,17 @@ function mount(host,getProject,subjectId,api,onImport){
    upload=result.references;chosen=ids;stagedRequest={direction:direction.value,height:height.value,distance:distance.value,extra:extra.value};
    const p=await post(api,"/api/workspace/generation/prepare",{workflow_id:flow});
    if(!ok())throw Error(t("mismatch"));
-   const inputs=(p.fields||[]).filter(inputType);
+   // LoadImage must have at least one real outgoing graph edge: an unused
+   // loader does not condition the generated image.
+   const connected=new Set();
+   for(const node of Object.values(p.graph||{})){
+    if(!node||!node.inputs)continue;
+    for(const value of Object.values(node.inputs)){
+     if(Array.isArray(value)&&value.length===2&&typeof value[0]==="string"&&Number.isInteger(value[1]))
+      connected.add(value[0]);
+    }
+   }
+   const inputs=(p.fields||[]).filter(f=>inputType(f)&&connected.has(String(f.node)));
    if(inputs.length<ids.length||!upload.every(x=>inputs.some(f=>matches(f,x.comfy_name))))throw Error(t("badNodes"));
    prepared={token:p.token,workflowId:flow,fields:p.fields||[]};
    fieldsWrap.replaceChildren();assigned=[];
