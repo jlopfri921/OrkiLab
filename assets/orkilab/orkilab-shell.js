@@ -305,7 +305,7 @@
             renderWorkspaceChrome();
             return;
         }
-        const page = location.pathname === "/queue" ? "queue" : location.pathname === "/workspace/multiview" ? "multiview" : "datasets";
+        const page = location.pathname === "/queue" ? "queue" : location.pathname === "/workspace/multiview" ? "multiview" : location.pathname === "/workspace/guide" ? "guide" : "datasets";
         const nav = document.querySelector(page === "queue" ? ".queue-sidebar" : ".studio-navigation");
         const content = document.querySelector(page === "queue" ? ".queue-shell .wrap" : ".studio-content");
         const layout = document.querySelector(page === "queue" ? ".queue-shell" : ".studio-layout");
@@ -438,9 +438,9 @@
         };
         const words = help[locale] || help.en;
         context.classList.add("orki-app-context");
-        context.querySelector("#orki-shell-context-title").textContent = page === "queue" ? words[1] : page === "multiview" ? multiviewLabel[locale] : words[3];
+        context.querySelector("#orki-shell-context-title").textContent = page === "queue" ? words[1] : page === "multiview" ? multiviewLabel[locale] : page === "guide" ? (locale === "es" ? "Guía y ayuda" : "Guide & help") : words[3];
         context.querySelector("#orki-shell-context-toggle-label").textContent = words[0];
-        context.querySelector("#orki-shell-context-description").textContent = page === "queue" ? words[2] : page === "multiview" ? multiviewIntro[locale] : words[4];
+        context.querySelector("#orki-shell-context-description").textContent = page === "queue" ? words[2] : page === "multiview" ? multiviewIntro[locale] : page === "guide" ? (locale === "es" ? "Aprende la estructura, los módulos y los pasos habituales de OrkiLab." : "Learn the OrkiLab layout, modules and everyday workflows.") : words[4];
         // Canonical source of truth: read the real Workspace chrome instead of
         // reconstructing a similar-looking but divergent header and menu.
         syncCanonicalWorkspaceChrome(page, nav, content);
@@ -575,4 +575,9 @@
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", render);
     else render();
     document.addEventListener("orkilab:language-changed", render);
+    // Load mode/guide navigation on every standalone and Workspace screen.
+    const modeHelp=document.createElement("script");
+    modeHelp.src="/assets/orkilab/orkilab-mode-help.js";
+    modeHelp.defer=true;
+    document.head.append(modeHelp);
 })();
