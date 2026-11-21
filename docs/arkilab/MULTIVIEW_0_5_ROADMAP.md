@@ -1,8 +1,15 @@
 # OrkiLab 0.5.0 — Multiview Studio roadmap
 
-**Status:** planned; not implemented or released as a 0.5 milestone. 
+**Status:** 0.5.0-alpha.1 implemented on a feature branch, pending final Windows/Linux CI and on-device browser acceptance; no 0.5 tag/release published. 
 **Baseline:** 0.4.0-rc.1 is available in `main` (release metadata); publication of a GitHub Release/tag and the 0.4.0 stable acceptance must be verified separately.
 **Owner workflow:** Projects → Dataset Studio → Multiview Studio → Training Engines / ComfyUI.
+
+## Alpha.1 implementation (development)
+
+- Project-linked subject cards and capture references, manually supplied azimuth/elevation/distance, explicit real/photo/frame/synthetic/unknown provenance, review fields and persisted SQLite metadata.
+- Read-only local image previews with image validation, SHA-256 checks, size/pixel limits and symlink rejection. Removing a capture or subject removes references, never source files.
+- Search/sort by name, angle and distance; local pagination. Separate on-device validation is needed for native Windows/mobile presentation and real image collections.
+- Responsive mobile navigation is shared across Workspace, ComfyUI Zone, Dataset Studio, Queue and Multiview: four bottom tabs with an accessible **More** sheet; desktop retains the left sidebar.
 
 ## Product goal
 
