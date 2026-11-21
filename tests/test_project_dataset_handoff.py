@@ -74,6 +74,42 @@ class ProjectHandoffTests(unittest.TestCase):
         self.assertEqual(Path(draft["pre_cache"]["dataset_path"]).resolve(), dataset.resolve())
         self.assertEqual(Path(draft["train"]["dataset_path"]).resolve(), dataset.resolve())
 
+    def test_missing_caption_in_prepared_folder_blocks_training(self):
+        (self.prepared / "test.txt").unlink()
+        with self.assertRaisesRegex(HandoffError, "incomplete"):
+            make_draft(self.root, self.project, "flux1")
+
+    def test_tampered_manifest_project_and_traversal_are_rejected(self):
+        manifest_file = self.prepared / "manifest.json"
+        valid = json.loads(manifest_file.read_text(encoding="utf-8"))
+        cases = [
+            dict(valid, project_id="c" * 32),
+            dict(valid, items=[{"image": "../outside.png", "caption": "test.txt"}]),
+            dict(valid, items=[{"image": "test.png", "caption": "../escape.txt"}]),
+            dict(valid, items=[{"image": "test.png", "caption": "wrong.txt"}]),
+            dict(valid, items=[]),
+            dict(valid, items=[{"image": "test.png", "caption": "test.txt"}] * 201),
+        ]
+        for data in cases:
+            with self.subTest(data=data):
+                manifest_file.write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaises(HandoffError):
+                    make_draft(self.root, self.project, "flux1")
+        manifest_file.write_text(json.dumps(valid), encoding="utf-8")
+        self.assertEqual(make_draft(self.root, self.project, "flux1")[1]["dataset_origin"], "prepared")
+
+    def test_symlink_in_prepared_dataset_blocks_training(self):
+        source = self.root / "external_caption.txt"
+        source.write_text("unexpected", encoding="utf-8")
+        (self.prepared / "test.txt").unlink()
+        try:
+            (self.prepared / "test.txt").symlink_to(source)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symlink creation not supported by this test runner")
+        with self.assertRaisesRegex(HandoffError, "incomplete"):
+            make_draft(self.root, self.project, "flux1")
+
+
 
 if __name__ == "__main__":
     unittest.main()
