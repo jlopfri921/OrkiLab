@@ -24,3 +24,19 @@ The readable project name is normalized for safe filenames (for example, accents
 ## Validation still required
 
 Windows and Linux automated tests, plus manual end-to-end testing on ComfyUI Desktop. Keep the PR in draft until validated. Never merge based on code-only inspection.
+
+## Review checkpoints and curate the trained-LoRA library
+
+In **ComfyUI Zone → LoRA Comparator → Project checkpoints**, rate each checkpoint from 1 to 5. Select **Best** for shortlisted variants or **Final model** for the chosen release candidate. Only these manually curated checkpoints appear in the **Trained LoRA library** on the **Projects** page. A project may have multiple Best models but only one Final model at a time.
+
+Each catalog card includes:
+- Project, training engine, final checkpoint step and file paths (automatically sourced from OrkiLab).
+- Rating (1–5), observations and Best/Final status (user selection).
+- Base model identifier (editable, as the trainer-engine ID alone does not prove the precise base-model weights).
+- Workflow used for comparison (recorded from the selected saved comparator workflow when explicitly requested, not guessed).
+- Training duration in minutes, GPU name, GPU VRAM capacity, peak VRAM and peak system RAM. These are optional manually supplied values with provenance **Manual**; blank unknowns show **Not recorded**. No invented historical telemetry.
+- The review date via the metadata `updated_at` field.
+
+Catalog records use the local `settings/orkilab/checkpoint_reviews.sqlite3` database. The database stores metadata only; original .safetensors remain in the trainer Outputs directory. Unmarking Best/Final removes the entry from the curated library but retains its review and original file. Changing Final automatically clears the old Final designation within the same project, without removing a separate Best selection.
+
+The catalog currently covers the image-project checkpoint inventory available to the comparator. A future extension can ingest measured hardware/runtime telemetry directly from training history when available, including provenance; the current implementation does not promise historical automatic measurements.
