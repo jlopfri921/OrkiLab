@@ -2237,5 +2237,10 @@
   "Run comparison": "Ejecutar comparación",
   "Project": "Proyecto",
   "Stop after current": "Detener después del actual",
-  "Compare results": "Comparar resultados"
+  "Compare results": "Comparar resultados",
+  "OrkiLab checkpoint manager": "Gestor de checkpoints de OrkiLab",
+  "ComfyUI/models/loras folder (on this PC)": "Carpeta ComfyUI/models/loras (en este PC)",
+  "Install selected": "Instalar seleccionados",
+  "Uninstall selected": "Desinstalar seleccionados",
+  "Check installed": "Comprobar instalación"
 }
