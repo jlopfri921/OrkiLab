@@ -247,7 +247,9 @@ def register(app, base):
                 if not lora_field or lora_field.get("kind")!="choice":
                     return jsonify(error="The workflow LoRA filename is not editable"),409
                 choices = set(x for x in lora_field["choices"] if isinstance(x, str))
-                missing = [name for name in names if name not in choices]
+                from managed_checkpoints import model_name
+                selected_models = {name: (model_name(project_id, name) if model_name(project_id, name) in choices else name) for name in names}
+                missing = [name for name in names if selected_models[name] not in choices]
                 if missing:
                     return jsonify(error="Checkpoints not installed in ComfyUI/models/loras",
                                    detail="Copy the project checkpoint files into ComfyUI's LoRA folder and refresh ComfyUI model lists: "+", ".join(missing)[:300]),409
@@ -259,12 +261,12 @@ def register(app, base):
                     return jsonify(error="Too many pending comparison variants"),409
                 variants=[]
                 for name in names:
-                    graph=apply_edits(item[4],item[5],[{"node":node_id,"name":"lora_name","value":name}])
+                    graph=apply_edits(item[4],item[5],[{"node":node_id,"name":"lora_name","value":selected_models[name]}])
                     validate_prompt(graph,item[6])
                     key=uuid.uuid4().hex
                     prepared[key]=(time.monotonic(),*item[1:4],graph,editable_fields(graph,item[6]),item[6])
                     step=next(x["step"] for x in discovered["checkpoints"] if x["name"]==name)
-                    variants.append({"step":step,"name":name,"token":key})
+                    variants.append({"step":step,"name":name,"comfy_name":selected_models[name],"token":key})
             return jsonify(workflow_id=item[1], variants=variants)
         except LookupError as exc:
             return jsonify(error=str(exc)),404
