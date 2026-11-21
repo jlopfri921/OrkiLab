@@ -15,6 +15,7 @@ import multiview_assist
 import multiview_export
 import multiview_recovery
 import multiview_viewpoint_ai
+import multiview_generate_views
 import gpu_monitor
 import gpu_stats
 import project_layout
@@ -36,6 +37,7 @@ def register(app, base, load_config):
     multiview_export.register(app, base)
     multiview_recovery.register(app, base)
     multiview_viewpoint_ai.register(app, base)
+    multiview_generate_views.register(app, base)
     project_checkpoints.register(app, base)
     managed_checkpoints.register(app, base)
     checkpoint_reviews.register(app, base)
