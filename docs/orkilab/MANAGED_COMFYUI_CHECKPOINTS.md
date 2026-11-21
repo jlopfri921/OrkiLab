@@ -6,9 +6,9 @@ OrkiLab can copy selected training checkpoints into a local ComfyUI installation
 
 A project checkpoint named `Flux3Klein_LoRA_step_300.safetensors` is copied to:
 
-`ComfyUI/models/loras/OrkiLab_<first-12-project-id-chars>_Flux3Klein_LoRA_step_300.safetensors`
+`ComfyUI/models/loras/OrkiLab_Prueba_Flux3Klein_LoRA_step_300.safetensors`
 
-The project ID segment avoids collisions between projects that use the same checkpoint filename. The comparison endpoint maps the project checkpoint to this managed name when ComfyUI reports it in the node's LoRA choices. Legacy/manual names remain supported.
+The readable project name is normalized for safe filenames (for example, accents are removed and spaces become underscores). If two projects would produce the same target filename, the manager refuses to overwrite a copy owned by another project. Project ownership is still tracked internally by ID. The comparison endpoint maps the project checkpoint to this managed name when ComfyUI reports it in the node's LoRA choices. Legacy/manual names remain supported.
 
 ## Usage
 
