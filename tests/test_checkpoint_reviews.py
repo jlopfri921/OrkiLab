@@ -74,6 +74,33 @@ class CheckpointReviewsTests(unittest.TestCase):
         self.assertIsNone(item["peak_ram_gb"])
         self.assertEqual(item["metrics_source"],"not_recorded")
 
+    def test_reference_image_requires_curated_model(self):
+        import base64
+        image = b"\\x89PNG\\r\\n\\x1a\\n" + b"0"*24
+        with self.assertRaises(ValueError):
+            reviews.set_reference_image(self.base,self.project,self.first,base64.b64encode(image).decode("ascii"))
+
+    def test_reference_image_is_saved_and_returned_only_for_curated_model(self):
+        import base64
+        image = b"\\x89PNG\\r\\n\\x1a\\n" + b"0"*24
+        reviews.save_review(self.base,self.project,self.first,rating=5,is_final=True)
+        ext=reviews.set_reference_image(self.base,self.project,self.first,base64.b64encode(image).decode("ascii"))
+        self.assertEqual(ext,".png")
+        model=reviews.catalog(self.base)[0]
+        self.assertIn("/api/workspace/trained-loras/reference/",model["reference_url"])
+        path=reviews.reference_file(self.base,self.project,self.first,ext)
+        self.assertEqual(path.read_bytes(),image)
+        self.assertTrue(Path(model["source_path"]).exists())
+
+    def test_reference_image_rejects_malformed_or_large_files(self):
+        import base64
+        reviews.save_review(self.base,self.project,self.first,is_best=True)
+        for data in ("not base64!",base64.b64encode(b"invalid").decode("ascii")):
+            with self.assertRaises(ValueError):
+                reviews.set_reference_image(self.base,self.project,self.first,data)
+        with self.assertRaises(ValueError):
+            reviews.set_reference_image(self.base,self.project,self.first,base64.b64encode(b"x"*2_000_001).decode("ascii"))
+
     def test_rejects_unknown_workflow(self):
         with self.assertRaises(ValueError):
             reviews.save_review(self.base,self.project,self.first,is_best=True,workflow_id="fake")
