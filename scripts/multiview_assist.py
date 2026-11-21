@@ -159,6 +159,31 @@ def register(app, base):
             distance=coordinate(body.get("distance_m"),0.0001,1_000_000,"distance_m")
             view=text_field(body.get("view_name",""),100)
             notes=text_field(body.get("notes",""),1000)
+            requested = []
+            for key, choices in (
+                ("requested_direction", {"front","front_right","right","back_right",
+                                         "back","back_left","left","front_left","top","bottom"}),
+                ("requested_elevation", {"above","level","below"}),
+                ("requested_distance", {"close","medium","far"})):
+                value=body.get(key)
+                if value is not None and (not isinstance(value,str) or value not in choices):
+                    raise ValueError("Invalid requested viewpoint")
+                requested.append(value)
+            ref_ids=body.get("reference_capture_ids")
+            if ref_ids is not None and (
+                    not isinstance(ref_ids,list) or not 1<=len(ref_ids)<=4
+                    or len(set(ref_ids))!=len(ref_ids)
+                    or any(not identifier(x) for x in ref_ids)):
+                raise ValueError("Invalid source references")
+            if ref_ids:
+                with closing(sqlite3.connect(multiview_db,timeout=5)) as refdb:
+                    marks=",".join("?" for _ in ref_ids)
+                    n=refdb.execute(
+                        "SELECT COUNT(*) FROM mv_captures WHERE project_id=? AND subject_id=? "
+                        "AND id IN ("+marks+") AND source_type IN ('real_photo','unknown','video_frame')",
+                        (project_id,subject_id,*ref_ids)).fetchone()[0]
+                if n!=len(ref_ids):
+                    raise ValueError("Reference image does not belong to this subject")
             # Preserve prompt/seed provenance in the recorded generation graph;
             # also keep selected seed values for quick inspection.
             graph_hash=hashlib.sha256(
@@ -199,12 +224,15 @@ def register(app, base):
                     conn.execute("""INSERT INTO mv_captures
                         (id,project_id,subject_id,path,name,sha256,bytes,width,height,
                          format,sharpness_score,view_name,azimuth_deg,elevation_deg,
-                         distance_m,source_type,provenance,review,notes)
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                         distance_m,source_type,provenance,review,notes,
+                         requested_direction,requested_elevation,requested_distance,
+                         reference_capture_ids_json)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                         (capture_id,project_id,subject_id,str(final),final.name,
                          properties["sha256"],properties["bytes"],properties["width"],
                          properties["height"],properties["format"],sharpness,view,
-                         azimuth,elevation,distance,"synthetic","workflow","unreviewed",notes))
+                         azimuth,elevation,distance,"synthetic","workflow","unreviewed",notes,
+                         *requested,json.dumps(ref_ids) if ref_ids else None))
                     conn.execute("""INSERT INTO mv_generated_lineage
                         (capture_id,generation_id,workflow_id,workflow_sha256,
                          prompt_id,output_index,seeds_json,source_filename)
