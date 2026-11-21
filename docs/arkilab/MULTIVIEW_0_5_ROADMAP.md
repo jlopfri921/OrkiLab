@@ -1,6 +1,6 @@
 # OrkiLab 0.5.0 — Multiview Studio roadmap
 
-**Status:** alpha.1 (PR #80), alpha.2 (PR #81) and beta.1 (PR #82) merged to `main`; beta.2 implementation under review, without a published 0.5 release/tag. 
+**Status:** alpha.1 (PR #80), alpha.2 (PR #81), beta.1 (PR #82), beta.2 (PR #83) and project selector fix (PR #84) merged to `main`; RC.1 persistence/recovery work under review. No 0.5.0 stable release/tag. 
 **Baseline:** 0.4.0-rc.1 is available in `main` (release metadata); publication of a GitHub Release/tag and the 0.4.0 stable acceptance must be verified separately.
 **Owner workflow:** Projects → Dataset Studio → Multiview Studio → Training Engines / ComfyUI.
 
@@ -40,6 +40,16 @@
 - Safety: access restricted to launcher-loopback, same-origin checks on both requests, project-scoped SQL, strict path/symlink validation, per-image hash verification and bounded export sizes (500 captures / 350 MiB uncompressed originals / 400 MiB final ZIP). A temporary archive exists only during download; never overwrites or deletes the source images.
 - This is a **generic multiview manifest**, not a guaranteed direct training adapter for every LoRA engine. Automatic handoff and per-engine profile compatibility still require dedicated validation.
 - No date-dependent field is embedded in the manifest; preview and download never start training or generate images.
+
+## RC.1 — persistence and project-photo integration (feature branch; acceptance pending)
+
+- Workspace **Image** projects are the canonical owners of Multiview subjects. Multiview references live in a separate `multiview.sqlite3`; Dataset Studio image references live in `datasets.sqlite3`. Photos imported into Dataset Studio do **not** automatically become Multiview subject captures.
+- The new read-only, launcher-local project recovery endpoint reports project-scoped subject and Multiview capture counts, already indexed Dataset Studio photos, missing original file references and up to 300 candidate photos. It neither creates projects nor alters images.
+- A separate, explicit **Link selected photos** action attaches 1–30 previously indexed Dataset Studio photo IDs to an existing subject, verifying project/subject ownership, validating every file and storing content hashes. It does not duplicate or move the original files.
+- Linked photos start with `source_type=unknown`, `provenance=unknown`, `review=unreviewed` and no inferred angles. Even if Dataset Studio previously approved a photo, Multiview review must be a separate action.
+- Repeated linking into the same subject is idempotent (unique subject/path). The project remains visible after a process restart because both project and photo references are stored in the same durable SQLite files used by the launcher's existing modules.
+- Tests cover save/reopen (simulated application restart), project isolation, archive/restore, missing files, cross-origin/remote restrictions, duplicate linking and original photo integrity. Remaining gates: actual Windows filesystem installation, real photo collection, real ComfyUI GPU workflow, ZIP open/retraining acceptance and mobile browser review.
+- If the selector is still empty, inspect `GET /api/workspace/projects` locally and ensure the project is active and `category=image`; archived or non-image projects are intentionally not selectable. Never recreate or erase saved work to troubleshoot.
 
 ## Product goal
 
