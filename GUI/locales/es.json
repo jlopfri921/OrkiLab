@@ -2279,5 +2279,15 @@
   "Highest rated": "Mejor puntuados",
   "Fewest steps": "Menos pasos",
   "Most steps": "Más pasos",
-  "Project A–Z": "Proyecto A–Z"
+  "Project A–Z": "Proyecto A–Z",
+  "Final model": "Modelo definitivo",
+  "Best model": "Mejor modelo",
+  "Unrated": "Sin valorar",
+  "Reference image": "Imagen de referencia",
+  "No reference image uploaded yet.": "Aún no hay imagen de referencia.",
+  "Save reference image": "Guardar imagen de referencia",
+  "Select an image first.": "Selecciona una imagen.",
+  "Maximum size: 2 MB.": "Tamaño máximo: 2 MB.",
+  "Use PNG, JPEG or WebP.": "Usa PNG, JPEG o WebP.",
+  "Image saved.": "Imagen guardada."
 }
