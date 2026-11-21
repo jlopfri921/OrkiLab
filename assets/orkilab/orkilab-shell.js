@@ -56,7 +56,16 @@
         footer.replaceChildren();
         const notice = element("span", null, "OrkiLab · " + t[9] + " · ");
         const home = link("/workspace", t[0]);
-        footer.append(notice, home);
+        const github = link("https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio", "GitHub", "orki-footer-github");
+        github.target = "_blank";
+        github.rel = "noopener noreferrer";
+        footer.append(notice, home, document.createTextNode(" · "), github);
+    }
+    function placeVersionBelowMenu(nav, indicator) {
+        if (!nav || !indicator) return;
+        indicator.classList.add("orki-nav-version", "no-i18n");
+        indicator.setAttribute("aria-label", "OrkiLab version");
+        nav.append(indicator);
     }
     function renderWorkspaceChrome() {
         const body = document.body, home = document.querySelector("#home-navigation");
@@ -70,6 +79,7 @@
         document.querySelector("#workspace-context")?.classList.add("orki-app-context");
         const locale = typeof I18N !== "undefined" && names[I18N.lang] ? I18N.lang : "en";
         unifiedFooter(content, names[locale]);
+        placeVersionBelowMenu(location.pathname.replace(/\/$/, "") === "/workspace/comfyui" ? document.querySelector("#comfy-navigation") : home, document.querySelector("#version"));
         // ComfyUI is a focused zone: ONLY its own navigation plus the
         // existing first "Back to Workspace" link in #comfy-navigation.
         // Never clone Home navigation into this area.
@@ -236,6 +246,7 @@
             if (id === page) node.setAttribute("aria-current", "page");
             nav.append(node);
         });
+        placeVersionBelowMenu(nav, document.querySelector("#version") || document.querySelector("#orki-shell-version"));
         unifiedFooter(content, t);
     }
     async function syncCanonicalWorkspaceChrome(page, nav, content) {
@@ -282,7 +293,7 @@
                 fetch("/api/workspace/overview", {credentials:"same-origin"})
                     .then(r => r.ok ? r.json() : null)
                     .then(data => { if (data && data.version) {
-                        const version = header.querySelector("#version");
+                        const version = document.getElementById("version");
                         if (version) version.textContent = data.version;
                     } }).catch(() => {});
             }
@@ -303,6 +314,12 @@
                         location.href = "/workspace?dialog=" + mode;
                     });
                 }
+            }
+            const versionInHeader = document.querySelector(".orki-shell-header #version");
+            if (versionInHeader) {
+                const prior = document.querySelector(".orki-nav-version");
+                if (prior && prior !== versionInHeader) prior.remove();
+                placeVersionBelowMenu(canonical, versionInHeader);
             }
             nav.replaceWith(canonical);
             if (typeof I18N !== "undefined") I18N.apply(canonical);
