@@ -318,3 +318,25 @@ body.orki-app-frame :is(button,a,input,select,textarea):focus-visible{
     padding:10px;
   }
 }
+
+
+/* Version belongs beneath whichever left navigation is active. It is
+   informational, not a menu button, and remains readable on narrow screens. */
+body.orki-app-frame .orki-nav-version{
+  display:block;
+  margin:12px 2px 0;
+  padding:12px 10px 4px;
+  border-top:1px solid var(--orki-app-border);
+  color:var(--orki-app-muted);
+  font:12px/1.5 system-ui,sans-serif;
+  letter-spacing:.025em;
+  overflow-wrap:anywhere;
+}
+body.orki-app-frame .orki-app-footer .orki-footer-github{
+  font-weight:650;
+  text-underline-offset:3px;
+}
+body.orki-app-frame .orki-app-footer .orki-footer-github:focus-visible{
+  outline:2px solid var(--orki-app-accent, #3cdbd0);
+  outline-offset:3px;
+}
