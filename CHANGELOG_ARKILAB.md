@@ -1,5 +1,20 @@
 # OrkiLab changelog
 
+## 0.4.0-rc.1 — release candidate prepared (not yet tagged or published; 2026-11-21)
+
+- Expand Dataset Studio: project-linked image inventory, duplicate/quality diagnostics, manual captions with revision history, export of captions in ZIP format, optional opt-in local Ollama vision previews and batch caption review.
+- Prepare separate image-and-caption training folders without modifying original sources, and connect project-specific prepared datasets to isolated trainer drafts where supported. Engine-specific dataset formats still require verification.
+- Improve ComfyUI checkpoint comparison: identify project checkpoints by steps, persist the chosen ComfyUI LoRA folder, safely manage named checkpoint copies, and preserve original `.safetensors`.
+- Add human checkpoint ratings (1–5 stars), Best and one Final designation per project, and a SQLite library for shortlisted LoRAs with optional reference image and training/test/hardware metadata.
+- Make trained LoRA records and generation history collapsible. Add searches, filters and sorting for the LoRA library, Projects and generation history.
+- Align shared header and left navigation across Workspace, Queue and Dataset Studio; move the live app version below the active left menu and add the official GitHub repository to the common footer.
+- Provide seven translated locales in addition to English, accessibility and layout refinements, and Windows/Linux CI with Python 3.13 and syntax checks.
+- **Release gate:** full Windows/Linux CI and genuine on-device testing before tagging. CPU-only CI cannot certify GPU model compatibility, every trainer, Windows GUI integration, Ollama cancellation/memory behavior or a reproducible end-to-end trainer-ready dataset with validation split.
+- **Not yet completed for 0.4 stable:** documented per-engine export profiles, guaranteed reproducible train/validation split, hardware compatibility matrix, complete integration tests on supported local GPU machines, and final stability acceptance.
+
+The release metadata is updated on the release-preparation branch; the GitHub tag/release must be created only after its exact merged SHA is verified. See [readiness register](docs/arkilab/RC_0_4_0_READINESS.md).
+
+
 ## 0.3.0-rc.1 — published GitHub prerelease (2026-11-21)
 
 - Add a welcome/introduction screen and verified-connection navigation gate for ComfyUI Zone.

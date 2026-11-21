@@ -1,6 +1,6 @@
 # OrkiLab 0.4.0 — Dataset Studio: initial scope and acceptance
 
-**Status:** alpha.1 implementation merged to main and code/CI checks complete; **local Windows browser and real-dataset acceptance not yet verified**. The 0.4.0 milestone is not tagged or released. See [alpha.1 development closeout and remaining acceptance gates](DATASET_STUDIO_0_4_ALPHA1_CLOSEOUT.md). The published 0.3.0-rc.1 tag remains immutable.
+**Status:** 0.4.0-rc.1 release-preparation branch contains the accumulated Dataset Studio development. **This is a release candidate in preparation, not a tagged 0.4.0 release.** Local Windows/Ollama/GPU and complete per-trainer dataset acceptance are not certified by CPU-only CI. The original alpha.1 closeout is retained as historical evidence ([alpha.1 register](DATASET_STUDIO_0_4_ALPHA1_CLOSEOUT.md)); the current gate is [RC 0.4.0 readiness](RC_0_4_0_READINESS.md). The published 0.3.0-rc.1 tag remains immutable.
 
 ## Goal and workflow
 
