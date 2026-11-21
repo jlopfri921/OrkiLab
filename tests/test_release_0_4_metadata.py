@@ -1,4 +1,4 @@
-"""Release metadata and documentation consistency for OrkiLab 0.4 RC."""
+"""Current release metadata consistency and historical 0.4 RC documentation."""
 import json
 import unittest
 from pathlib import Path
@@ -10,10 +10,11 @@ class Release04CandidateTests(unittest.TestCase):
         version=(ROOT/"VERSION_ARKILAB").read_text(encoding="utf-8").strip()
         launcher=json.loads((ROOT/"GUI"/"launcher.json").read_text(encoding="utf-8"))
         readme=(ROOT/"README.md").read_text(encoding="utf-8")
-        self.assertEqual(version,"0.4.0-rc.1")
+        self.assertRegex(version,r"^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+)?$")
         self.assertEqual(launcher["arkilab_version"],version)
         self.assertIn("alt=\"Version "+version+"\"",readme)
-        self.assertIn("0.4.0-rc.1",readme)
+        self.assertIn("version-"+version.replace("-","--"),readme)
+        self.assertIn("0.4.0-rc.1",readme)  # prior published prerelease retained
 
     def test_readiness_notes_are_explicit_and_do_not_claim_stable(self):
         note=(ROOT/"docs"/"arkilab"/"RC_0_4_0_READINESS.md").read_text(encoding="utf-8")
@@ -28,7 +29,10 @@ class Release04CandidateTests(unittest.TestCase):
         changelog=(ROOT/"CHANGELOG_ARKILAB.md").read_text(encoding="utf-8")
         roadmap=(ROOT/"docs"/"arkilab"/"ROADMAP.md").read_text(encoding="utf-8")
         self.assertIn("## 0.4.0-rc.1",changelog)
-        self.assertIn("## Current milestone: 0.4.0-rc.1",roadmap)
+        self.assertIn("## Current milestone: 0.5.0-rc.1",roadmap)
+        self.assertIn("## Previous milestone: 0.4.0-rc.1",roadmap)
+        self.assertIn("## 0.5.0-rc.1",changelog)
+        self.assertIn("RC_0_5_0_READINESS.md",roadmap)
         self.assertIn("Stable 0.4.0 gate (not yet met)",roadmap)
 
 if __name__=="__main__":

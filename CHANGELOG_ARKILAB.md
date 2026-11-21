@@ -1,5 +1,16 @@
 # OrkiLab changelog
 
+## 0.5.0-rc.1 — release candidate in preparation (unpublished)
+
+- Multiview Studio 0.5 alpha.1: SQLite project-scoped subject/view records, manually provided camera metadata, provenance and mobile bottom navigation.
+- Alpha.2: twelve-sector angular coverage, missing-angle diagnostics, image quality hints, review controls and photo comparator.
+- Beta.1: opt-in ComfyUI generation from installed validated workflows, explicit capture registration and synthetic lineage tracking.
+- Beta.2: reproducible, non-destructive ZIP exports with SHA-256 manifest and subject-level train/validation grouping; excludes synthetic images unless approved and opted in.
+- RC.1: existing Workspace Image project discovery, Dataset Studio photo recovery/linking, project persistence and safety regression tests.
+- On-device operator reports 7/7 functional checks passed on Windows with RTX 3090; these reports do not establish a complete training pass, broad workflow compatibility, final release CI or rollback acceptance. See [RC.1 readiness](docs/arkilab/RC_0_5_0_READINESS.md).
+- **Not yet released:** stable v0.5.0 remains gated on final SHA CI, named tested configuration, release review and documented limitations. 0.4 stable scope gaps are not silently considered completed.
+
+
 ## 0.4.0-rc.1 — published GitHub prerelease (2026-11-21)
 
 - Published source prerelease [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1). Windows/Linux automated gates passed; remaining real-device and stable-release limitations are documented separately.
