@@ -1289,7 +1289,7 @@
   "Pre-cache": "Pré-cache",
   "Waiting": "Na espera",
   "Done": "Concluído",
-  "Failed": "Falhou",
+  "Failed": "Falhadas",
   "Stopped": "Parado",
   "Queue paused": "Fila pausada",
   "Running": "Em andamento",
@@ -2079,5 +2079,16 @@
   "Only models marked Best or Final appear here. Your original training files remain unchanged.": "Apenas os modelos marcados como Melhores ou Definitivos aparecem aqui. Os arquivos originais do treinamento não são alterados.",
   "Selected models": "Modelos selecionados",
   "Refresh library": "Atualizar biblioteca",
-  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "Consulte os LoRA selecionados e seus dados de treinamento e avaliação. Volte ao treinamento a qualquer momento."
+  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "Consulte os LoRA selecionados e seus dados de treinamento e avaliação. Volte ao treinamento a qualquer momento.",
+  "Search generations": "Pesquisar gerações",
+  "Search by workflow, name or ID": "Pesquisar por workflow, nome ou ID",
+  "Filter by status": "Filtrar por estado",
+  "All statuses": "Todos os estados",
+  "Sort generations": "Ordenar gerações",
+  "Newest first": "Mais recentes primeiro",
+  "Oldest first": "Mais antigas primeiro",
+  "Name A–Z": "Nome A–Z",
+  "Name Z–A": "Nome Z–A",
+  "Clear filters": "Limpar filtros",
+  "Cancelled": "Canceladas"
 }
