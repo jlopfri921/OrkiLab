@@ -36,6 +36,29 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn("capture.id,api,refresh,capture",html)
 
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
+    def test_missing_view_and_mode_help_scripts_compile(self):
+        for name in ("multiview-generate-view.js","orkilab-mode-help.js"):
+            with self.subTest(name=name):
+                script=ROOT/"assets"/"orkilab"/name
+                result=subprocess.run([shutil.which("node"),"--check",str(script)],
+                                     capture_output=True,text=True,timeout=15)
+                self.assertEqual(result.returncode,0,result.stderr)
+        html=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
+        self.assertIn('src="/assets/orkilab/multiview-generate-view.js"',html)
+        self.assertIn("OrkiMultiviewGenerateViews.mount(",html)
+        shell=(ROOT/"assets"/"orkilab"/"orkilab-shell.js").read_text(encoding="utf-8")
+        self.assertIn('modeHelp.src="/assets/orkilab/orkilab-mode-help.js"',shell)
+        self.assertIn('"/workspace/guide"',shell)
+
+    def test_general_guide_page_exists(self):
+        page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
+        for section in ('id="flow"','id="sections"','id="multiview"',
+                        'id="modes"','id="faq"'):
+            self.assertIn(section,page)
+        self.assertIn('data-lang="es"',page)
+        self.assertIn('data-lang="en"',page)
+
+    @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
     def test_multiview_rc1_recovery_script_compiles_and_is_wired(self):
         script=ROOT/"assets"/"orkilab"/"multiview-rc1.js"
         result=subprocess.run([shutil.which("node"),"--check",str(script)],
