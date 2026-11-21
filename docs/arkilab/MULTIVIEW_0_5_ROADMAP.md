@@ -61,6 +61,24 @@ Multiview now has a **per-photograph local Ollama vision suggestion** tool, subj
 
 Safety: local loopback and same-origin POST only, only project-linked immutable images, SHA-256 checked before sending a bounded JPEG thumbnail to local Ollama, model-capability check, serialized jobs, no public API or internet calls. The preview never writes to SQLite or alters originals. Confirmation uses the existing capture PATCH route and does not add fake numeric azimuth/elevation/distance or change review status. Existing manual angles or workflow provenance must never be overwritten by an estimate. This is **not** calibrated pose estimation / COLMAP / SfM / a 3D reconstruction and **cannot** certify the 12-sector 360° chart; sectors with unknown numeric azimuth remain unknown.
 
+## RC.1 usability additions — missing-view generation, help and native-mode visibility
+
+The **0.5.0-rc.1** source now includes the guided missing-view workflow as an RC.1 improvement, without claiming stable release or a new version number:
+
+1. Link real photographs to an active Image project and Multiview subject; optionally classify qualitative orientation with local Ollama.
+2. Within the subject, select 1–4 non-rejected real/unknown/video-frame captures and an installed ComfyUI image workflow.
+3. Explicitly stage **copies** of those references in the configured private ComfyUI `input` folder, verifying registered source file sizes and SHA-256 values. Copies in ComfyUI input are not automatically deleted.
+4. Prepare the saved workflow against the actual ComfyUI schema, assign each uploaded photo to a distinct editable **LoadImage** input, and select the text prompt field. If there are insufficient image inputs or an editable prompt is missing, refuse rather than silently running an unrelated text-to-image workflow.
+5. Explicitly confirm generation through the established OrkiLab generation queue. The existing poll/status/cancel mechanism is reused; there is no separate, unsafe generation backend.
+6. Review the generated preview and explicitly import selected outputs. They remain **synthetic, workflow provenance and unreviewed**. Save requested direction/height/apparent distance and source capture IDs separately from numeric camera measurements, leaving azimuth/elevation/distance null unless independently measured.
+7. Source capture IDs are checked against the saved generation graph's LoadImage nodes. Input photos remain unchanged; no prompt or requested direction is proof of 3D geometric fidelity.
+
+**General guide:** `/workspace/guide` explains app modules, first use, datasets, Multiview, local AI, training, troubleshooting and modes. Main help body begins in Spanish and English, with navigation titles localized in all current UI locales and English fallback for other content.
+
+**Native/stand-alone mode:** the shared desktop/mobile shell hides ComfyUI-only navigation, overview shortcuts and view-generation panels while preserving OrkiLab training, Dataset Studio, GPU, projects, queues and Ollama (which is independent). **Settings** always exposes a mode selector so users can re-enable ComfyUI; switching modes does not delete data. Hidden UI is not a substitute for backend authorization, which still rejects incompatible operations.
+
+**Release caution:** CI checks source logic, not the installed ComfyUI workflow on the user's RTX 3090. Validate the actual workflow's LoadImage nodes and generated views on-device before treating this as fully accepted.
+
 ## Product goal
 
 Build an integrated **Multiview Studio** for organizing different photographs or video frames of the **same subject** at different angles, distances and elevations, with explicit provenance and controlled compatibility with training datasets. It should be useful for objects, products, sculptures, architectural objects and processional floats photographed from multiple positions. It must never claim that multiple 2D photos automatically constitute a faithful 3D model.
