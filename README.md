@@ -3,7 +3,7 @@
 <p align="center"><strong>Train. Adapt. Create.</strong><br>Local-first LoRA training for image, video and audio.</p>
 
 <p align="center">
-  <a href="VERSION_ARKILAB"><img alt="Version 0.3.0-rc.1" src="https://img.shields.io/badge/version-0.3.0--rc.1-087F91"></a>
+  <a href="VERSION_ARKILAB"><img alt="Version 0.4.0-rc.1" src="https://img.shields.io/badge/version-0.4.0--rc.1-087F91"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-315DB3"></a>
   <img alt="Windows and Linux" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-293C60">
   <a href="https://ko-fi.com/jorgelf"><img alt="Support OrkiLab on Ko-fi" src="https://img.shields.io/badge/Ko--fi-Support%20OrkiLab-FF5E5B?logo=kofi&logoColor=white"></a>
@@ -13,11 +13,21 @@
 
 # OrkiLab — LoRA Trainer Studio
 
-Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, local-first workspace for adapting generative models with LoRA. Workspace is the default interface. **Version 0.3.0-rc.1 was published as a GitHub prerelease on 2026-11-21**; it is not a stable release. See [the official release](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1) and the [acceptance register](docs/arkilab/RC_0_3_0_READINESS.md).
+Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, local-first workspace for adapting generative models with LoRA. Workspace is the default interface. **The 0.4.0-rc.1 release candidate is being prepared; it is not yet a tagged/published release or a stable 0.4.0.** The latest previously published prerelease is [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1). See the [0.4 candidate readiness register](docs/arkilab/RC_0_4_0_READINESS.md) for verified and pending acceptance.
 
-## Dataset Studio 0.4 development — manual Caption Studio (not released)
+## OrkiLab 0.4.0-rc.1 — release candidate (not yet published)
 
-The **development branch in `main`**, after the published 0.3.0-rc.1 prerelease, includes a project-linked Dataset Studio under **Workspace → Dataset Studio**. Import references to local image files, review them, scan for exact/possible visual duplicates and blur, and compare pairs. Images remain at their original locations.
+**Candidate scope:** a searchable and multilingual training Workspace, Dataset Studio (image library, quality/duplicate review, manually approved captions and optional local vision suggestions), project-aware prepared dataset handoff, managed ComfyUI checkpoints, and a curated **My trained LoRAs / Mis LoRA entrenados** catalog. The catalog supports 1–5 star ratings, Best/Final flags, optional reference images, collapsed model cards, and local SQLite metadata. ComfyUI Generation history also offers collapsed, searchable and sortable jobs.
+
+The main application's version is read from `VERSION_ARKILAB` and shown beneath the active left navigation. The shared footer links to the [OrkiLab GitHub project](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio). Current integration is local-first: original training weights and imported datasets are preserved, and saved library records refer to local files.
+
+**Important scope limits:** the prepared image/caption workflow does not establish that every trainer can successfully pre-cache/train from its generated dataset. Per-engine export profiles, a formal train/validation split, reproducibility acceptance across engines, full trainer/GPU validation, and real Windows image/Ollama smoke tests remain separate gates for the eventual **0.4.0 stable** milestone. The candidate's CI uses CPU-only dependencies and synthetic fixtures; it does not run a real GPU training pass. See [candidate readiness](docs/arkilab/RC_0_4_0_READINESS.md), [Dataset Studio scope](docs/arkilab/DATASET_STUDIO_0_4_SCOPE.md), and [managed checkpoints](docs/orkilab/MANAGED_COMFYUI_CHECKPOINTS.md).
+
+**Updating from an earlier installation:** back up `settings/orkilab/`, your project datasets, trainer configurations and ComfyUI workflows before updating. Pull the tagged release only after it is actually published, or test the candidate branch separately. Existing `.safetensors` and original image folders must not be deleted by the update.
+
+## Dataset Studio 0.4 development — manual Caption Studio (candidate scope; see limits above)
+
+Current 0.4 candidate development, following the published 0.3.0-rc.1 prerelease, includes a project-linked Dataset Studio under **Workspace → Dataset Studio**. Import references to local image files, review them, scan for exact/possible visual duplicates and blur, and compare pairs. Images remain at their original locations.
 
 The first **0.4 beta.1 development slice** adds a per-image **Edit caption** dialog with manual text, a bounded history of the 25 latest saved revisions and a way to load an older version before saving it as a new revision. Captions are kept in OrkiLab's local SQLite metadata, with concurrent-edit conflict detection; they **do not yet create or modify `.txt` sidecars**. This is **not an AI caption generator**, a resize/crop exporter or a completed 0.4 beta.1 release; these are separate acceptance steps.
 
