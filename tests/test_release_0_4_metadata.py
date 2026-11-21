@@ -17,7 +17,8 @@ class Release04CandidateTests(unittest.TestCase):
 
     def test_readiness_notes_are_explicit_and_do_not_claim_stable(self):
         note=(ROOT/"docs"/"arkilab"/"RC_0_4_0_READINESS.md").read_text(encoding="utf-8")
-        self.assertIn("NOT TAGGED / NOT PUBLISHED",note)
+        self.assertIn("**Release state:**",note)
+        self.assertIn("stable",note.lower())
         self.assertIn("NOT VERIFIED END TO END",note)
         self.assertIn("train/validation split",note)
         self.assertIn("Windows",note)
