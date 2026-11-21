@@ -471,9 +471,12 @@ def register(app, base):
             return jsonify(error="Manage workflows on the launcher PC"), 403
         try:
             offset = max(0,min(100000,int(request.args.get("offset",0))))
-        except ValueError:
-            return jsonify(error="Invalid request"),400
-        return jsonify(jobs=records.list(100,offset))
+            query = request.args.get("q","")
+            state = request.args.get("state","")
+            sort = request.args.get("sort","newest")
+            return jsonify(records.search(100,offset,query,state,sort))
+        except (ValueError,TypeError):
+            return jsonify(error="Invalid history filter"),400
 
     @app.get("/api/workspace/generation/history/<token>")
     def generation_history_detail(token):
