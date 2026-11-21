@@ -9,7 +9,7 @@ const directions=["front","front_right","right","back_right","back","back_left",
 function lang(){return typeof I18N!=="undefined"&&I18N.lang==="es"?"es":"en"}
 function tr(k){return strings[lang()][k]||k}
 function el(tag,value){const n=document.createElement(tag);if(value!==undefined)n.textContent=value;return n}
-function mount(host,getProject,captureId,api,afterSave){
+function mount(host,getProject,captureId,api,afterSave,capture){
  const project=getProject();
  const box=el("section");box.className="mv-viewpoint-panel no-i18n";
  const title=el("h3",tr("title")),intro=el("p",tr("intro"));
@@ -63,10 +63,16 @@ function mount(host,getProject,captureId,api,afterSave){
   if(!window.confirm(tr("confirm")))return;
   busy=true;save.disabled=true;
   try{
+   // Do not overwrite measured/manual/workflow camera provenance with an AI guess.
+   const hasGeometry=capture.azimuth_deg!==null||capture.elevation_deg!==null||capture.distance_m!==null;
+   const proposed={view_name:tr(direction.value)};
+   if(!hasGeometry&&(capture.provenance==="unknown"||capture.provenance==="estimated")){
+     proposed.provenance="estimated";
+   }
    await api("/api/workspace/multiview/projects/"+encodeURIComponent(project)+
        "/captures/"+encodeURIComponent(captureId),{
         method:"PATCH",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({view_name:tr(direction.value),provenance:"estimated"})});
+        body:JSON.stringify(proposed)});
    status.textContent=tr("done");verified=null;result.hidden=true;
    await afterSave();
   }catch(e){status.textContent=e.message||tr("error");save.disabled=false}
