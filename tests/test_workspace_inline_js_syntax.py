@@ -34,6 +34,7 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn('src="/assets/orkilab/multiview-rc1.js"',html)
         self.assertIn('id="mv-recovery"',html)
         self.assertIn("OrkiMultiviewRecovery.mount(",html)
+        self.assertIn("0.5.0-rc.1",html)
         self.assertIn('old._assistant?.dispose()',html)
 
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
@@ -46,7 +47,7 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn('src="/assets/orkilab/multiview-beta2.js"',html)
         self.assertIn("OrkiMultiviewExport.mount(",html)
         self.assertIn('id="mv-export"',html)
-        self.assertIn("0.5.0-beta.2",html)
+        self.assertIn("OrkiMultiviewExport.mount(",html)
 
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
     def test_multiview_beta1_assist_compiles_and_is_wired(self):
