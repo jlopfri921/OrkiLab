@@ -248,7 +248,7 @@ def register(app, base):
                     return jsonify(error="The workflow LoRA filename is not editable"),409
                 choices = set(x for x in lora_field["choices"] if isinstance(x, str))
                 from managed_checkpoints import model_name
-                selected_models = {name: (model_name(project_id, name) if model_name(project_id, name) in choices else name) for name in names}
+                selected_models = {name: (model_name(discovered["project_name"], name) if model_name(project_id, name) in choices else name) for name in names}
                 missing = [name for name in names if selected_models[name] not in choices]
                 if missing:
                     return jsonify(error="Checkpoints not installed in ComfyUI/models/loras",
