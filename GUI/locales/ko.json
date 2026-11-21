@@ -2072,5 +2072,12 @@
   "ComfyUI/models/loras folder (on this PC)": "ComfyUI/models/loras 폴더 (이 PC)",
   "Install selected": "선택 항목 설치",
   "Uninstall selected": "선택 항목 제거",
-  "Check installed": "설치 확인"
+  "Check installed": "설치 확인",
+  "My trained LoRAs": "내 학습 LoRA",
+  "Trained LoRA library": "학습된 LoRA 라이브러리",
+  "← Back to training": "학습 화면으로 돌아가기",
+  "Only models marked Best or Final appear here. Your original training files remain unchanged.": "최고 또는 최종 모델로 지정한 항목만 표시됩니다. 원본 학습 파일은 변경되지 않습니다.",
+  "Selected models": "선택한 모델",
+  "Refresh library": "라이브러리 새로고침",
+  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "최고 또는 최종으로 선택한 LoRA의 학습 및 평가 정보를 확인하고 언제든 학습 화면으로 돌아갈 수 있습니다."
 }
