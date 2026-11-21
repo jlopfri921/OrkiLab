@@ -15,7 +15,7 @@
 
 ## Current milestone: 0.4.0-rc.1 — integrated dataset and curated LoRA candidate
 
-**Status:** `0.4.0-rc.1` source is merged in `main` via PR #76. It is available for git-based installations, but a GitHub Release/tag has not been verified; this is not 0.4.0 stable. The Dataset Studio hardening checks (PR #77) were also merged after Windows/Linux CI. The last published prerelease remains `v0.3.0-rc.1` until GitHub Releases confirms otherwise.
+**Status:** [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) is a published GitHub prerelease based on the candidate merged through PR #76. Subsequent Dataset Studio safety changes (PR #77) are in `main` and may be newer than the immutable release tag. This is not 0.4.0 stable. The Dataset Studio hardening checks (PR #77) were also merged after Windows/Linux CI. The last published prerelease remains `v0.3.0-rc.1` until GitHub Releases confirms otherwise.
 
 **In candidate:** project-linked Dataset Studio, captions, non-destructive derived export, optional local Ollama preview, project-specific trainer draft handoff, named ComfyUI checkpoint management and comparison, human LoRA ratings and a searchable curated library, collapsible and searchable generation history, common footer and sidebar version.
 
