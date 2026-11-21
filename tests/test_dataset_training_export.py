@@ -1,5 +1,8 @@
 """Training dataset export smoke and non-destructive behavior."""
 import io
+import hashlib
+import json
+import os
 import sqlite3
 import sys
 import tempfile
@@ -102,6 +105,74 @@ class TrainingDatasetExportTests(unittest.TestCase):
             "mode": "preview", "image_ids": [self.image_id]}).get_json()
         self.assertEqual(changed["ready"], 0)
         self.assertEqual(changed["skipped"][0]["reason"], "missing_caption")
+
+    def _save_caption(self, image_id, caption):
+        return self.client.put(self.path + "/" + image_id + "/caption",
+                               json={"caption": caption, "expected_revision": 0})
+
+    def test_manifest_round_trip_and_repeated_preparation_preserve_sources(self):
+        original_hash = hashlib.sha256(self.image.read_bytes()).hexdigest()
+        self.assertEqual(self._save_caption(self.image_id, "scene with person").status_code, 200)
+        request = {"mode": "prepare", "image_ids": [self.image_id], "confirm": True}
+        first = self.client.post(self.export, json=request)
+        second = self.client.post(self.export, json=request)
+        self.assertEqual((first.status_code, second.status_code), (200, 200))
+        first_dir, second_dir = Path(first.get_json()["path"]), Path(second.get_json()["path"])
+        self.assertNotEqual(first_dir, second_dir)
+        for prepared in (first_dir, second_dir):
+            manifest = json.loads((prepared / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["project_id"], self.project_id)
+            self.assertEqual(manifest["format"], "flat_image_txt")
+            self.assertEqual(manifest["items"], [
+                {"id": self.image_id, "image": "test.png", "caption": "test.txt"}
+            ])
+            self.assertEqual(hashlib.sha256((prepared / "test.png").read_bytes()).hexdigest(), original_hash)
+            self.assertEqual((prepared / "test.txt").read_text(encoding="utf-8"), "scene with person")
+            self.assertEqual({x.name for x in prepared.iterdir()}, {"test.png", "test.txt", "manifest.json"})
+        self.assertEqual(hashlib.sha256(self.image.read_bytes()).hexdigest(), original_hash)
+        self.assertFalse(self.image.with_suffix(".txt").exists())
+
+    def test_changed_source_after_caption_is_rejected_before_prepare(self):
+        self.assertEqual(self._save_caption(self.image_id, "test subject").status_code, 200)
+        self.image.write_bytes(self.original + b"changed")
+        preview = self.client.post(self.export, json={
+            "mode": "preview", "image_ids": [self.image_id]})
+        self.assertEqual(preview.status_code, 200)
+        self.assertEqual(preview.get_json()["skipped"][0]["reason"], "changed_or_oversized")
+        prepared = self.client.post(self.export, json={
+            "mode": "prepare", "image_ids": [self.image_id], "confirm": True})
+        self.assertEqual(prepared.status_code, 409)
+        self.assertFalse((self.root / "Datasets" / "OrkiLab" / self.project_id).exists())
+
+    def test_preparation_rejects_managed_destination_symlink(self):
+        self.assertEqual(self._save_caption(self.image_id, "test subject").status_code, 200)
+        foreign = self.root / "foreign"
+        foreign.mkdir()
+        link = self.root / "Datasets"
+        try:
+            link.symlink_to(foreign, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("Creating directory symlinks requires platform privileges")
+        result = self.client.post(self.export, json={
+            "mode": "prepare", "image_ids": [self.image_id], "confirm": True})
+        self.assertEqual(result.status_code, 409)
+        self.assertFalse((foreign / "OrkiLab").exists())
+        self.assertEqual(self.image.read_bytes(), self.original)
+
+    def test_preparation_rejects_rejected_image_and_keeps_source(self):
+        self.assertEqual(self._save_caption(self.image_id, "test subject").status_code, 200)
+        dataset_db = self.root / "settings" / "orkilab" / "datasets.sqlite3"
+        with closing(sqlite3.connect(dataset_db)) as conn, conn:
+            conn.execute("UPDATE dataset_images SET review='rejected' WHERE id=?", (self.image_id,))
+        preview = self.client.post(self.export, json={
+            "mode": "preview", "image_ids": [self.image_id]})
+        self.assertEqual(preview.status_code, 200)
+        self.assertEqual(preview.get_json()["skipped"][0]["reason"], "rejected")
+        prepared = self.client.post(self.export, json={
+            "mode": "prepare", "image_ids": [self.image_id], "confirm": True})
+        self.assertEqual(prepared.status_code, 409)
+        self.assertEqual(self.image.read_bytes(), self.original)
+
 
 
 if __name__ == "__main__":
