@@ -24,8 +24,8 @@ class ProjectCheckpointInventoryTests(unittest.TestCase):
         db = self.base / "settings" / "orkilab" / "projects.sqlite3"
         db.parent.mkdir(parents=True)
         with closing(sqlite3.connect(db)) as conn, conn:
-            conn.execute("CREATE TABLE projects(id TEXT PRIMARY KEY, engine TEXT, category TEXT, archived INTEGER)")
-            conn.execute("INSERT INTO projects VALUES (?,?,?,0)", (self.project, "flux3klein", "image"))
+            conn.execute("CREATE TABLE projects(id TEXT PRIMARY KEY, engine TEXT, category TEXT, name TEXT, archived INTEGER)")
+            conn.execute("INSERT INTO projects VALUES (?,?,?,?,0)", (self.project, "flux3klein", "image", "Prueba"))
         self.output = self.base / "Outputs" / ("flux3klein_lora_output_orkilab_" + self.project[:12])
         self.output.mkdir(parents=True)
         for step in (500, 100, 300, 700, 1000):
@@ -36,6 +36,7 @@ class ProjectCheckpointInventoryTests(unittest.TestCase):
     def test_sorted_project_scoped_checkpoints(self):
         result = project_checkpoints.inventory(self.base, self.project)
         self.assertEqual(result["engine"], "flux3klein")
+        self.assertEqual(result["project_name"], "Prueba")
         self.assertEqual([c["step"] for c in result["checkpoints"]], [100, 300, 500, 700, 1000])
         self.assertEqual(len(result["checkpoints"]), 5)
         self.assertTrue(all(c["size_bytes"] > 0 for c in result["checkpoints"]))
@@ -87,7 +88,7 @@ class ProjectCheckpointUiTests(unittest.TestCase):
             'def compare_project_checkpoints():',
             'project_checkpoints.inventory(base, project_id)',
             'node.get("class_type") not in ("LoraLoader", "LoraLoaderModelOnly")',
-            'f["name"]=="lora_name"', '"name":"lora_name","value":name',
+            'f["name"]=="lora_name"', '"name":"lora_name","value":selected_models[name]',
             'validate_prompt(graph,item[6])',
             'Checkpoints not installed in ComfyUI/models/loras',
         ):
