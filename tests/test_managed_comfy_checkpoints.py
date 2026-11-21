@@ -1,5 +1,6 @@
 """Safety and naming tests for local ComfyUI checkpoint management."""
 import json
+from contextlib import closing
 import sqlite3
 import tempfile
 import unittest
@@ -26,7 +27,7 @@ class ManagedCheckpointTests(unittest.TestCase):
         self.project = "a" * 32
         cfg = self.base / "settings" / "orkilab"
         cfg.mkdir(parents=True)
-        with sqlite3.connect(cfg / "projects.sqlite3") as db:
+        with closing(sqlite3.connect(cfg / "projects.sqlite3")) as db, db:
             db.execute("CREATE TABLE projects(id TEXT, engine TEXT, category TEXT, name TEXT, archived INTEGER)")
             db.execute("INSERT INTO projects VALUES(?,?,?,?,0)", (self.project, "flux3klein", "image", "Prueba"))
         self.outputs = self.base / "Outputs" / ("flux3klein_lora_output_orkilab_" + self.project[:12])
