@@ -1,0 +1,39 @@
+"""JavaScript syntax smoke check for the inline Workspace app (not only external JS)."""
+from html.parser import HTMLParser
+from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+import unittest
+
+ROOT=Path(__file__).resolve().parents[1]
+
+class InlineScripts(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.scripts=[]
+        self.capture=False
+    def handle_starttag(self,tag,attrs):
+        if tag=="script":
+            self.capture=not dict(attrs).get("src")
+    def handle_data(self,data):
+        if self.capture:
+            self.scripts.append(data)
+    def handle_endtag(self,tag):
+        if tag=="script":
+            self.capture=False
+
+class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
+    def test_inline_workspace_javascript_compiles(self):
+        parser=InlineScripts()
+        parser.feed((ROOT/"GUI"/"workspace.html").read_text(encoding="utf-8"))
+        self.assertTrue(parser.scripts,"Workspace must contain inline JS")
+        for index,source in enumerate(parser.scripts):
+            with self.subTest(script=index):
+                with tempfile.TemporaryDirectory() as directory:
+                    path=Path(directory)/"workspace-inline.js"
+                    path.write_text(source,encoding="utf-8")
+                    result=subprocess.run([shutil.which("node"),"--check",str(path)],
+                        capture_output=True,text=True,timeout=15)
+                    self.assertEqual(result.returncode,0,result.stderr)
