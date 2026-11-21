@@ -15,6 +15,7 @@ import gpu_stats
 import project_layout
 import promotions_feed
 import project_checkpoints
+import managed_checkpoints
 
 
 def register(app, base, load_config):
@@ -25,6 +26,7 @@ def register(app, base, load_config):
     generation_studio.register(app, base)
     dataset_studio.register(app, base)
     project_checkpoints.register(app, base)
+    managed_checkpoints.register(app, base)
     store = ProjectStore(base / "settings" / "orkilab" / "projects.sqlite3")
 
     @app.get("/workspace/datasets")
