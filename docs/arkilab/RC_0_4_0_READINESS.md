@@ -5,6 +5,7 @@
 **Release state:** NOT TAGGED / NOT PUBLISHED
 **Source:** `release/0.4.0-rc.1` (PR to `main`)
 **Previous published prerelease:** `v0.3.0-rc.1`
+**Automated validation:** foundation run `44917024684` — SUCCESS; RC validation run `44917024693` — SUCCESS on candidate commit `45a10106be00492ab16a106503ab3b48b601ff22` (before updating this evidence register). Both include Windows and Ubuntu. The RC run completed **231 tests per platform, zero failures**, and checked version metadata. This evidence-update commit requires a fresh final CI pass before merge/tag.
 
 This register distinguishes automated evidence, user-reported tests, and hardware checks not yet confirmed. Do **not** describe `0.4.0` as stable simply because `0.4.0-rc.1` has passed CI.
 
@@ -12,16 +13,16 @@ This register distinguishes automated evidence, user-reported tests, and hardwar
 
 | Area | Gate | Status at preparation | Evidence/next action |
 |---|---|---|---|
-| Version consistency | `VERSION_ARKILAB`, `GUI/launcher.json`, README badge | PENDING CI | Validate exact candidate commit on both platforms |
-| Import safety | Original image/caption/LoRA and unrelated model files untouched | PENDING CI | Run fixture tests, then Windows test with backup |
-| Core regression | Full Python test suite, JS syntax, release metadata | PENDING CI | GitHub Actions (Windows + Ubuntu, Python 3.13) |
+| Version consistency | `VERSION_ARKILAB`, `GUI/launcher.json`, README badge | PASS CI | Version consistency passed on candidate commit; repeat on final evidence commit |
+| Import safety | Original image/caption/LoRA and unrelated model files untouched | PASS CI | Run fixture tests, then Windows test with backup |
+| Core regression | Full Python test suite, JS syntax, release metadata | PASS CI | GitHub Actions (Windows + Ubuntu, Python 3.13) |
 | Project & curated LoRA | Checkpoint ratings, Best/Final, persistence and image reference | REPORTED | Operator reported OrkiLab functioning; repeat the relevant cases on candidate |
 | ComfyUI comparison | Project checkpoint 100 vs later steps, fixed seed/workflow, installed paths | REPORTED | Project 'Prueba' comparison was exercised earlier; record candidate evidence separately |
-| Generation history | Collapsible records and server search/filter/sort, page boundaries | PENDING CI | Unit tests and local UI smoke |
+| Generation history | Collapsible records and server search/filter/sort, page boundaries | PASS CI | Unit tests and local UI smoke |
 | Dataset Studio | Image import, duplicate analysis, captions, prepared folder, no source mutation | NOT VERIFIED END TO END | Real Windows images and dataset preparation |
 | Project → training | Prepared image dataset in isolated trainer settings, successful real GPU pre-cache/train | NOT VERIFIED END TO END | At least one supported image trainer |
 | Local Ollama | Caption preview/batch, cancellation and VRAM/resource behavior | NOT VERIFIED END TO END | Real installed vision-capable Ollama model |
-| Navigation/version/footer | Version below sidebar, GitHub footer, i18n | PENDING CI + VISUAL | Browser view on Windows |
+| Navigation/version/footer | Version below sidebar, GitHub footer, i18n | PASS CI; VISUAL PENDING | Browser view on Windows |
 | Desktop packaging | Standalone portable/installer and rollback | OUT OF RC SCOPE | Tracked for later release; no package promised |
 | 0.4.0 stable prerequisites | Per-engine export profiles, train/validation split, reproducible round trip and supported hardware matrix | NOT COMPLETE | Do not label this candidate stable |
 
