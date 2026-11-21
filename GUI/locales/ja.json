@@ -2079,5 +2079,16 @@
   "Only models marked Best or Final appear here. Your original training files remain unchanged.": "ベストまたは最終モデルに指定したものだけを表示します。元の学習ファイルは変更されません。",
   "Selected models": "選択したモデル",
   "Refresh library": "ライブラリを更新",
-  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "ベストまたは最終モデルに指定したLoRAと学習・評価情報を確認できます。いつでも学習画面に戻れます。"
+  "Browse your selected Best and Final trained LoRAs and their training and evaluation metadata. Return to training at any time.": "ベストまたは最終モデルに指定したLoRAと学習・評価情報を確認できます。いつでも学習画面に戻れます。",
+  "Search generations": "生成履歴を検索",
+  "Search by workflow, name or ID": "ワークフロー・名前・IDで検索",
+  "Filter by status": "ステータスで絞り込み",
+  "All statuses": "すべてのステータス",
+  "Sort generations": "生成履歴の並び順",
+  "Newest first": "新しい順",
+  "Oldest first": "古い順",
+  "Name A–Z": "名前 A–Z",
+  "Name Z–A": "名前 Z–A",
+  "Clear filters": "フィルターを解除",
+  "Cancelled": "キャンセル済み"
 }
