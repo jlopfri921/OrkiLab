@@ -340,3 +340,139 @@ body.orki-app-frame .orki-app-footer .orki-footer-github:focus-visible{
   outline:2px solid var(--orki-app-accent, #3cdbd0);
   outline-offset:3px;
 }
+
+
+/* Phone navigation: thumb-reachable fixed tabs and an accessible bottom sheet.
+   Desktop/tablet sidebar stays unchanged. One shared source for all OrkiLab pages. */
+body.orki-app-frame #orki-mobile-navigation{display:none}
+@media(max-width:760px){
+  body.orki-app-frame{
+    padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;
+    overflow-x:hidden;
+  }
+  body.orki-app-frame.orki-mobile-sheet-open{overflow:hidden}
+  body.orki-app-frame > main,
+  body.orki-app-frame .queue-shell,
+  body.orki-app-frame .studio-layout{
+    display:block;
+    padding:14px;
+  }
+  /* No large block of menu options above the page content. */
+  body.orki-app-frame #home-navigation,
+  body.orki-app-frame #comfy-navigation,
+  body.orki-app-frame .orki-app-nav,
+  body.orki-app-frame .queue-sidebar,
+  body.orki-app-frame .studio-navigation{
+    display:none!important;
+  }
+  body.orki-app-frame #orki-mobile-navigation{
+    display:block;
+    position:relative;
+    z-index:1100;
+  }
+  body.orki-app-frame .orki-mobile-bar{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    align-items:stretch;
+    gap:3px;
+    padding:8px max(7px,env(safe-area-inset-right,0px))
+            calc(8px + env(safe-area-inset-bottom,0px))
+            max(7px,env(safe-area-inset-left,0px));
+    background:rgba(11,20,36,.97);
+    border-top:1px solid var(--orki-app-border);
+    box-shadow:0 -9px 30px rgba(0,0,0,.36);
+    backdrop-filter:blur(16px);
+    z-index:1102;
+  }
+  body.orki-app-frame .orki-mobile-tab{
+    width:100%;min-width:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:4px;
+    min-height:55px;
+    margin:0;
+    padding:6px 3px;
+    font:600 11px/1.25 system-ui,sans-serif;
+    color:#b0c4dc;
+    border:1px solid transparent;
+    border-radius:11px;
+    background:transparent;
+    text-align:center;
+    text-decoration:none;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body.orki-app-frame .orki-mobile-tab>svg{flex:none}
+  body.orki-app-frame .orki-mobile-tab>span{
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
+  }
+  body.orki-app-frame .orki-mobile-tab[aria-current="page"],
+  body.orki-app-frame .orki-mobile-tab-active,
+  body.orki-app-frame .orki-mobile-tab[aria-expanded="true"]{
+    color:#3cdbd0;background:rgba(56,189,248,.13);border-color:rgba(56,189,248,.27);
+  }
+  body.orki-app-frame .orki-mobile-tab:focus-visible,
+  body.orki-app-frame .orki-mobile-option:focus-visible,
+  body.orki-app-frame .orki-mobile-close:focus-visible{
+    outline:2px solid #3cdbd0;outline-offset:2px;
+  }
+  body.orki-app-frame .orki-mobile-veil{
+    position:fixed;inset:0;
+    background:rgba(1,6,15,.68);
+    z-index:1103;
+  }
+  body.orki-app-frame .orki-mobile-sheet{
+    position:fixed;
+    bottom:calc(75px + env(safe-area-inset-bottom,0px));
+    left:8px;right:8px;
+    max-height:min(68dvh,590px);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding:16px;
+    background:#152238;
+    border:1px solid #47607d;
+    border-radius:20px 20px 12px 12px;
+    box-shadow:0 -15px 44px rgba(0,0,0,.5);
+    z-index:1104;
+    overflow:hidden;
+  }
+  body.orki-app-frame #orki-mobile-navigation [hidden]{display:none!important}
+  body.orki-app-frame .orki-mobile-sheet-head{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;flex:none;
+    font:700 17px/1.3 system-ui,sans-serif;
+  }
+  body.orki-app-frame .orki-mobile-close{
+    min-width:44px;min-height:44px;
+    font:26px system-ui,sans-serif;
+    background:#24354e;color:#fff;
+    border:1px solid #45617e;border-radius:12px;
+  }
+  body.orki-app-frame .orki-mobile-options{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:8px;
+    min-height:0;overflow-y:auto;overscroll-behavior:contain;
+    padding:2px 2px 6px;
+  }
+  body.orki-app-frame .orki-mobile-option{
+    display:flex;justify-content:center;align-items:center;
+    min-height:48px;
+    min-width:0;
+    margin:0;
+    padding:10px 8px;
+    color:#3cdbd0;
+    font:600 13px/1.3 system-ui,sans-serif;
+    text-align:center;
+    text-decoration:none;
+    overflow-wrap:anywhere;
+    background:#1f3048;
+    border:1px solid #3e5c7a;border-radius:11px;
+    cursor:pointer;
+  }
+  body.orki-app-frame .orki-mobile-option[aria-current="page"]{
+    background:#183f55;border-color:#3cdbd0;
+  }
+}
