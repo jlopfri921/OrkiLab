@@ -130,6 +130,10 @@ def register(app, base):
             provenance TEXT NOT NULL DEFAULT 'unknown',
             review TEXT NOT NULL DEFAULT 'unreviewed',
             notes TEXT NOT NULL DEFAULT '',
+            requested_direction TEXT,
+            requested_elevation TEXT,
+            requested_distance TEXT,
+            reference_capture_ids_json TEXT,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(subject_id) REFERENCES mv_subjects(id) ON DELETE CASCADE,
@@ -138,6 +142,11 @@ def register(app, base):
         columns = {row[1] for row in conn.execute("PRAGMA table_info(mv_captures)")}
         if "sharpness_score" not in columns:
             conn.execute("ALTER TABLE mv_captures ADD COLUMN sharpness_score REAL")
+        # Requested output labels are NEVER a measurement of camera geometry.
+        for name in ("requested_direction", "requested_elevation",
+                     "requested_distance", "reference_capture_ids_json"):
+            if name not in columns:
+                conn.execute("ALTER TABLE mv_captures ADD COLUMN "+name+" TEXT")
         conn.execute("CREATE INDEX IF NOT EXISTS mv_subject_project ON mv_subjects(project_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS mv_capture_subject ON mv_captures(project_id, subject_id)")
         return conn
