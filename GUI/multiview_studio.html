@@ -172,7 +172,7 @@ const projectLabels={
  es:{loading:"Buscando proyectos guardados…",none:"No hay proyectos activos de categoría Imagen. Créalo primero en Workspace → Proyectos. Importar fotografías no crea un proyecto.",archived:"Hay proyectos archivados: restáuralos en Workspace → Proyectos → Archivados.",other:"Hay proyectos de otras categorías, que no sirven para el dataset multivista.",found:"Proyectos de imagen disponibles",missing:"El proyecto solicitado ya no está activo o no pertenece a la categoría Imagen.",error:"No se pudo consultar el registro de proyectos. Comprueba que OrkiLab está abierto en el ordenador principal.",remote:"El proyecto existe, pero Multiview necesita abrirse desde el ordenador del lanzador; las funciones de imágenes aún no están habilitadas por red."},
  en:{loading:"Loading saved projects…",none:"No active Image projects. Create one under Workspace → Projects; adding photographs alone does not create a project.",archived:"Some projects are archived. Restore them in Workspace → Projects → Archived.",other:"Projects of other categories cannot be used for multiview datasets.",found:"Image projects available",missing:"Requested project is archived, missing or not an Image project.",error:"Could not load the project registry. Open OrkiLab on the launcher computer.",remote:"Project found, but Multiview image operations require opening OrkiLab on the launcher computer."}
 };
-const projectText=key=>(projectLabels[I18N?.lang]||projectLabels.en)[key]||projectLabels.en[key];
+const projectText=key=>(projectLabels[typeof I18N!=="undefined"?I18N.lang:"en"]||projectLabels.en)[key]||projectLabels.en[key];
 async function loadProjects(){
  const select=$("mv-project"),feedback=$("mv-project-feedback");
  const requested=new URLSearchParams(location.search).get("project")||"";
@@ -182,7 +182,7 @@ async function loadProjects(){
  try{
   const response=await api("/api/workspace/projects?archived=0");
   const all=Array.isArray(response.projects)?response.projects:[];
-  const images=all.filter(p=>p.category==="image");
+  const images=all.filter(p=>String(p.category||"").toLowerCase()==="image");
   select.replaceChildren(new Option(t("Choose a project"),""));
   for(const p of images)select.add(new Option(p.name+" · "+p.engine,p.id));
   const available=images.some(p=>p.id===previous);
@@ -422,10 +422,25 @@ $("mv-subject-form").onsubmit=async event=>{
  }catch(e){report(e.message)}finally{submit.disabled=false}
 };
 document.addEventListener("DOMContentLoaded",()=>{
- I18N.apply(document.body);
- exportPanel=OrkiMultiviewExport.mount($("mv-export"),()=>currentProject,api);
- recoveryPanel=OrkiMultiviewRecovery.mount($("mv-recovery"),()=>currentProject,()=>allSubjects,api,loadSubjects);
- loadProjects();
+ // Project discovery must NEVER be blocked by an optional UI module or i18n failure.
+ const feedback=$("mv-project-feedback");
+ const warn=(name,error)=>{
+  const detail=name+": "+(error?.message||String(error));
+  feedback.textContent=(feedback.textContent?feedback.textContent+" ":"")+detail;
+  report(detail);
+ };
+ try{if(typeof I18N!=="undefined")I18N.apply(document.body)}
+ catch(error){warn("Translation initialization",error)}
+ // Populate the canonical project chooser immediately, independently of exports/recovery.
+ loadProjects().catch(error=>warn("Project discovery",error));
+ try{
+  if(typeof OrkiMultiviewExport==="undefined")throw Error("Export module unavailable");
+  exportPanel=OrkiMultiviewExport.mount($("mv-export"),()=>currentProject,api);
+ }catch(error){warn("ZIP export module",error)}
+ try{
+  if(typeof OrkiMultiviewRecovery==="undefined")throw Error("Photo recovery module unavailable");
+  recoveryPanel=OrkiMultiviewRecovery.mount($("mv-recovery"),()=>currentProject,()=>allSubjects,api,loadSubjects);
+ }catch(error){warn("Photo recovery module",error)}
 });
 </script>
 <script src="/assets/orkilab/orkilab-shell.js"></script>
