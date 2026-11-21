@@ -1,0 +1,94 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OrkiLab · Guía y ayuda</title><link rel="icon" href="/assets/orkilab/orkilab-icon.svg"><script src="/i18n.js"></script>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0b1221;color:#edf4fc}
+*{box-sizing:border-box}body{margin:0;background:#0b1221;color:#e8f0fb}a{color:#5fe0d7}button,input{font:inherit}
+.studio-layout{display:grid;grid-template-columns:215px minmax(0,1fr);max-width:1500px;margin:auto;gap:24px;padding:22px}
+.studio-navigation{display:flex;flex-direction:column;gap:8px}.studio-navigation a{display:block;text-decoration:none;border-radius:9px;background:#152238;padding:12px}
+.studio-content{min-width:0}.hero{border:1px solid #356178;border-radius:18px;padding:clamp(20px,3vw,34px);background:linear-gradient(130deg,#153a4d,#152238)}.hero h1{font-size:clamp(25px,4vw,37px);margin:5px 0}.hero p{max-width:860px;line-height:1.6}
+.tag{display:inline-block;color:#77ebe0;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px;margin:20px 0}
+.panel{border:1px solid #314a62;border-radius:13px;background:#14243b;padding:18px;scroll-margin-top:22px}
+.panel h2{font-size:20px;margin:0 0 10px}.panel p,.panel li{line-height:1.65;color:#cad8e8}.panel ol,.panel ul{padding-left:24px}.panel a{display:inline-block;margin-top:6px}
+.sections{display:flex;gap:9px;flex-wrap:wrap;margin:17px 0}.sections a{padding:9px 12px;border:1px solid #3a6075;border-radius:9px;text-decoration:none}
+.qa details{border-top:1px solid #36516a;padding:12px 0}.qa summary{cursor:pointer;font-weight:650}.qa p{margin:8px 0}
+code{background:#0b1727;border:1px solid #30465e;padding:2px 6px;border-radius:5px}
+[hidden]{display:none!important}
+@media(max-width:850px){.studio-layout{display:block;padding:14px}.studio-navigation{display:none}.grid{grid-template-columns:1fr}}
+</style></head>
+<body class="orki-queue-theme orki-app-frame orki-standalone-shell">
+<div class="studio-layout"><nav class="studio-navigation" aria-label="Navegación OrkiLab"><a href="/workspace#overview">Panel general</a><a href="/workspace#projects">Proyectos</a><a href="/workspace#engines">Entrenadores</a><a href="/workspace/datasets">Dataset Studio</a><a href="/workspace/multiview">Multiview Studio</a><a href="/workspace?dialog=settings">Ajustes</a></nav>
+<main class="studio-content">
+<div class="no-i18n">
+<section class="hero" data-lang="es"><span class="tag">OrkiLab / Ayuda 0.5.0 RC.1</span><h1>Guía de OrkiLab</h1>
+<p>Un recorrido claro por la estructura de la aplicación, los proyectos, los datos, el entrenamiento y las funciones opcionales de IA. Trabaja a tu ritmo: ningún workflow se ejecuta ni se descarga ningún modelo por consultar esta guía.</p></section>
+<section class="hero" data-lang="en" hidden><span class="tag">OrkiLab / Help 0.5.0 RC.1</span><h1>OrkiLab user guide</h1>
+<p>A practical map of the application: projects, datasets, trainers, GPU, optional AI tools, and safe workflows. Reading the guide never starts generation or downloads models.</p></section>
+<nav class="sections" aria-label="Guide contents"><a href="#flow" data-text-es="Primeros pasos" data-text-en="Getting started">Primeros pasos</a><a href="#sections" data-text-es="Módulos" data-text-en="Modules">Módulos</a><a href="#multiview" data-text-es="Multiview" data-text-en="Multiview">Multiview</a><a href="#modes" data-text-es="Modos" data-text-en="Modes">Modos</a><a href="#faq" data-text-es="Preguntas frecuentes" data-text-en="FAQ">Preguntas frecuentes</a></nav>
+<div class="grid">
+<article class="panel" id="flow" data-lang="es"><h2>1. Primeros pasos</h2><ol><li>En <b>Proyectos</b>, crea un proyecto y selecciona su categoría y motor.</li><li>En <b>Dataset Studio</b>, incorpora imágenes por referencia, revisa su calidad y prepara las descripciones.</li><li>En <b>Entrenadores</b>, abre el motor compatible y configura el entrenamiento. Los proyectos no lanzan entrenamientos solos.</li><li>En <b>Cola de trabajo</b>, supervisa el progreso y controla los trabajos.</li><li>En <b>Mis LoRA entrenados</b>, consulta los resultados registrados.</li></ol><a href="/workspace#projects">Ir a proyectos</a></article>
+<article class="panel" data-lang="en" hidden><h2>1. Getting started</h2><ol><li>Create a project and choose its category/engine.</li><li>Reference, review, and caption images in Dataset Studio.</li><li>Open a compatible trainer; projects do not start training by themselves.</li><li>Track and manage jobs in the queue.</li><li>Inspect recorded results in My trained LoRAs.</li></ol><a href="/workspace#projects">Open projects</a></article>
+<article class="panel" id="sections" data-lang="es"><h2>2. Estructura y funciones</h2><ul>
+<li><b>Panel general:</b> acceso rápido y estado de la instalación.</li>
+<li><b>Proyectos:</b> carpeta lógica que vincula motor, datos y actividad.</li>
+<li><b>Entrenadores:</b> herramientas de entrenamiento por familia de modelos.</li>
+<li><b>Dataset Studio:</b> importación sin modificar originales, revisión, comparación y captions.</li>
+<li><b>Multiview Studio:</b> vistas de un sujeto, cobertura y exportación.</li>
+<li><b>Gestor GPU:</b> uso de recursos, memoria y diagnósticos.</li>
+<li><b>Cola:</b> ejecución y control de trabajos.</li>
+<li><b>Ajustes:</b> GPU, red, modo independiente o ComfyUI.</li>
+<li><b>Zona ComfyUI:</b> conexión, modelos, workflows y generación, solo si está habilitada.</li></ul></article>
+<article class="panel" data-lang="en" hidden><h2>2. Application map</h2><ul>
+<li><b>Dashboard:</b> quick access and installation status.</li><li><b>Projects:</b> organize engine, data and work.</li>
+<li><b>Trainers:</b> model-family training tools.</li><li><b>Dataset Studio:</b> non-destructive references, review, captions and comparison.</li>
+<li><b>Multiview Studio:</b> viewpoints, coverage and export.</li><li><b>GPU Manager:</b> resource and memory diagnostics.</li>
+<li><b>Queue:</b> monitor and manage jobs.</li><li><b>Settings:</b> GPU, network and engine mode.</li>
+<li><b>ComfyUI Zone:</b> conditional workflows and generation tools.</li></ul></article>
+<article class="panel" id="multiview" data-lang="es"><h2>3. Multiview: de fotos a nuevas vistas</h2><ol>
+<li>Selecciona un proyecto de imagen.</li><li>Crea un <b>sujeto</b>: es el objeto o figura que aparece en tus fotos.</li>
+<li>En Recuperación de fotografías, vincula las fotos de Dataset Studio al sujeto.</li>
+<li>Si desconoces los ángulos, déjalos vacíos. La <b>IA local de Ollama</b> puede sugerir etiquetas, nunca grados medidos.</li>
+<li>Revisa comparación y cobertura: los sectores sin azimut medido permanecen desconocidos.</li>
+<li>Opcionalmente, en <b>Generar vista faltante</b>, selecciona 1–4 fotos reales y un workflow ComfyUI con entradas LoadImage, asígnalas y genera una vista sintética.</li>
+<li>Revisa el resultado antes de incorporarlo como <b>sintético, no aprobado</b>. Exporta el ZIP cuando corresponda.</li></ol>
+<p>La IA puede inventar detalles del reverso: no sustituye la fotogrametría ni una medición geométrica.</p><a href="/workspace/multiview">Abrir Multiview</a></article>
+<article class="panel" data-lang="en" hidden><h2>3. Multiview workflow</h2><ol>
+<li>Choose an Image project and create a subject.</li><li>Link the real photos already indexed in Dataset Studio.</li>
+<li>Leave unknown numerical angles empty. Optional local Ollama can suggest qualitative directions.</li>
+<li>Review coverage and image comparisons; unknown angles remain unknown.</li>
+<li>To generate, select 1–4 real photos, choose a reference-capable ComfyUI workflow, map LoadImage inputs and submit explicitly.</li>
+<li>Review the output, import as synthetic/unreviewed, then export your dataset when ready.</li></ol>
+<p>AI may invent hidden geometry; synthetic views are not photogrammetric measurements.</p><a href="/workspace/multiview">Open Multiview</a></article>
+<article class="panel" id="modes" data-lang="es"><h2>4. Modos de funcionamiento</h2><p><b>Solo OrkiLab (independiente):</b> entrenadores, Dataset Studio, GPU, proyectos y cola siguen disponibles. Se oculta la navegación y las herramientas exclusivas de ComfyUI.</p>
+<p><b>Con ComfyUI:</b> activa la zona de conexión y los workflows. <b>Híbrido:</b> combina los entrenadores de OrkiLab y la generación compatible con ComfyUI. Puedes cambiar el modo en <a href="/workspace?dialog=settings">Ajustes</a> sin borrar datos.</p>
+<p><b>Ollama es opcional</b> e independiente del motor ComfyUI: no se instala automáticamente y necesita un modelo local con visión para analizar fotografías.</p></article>
+<article class="panel" data-lang="en" hidden><h2>4. Operating modes</h2><p><b>Native / OrkiLab only:</b> trainers, datasets, projects, GPU and queue remain available. ComfyUI-only navigation and panels are hidden.</p>
+<p><b>ComfyUI connected:</b> enable compatible workflows and generation. <b>Hybrid:</b> use both local trainers and ComfyUI tools. Switch mode in <a href="/workspace?dialog=settings">Settings</a> without deleting data.</p><p><b>Ollama is optional and separate.</b> It is never automatically installed; photo analysis requires a local vision model.</p></article>
+</div>
+<section class="panel qa" id="faq" data-lang="es"><h2>Preguntas frecuentes</h2>
+<details><summary>¿Por qué no aparece mi proyecto en Multiview?</summary><p>Debe estar activo y ser de categoría Imagen; los proyectos archivados no aparecen.</p></details>
+<details><summary>¿Qué significa «fotografías Dataset 8 / Multiview 0»?</summary><p>Las ocho fotos existen en Dataset Studio, pero todavía debes crear un sujeto y vincularlas. No se duplican.</p></details>
+<details><summary>¿Puede la IA calcular el ángulo exacto?</summary><p>Una etiqueta visual como «tres cuartos» es estimada, no un azimut medido. Deja vacíos los grados que desconozcas.</p></details>
+<details><summary>¿Por qué no genera una vista nueva?</summary><p>Comprueba el modo ComfyUI, la conexión, un workflow preparado y validado, y que disponga de entradas de imagen conectadas. Un workflow solamente de texto no basta para conservar el objeto.</p></details>
+<details><summary>¿Se borran mis fotografías al rechazar o quitar referencias?</summary><p>Las acciones de referencias del dataset o Multiview no eliminan los archivos originales. Antes de cambios amplios, haz copia de seguridad de la carpeta settings/orkilab.</p></details>
+<details><summary>¿Qué hacer si la GPU se llena?</summary><p>Consulta Gestor GPU y los controles explícitos de memoria de la integración que utilices. No interrumpas trabajos ajenos en ComfyUI ni cierres procesos sin identificar.</p></details></section>
+<section class="panel qa" data-lang="en" hidden><h2>Frequently asked questions</h2>
+<details><summary>Why is my project missing in Multiview?</summary><p>It must be an active Image project, not archived.</p></details>
+<details><summary>Why are Dataset photos not in Multiview?</summary><p>Create a subject and explicitly link the indexed photographs without duplicating originals.</p></details>
+<details><summary>Can AI measure precise camera angles?</summary><p>No; qualitative front/side labels are guesses, not calibrated geometry.</p></details>
+<details><summary>Why is a missing view not generated?</summary><p>Check ComfyUI mode/connection and a validated, image-conditioned workflow with connected LoadImage nodes.</p></details>
+<details><summary>Are originals removed during reference review?</summary><p>Dataset/Multiview reference actions preserve original source files. Back up settings/orkilab before major changes.</p></details></section>
+</div></main></div>
+<script>
+(function(){
+ function translate(){
+  const locale=typeof I18N!=="undefined"?I18N.lang:"es";const lang=locale==="es"?"es":"en";
+  document.querySelectorAll("[data-lang]").forEach(n=>n.hidden=n.dataset.lang!==lang);
+  document.querySelectorAll("[data-text-es]").forEach(n=>n.textContent=n.dataset[lang==="es"?"textEs":"textEn"]);
+  document.documentElement.lang=lang;
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",translate);else translate();
+ document.addEventListener("orkilab:language-changed",translate);
+})();
+</script><script src="/assets/orkilab/orkilab-shell.js"></script>
+</body></html>
