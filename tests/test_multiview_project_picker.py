@@ -30,6 +30,14 @@ class MultiviewProjectPickerTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token,self.studio)
 
+    def test_shared_i18n_name_does_not_abort_entire_multiview_script(self):
+        # /i18n.js supplies global function t(); a top-level const t redeclaration
+        # raises a SyntaxError before any DOMContentLoaded/project loading code runs.
+        i18n=(ROOT/"GUI"/"i18n.js").read_text(encoding="utf-8")
+        self.assertIn("function t(key, vars)",i18n)
+        self.assertNotIn('const t=key=>',self.studio)
+        self.assertIn('loadProjects().catch(',self.studio)
+
     def test_project_loading_does_not_depend_on_optional_modules(self):
         self.assertIn('loadProjects().catch(error=>warn("Project discovery",error));',self.studio)
         start=self.studio.index('document.addEventListener("DOMContentLoaded",()=>{')
