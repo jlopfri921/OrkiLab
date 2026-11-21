@@ -24,7 +24,8 @@
         ["shutdown", "/workspace?dialog=shutdown", null],
         ["queue", "/queue", 6],
         ["comfy", "/workspace/comfyui", 7],
-        ["datasets", "/workspace/datasets", 4]
+        ["datasets", "/workspace/datasets", 4],
+        ["multiview", "/workspace/multiview", null]
     ];
     const names = {
         en: ["Workspace", "Dashboard", "Projects", "Training engines", "Dataset Studio", "GPU Manager", "Job queue", "ComfyUI Zone", "Local AI workspace", "Open-source · Local-first", "Support OrkiLab"],
@@ -35,6 +36,21 @@
         it: ["Spazio di lavoro", "Dashboard", "Progetti", "Trainer", "Dataset Studio", "Gestione GPU", "Coda lavori", "Zona ComfyUI", "Spazio IA locale", "Open source · Locale", "Sostieni OrkiLab"],
         ja: ["ワークスペース", "ダッシュボード", "プロジェクト", "トレーナー", "Dataset Studio", "GPU管理", "ジョブキュー", "ComfyUIゾーン", "ローカルAI", "オープンソース・ローカル", "OrkiLabを支援"],
         ko: ["작업 공간", "대시보드", "프로젝트", "트레이너", "Dataset Studio", "GPU 관리자", "작업 대기열", "ComfyUI 영역", "로컬 AI", "오픈 소스 · 로컬 우선", "OrkiLab 후원"]
+    };
+    const multiviewLabel = {
+        en:"Multiview Studio", es:"Estudio multivista", pt:"Estúdio multivista",
+        fr:"Studio multivues", de:"Multiview-Studio", it:"Studio multivista",
+        ja:"マルチビュースタジオ", ko:"멀티뷰 스튜디오"
+    };
+    const multiviewIntro = {
+        en:"Organize real and synthetic reference photographs of a subject by viewpoint, angle and distance. Sources stay untouched.",
+        es:"Organiza fotografías reales o sintéticas de un sujeto según vista, ángulo y distancia, sin modificar las imágenes originales.",
+        pt:"Organize fotografias reais e sintéticas por vista, ângulo e distância, sem alterar os originais.",
+        fr:"Classez des photographies réelles ou synthétiques par vue, angle et distance, sans modifier les originaux.",
+        de:"Reale und synthetische Referenzbilder nach Blickwinkel und Abstand ordnen, ohne die Originale zu verändern.",
+        it:"Organizza fotografie reali o sintetiche per vista, angolo e distanza senza modificare gli originali.",
+        ja:"元画像を変更せず、被写体の写真を視点・角度・距離ごとに整理します。",
+        ko:"원본을 수정하지 않고 실제·합성 사진을 시점, 각도, 거리별로 정리합니다."
     };
     function element(tag, cls, value) {
         const node = document.createElement(tag);
@@ -67,6 +83,200 @@
         indicator.setAttribute("aria-label", "OrkiLab version");
         nav.append(indicator);
     }
+    // Mobile-first navigation: four frequent destinations plus a bottom sheet
+    // containing the REAL menu options. The sidebar stays unchanged on desktop.
+    function setupMobileNavigation() {
+        let root = document.querySelector("#orki-mobile-navigation");
+        if (root) return;
+        root = element("div", "orki-mobile-navigation");
+        root.id = "orki-mobile-navigation";
+        const bar = element("nav", "orki-mobile-bar");
+        bar.setAttribute("aria-label", "Mobile navigation");
+        const veil = element("div", "orki-mobile-veil");
+        veil.hidden = true;
+        const sheet = element("section", "orki-mobile-sheet");
+        sheet.id = "orki-mobile-sheet";
+        sheet.hidden = true;
+        sheet.setAttribute("aria-label", "All navigation options");
+        sheet.setAttribute("role", "dialog");
+        sheet.setAttribute("aria-modal", "true");
+        const heading = element("div", "orki-mobile-sheet-head");
+        const title = element("strong", null, "Menu");
+        const close = element("button", "orki-mobile-close", "×");
+        close.type = "button";
+        close.setAttribute("aria-label", "Close menu");
+        heading.append(title, close);
+        const options = element("div", "orki-mobile-options");
+        sheet.append(heading, options);
+        root.append(bar, veil, sheet);
+        document.body.append(root);
+        const locale = () => typeof I18N !== "undefined" && names[I18N.lang] ? I18N.lang : "en";
+        const labels = {
+            en:["Home","Projects","Datasets","More","Back","Connect","Generate","Menu","Close menu"],
+            es:["Inicio","Proyectos","Datasets","Más","Volver","Conexión","Generar","Menú","Cerrar menú"],
+            pt:["Início","Projetos","Datasets","Mais","Voltar","Conexão","Gerar","Menu","Fechar menu"],
+            fr:["Accueil","Projets","Datasets","Plus","Retour","Connexion","Générer","Menu","Fermer le menu"],
+            de:["Start","Projekte","Datasets","Mehr","Zurück","Verbindung","Generieren","Menü","Menü schließen"],
+            it:["Home","Progetti","Dataset","Altro","Indietro","Connessione","Genera","Menu","Chiudi menu"],
+            ja:["ホーム","プロジェクト","データセット","その他","戻る","接続","生成","メニュー","メニューを閉じる"],
+            ko:["홈","프로젝트","데이터셋","더 보기","뒤로","연결","생성","메뉴","메뉴 닫기"]
+        };
+        // Fixed SVG paths are local UI assets; no external icon library or requests.
+        const icons = {
+            home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
+            projects:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 5V3h8v2M3 11h18"/>',
+            datasets:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m8 11 3 3 5-6"/>',
+            more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+            back:'<path d="m12 19-7-7 7-7M5 12h15"/>',
+            connect:'<path d="M8 13a5 5 0 0 1 8-5l2 2M16 11a5 5 0 0 1-8 5l-2-2"/><path d="M16 4v4h4M8 20v-4H4"/>',
+            generate:'<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>'
+        };
+        function icon(kind) {
+            const el = document.createElementNS("http://www.w3.org/2000/svg","svg");
+            el.setAttribute("viewBox","0 0 24 24");
+            el.setAttribute("width","22");
+            el.setAttribute("height","22");
+            el.setAttribute("fill","none");
+            el.setAttribute("stroke","currentColor");
+            el.setAttribute("stroke-width","1.8");
+            el.setAttribute("stroke-linecap","round");
+            el.setAttribute("stroke-linejoin","round");
+            el.setAttribute("aria-hidden","true");
+            el.innerHTML=icons[kind];
+            return el;
+        }
+        const isComfy = () => location.pathname.replace(/\/$/, "") === "/workspace/comfyui";
+        function menuSource() {
+            if (isComfy()) return document.querySelector("#comfy-navigation");
+            return document.querySelector("#home-navigation:not([hidden])") ||
+                document.querySelector(".orki-app-nav:not([hidden])") ||
+                document.querySelector(".studio-navigation") ||
+                document.querySelector(".queue-sidebar");
+        }
+        let lastFocus = null;
+        function closeSheet(restore=true) {
+            if (sheet.hidden) return;
+            sheet.hidden = true;
+            veil.hidden = true;
+            root.classList.remove("orki-mobile-open");
+            document.body.classList.remove("orki-mobile-sheet-open");
+            const trigger = bar.querySelector('button[aria-controls="orki-mobile-sheet"]');
+            if (trigger) trigger.setAttribute("aria-expanded","false");
+            if (restore && lastFocus && lastFocus.isConnected) lastFocus.focus();
+        }
+        function openSheet() {
+            const source = menuSource();
+            if (!source) return;
+            lastFocus = document.activeElement;
+            options.replaceChildren();
+            const language = labels[locale()];
+            title.textContent = language[7];
+            close.setAttribute("aria-label",language[8]);
+            // Copy only the menu's actionable items, not decorative/version text.
+            // On ComfyUI, never leak Workspace items into the focused zone.
+            for (const original of source.querySelectorAll(":scope > a, :scope > button")) {
+                const item = original.cloneNode(true);
+                item.removeAttribute("id");
+                item.classList.add("orki-mobile-option");
+                if (item.tagName === "BUTTON") {
+                    item.type = "button";
+                    item.addEventListener("click", () => {
+                        closeSheet(false);
+                        const action = original.id;
+                        if (action === "settings-open") location.assign("/workspace?dialog=settings");
+                        else if (action === "shutdown-open") location.assign("/workspace?dialog=shutdown");
+                        else original.click();
+                    });
+                } else {
+                    const href = original.getAttribute("href") || "";
+                    // Standalone pages' canonical menu already provides absolute URLs.
+                    if (href.startsWith("#") && !location.pathname.startsWith("/workspace"))
+                        item.href="/workspace"+href;
+                    item.addEventListener("click",()=>closeSheet(false));
+                }
+                options.append(item);
+            }
+            veil.hidden = false;
+            sheet.hidden = false;
+            root.classList.add("orki-mobile-open");
+            document.body.classList.add("orki-mobile-sheet-open");
+            const trigger = bar.querySelector('button[aria-controls="orki-mobile-sheet"]');
+            if (trigger) trigger.setAttribute("aria-expanded","true");
+            close.focus();
+        }
+        const tabs = () => isComfy()
+            ? [
+                ["/workspace#overview",4,"back"],
+                ["/workspace/comfyui#comfyui",5,"connect"],
+                ["/workspace/comfyui#generation",6,"generate"],
+                [null,3,"more"]
+            ]
+            : [
+                ["/workspace#overview",0,"home"],
+                ["/workspace#projects",1,"projects"],
+                ["/workspace/datasets",2,"datasets"],
+                [null,3,"more"]
+            ];
+        function isActive(href) {
+            if (!href) return false;
+            const currentPath=location.pathname.replace(/\/$/,"") || "/";
+            const u=new URL(href,location.href);
+            if (u.pathname !== currentPath) return false;
+            if (u.hash) {
+                const currentHash = location.hash || (currentPath === "/workspace" ? "#overview" : "#welcome");
+                return u.hash === currentHash;
+            }
+            return true;
+        }
+        function updateBar() {
+            const language=labels[locale()];
+            bar.replaceChildren();
+            const entries=tabs();
+            const hasActive=entries.some(([href])=>isActive(href));
+            for (const [href,labelIndex,kind] of entries) {
+                const el=href ? link(href,"","orki-mobile-tab") :
+                    element("button","orki-mobile-tab");
+                if (!href) {
+                    el.type="button";
+                    el.setAttribute("aria-controls","orki-mobile-sheet");
+                    el.setAttribute("aria-expanded",String(!sheet.hidden));
+                    el.addEventListener("click",()=>sheet.hidden?openSheet():closeSheet());
+                } else if (isActive(href)) {
+                    el.setAttribute("aria-current","page");
+                }
+                if (!href && !hasActive) el.classList.add("orki-mobile-tab-active");
+                el.append(icon(kind),element("span",null,language[labelIndex]));
+                bar.append(el);
+            }
+        }
+        veil.addEventListener("click",()=>closeSheet());
+        close.addEventListener("click",()=>closeSheet());
+        document.addEventListener("keydown",event=>{
+            if (sheet.hidden) return;
+            if (event.key==="Escape") { event.preventDefault(); closeSheet(); return; }
+            if (event.key==="Tab") {
+                const focusables=[...sheet.querySelectorAll("a[href],button:not([disabled])")];
+                if (!focusables.length) return;
+                if (event.shiftKey && document.activeElement===focusables[0]) {
+                    event.preventDefault();focusables.at(-1).focus();
+                } else if (!event.shiftKey && document.activeElement===focusables.at(-1)) {
+                    event.preventDefault();focusables[0].focus();
+                }
+            }
+        });
+        window.addEventListener("hashchange",()=>{
+            closeSheet(false);
+            updateBar();
+        });
+        window.addEventListener("resize",()=>{
+            if (window.innerWidth>760) closeSheet(false);
+        });
+        document.addEventListener("orkilab:language-changed",()=>{
+            closeSheet(false);
+            updateBar();
+        });
+        updateBar();
+    }
     function renderWorkspaceChrome() {
         const body = document.body, home = document.querySelector("#home-navigation");
         const content = document.querySelector("#workspace-body");
@@ -79,19 +289,23 @@
         document.querySelector("#workspace-context")?.classList.add("orki-app-context");
         const locale = typeof I18N !== "undefined" && names[I18N.lang] ? I18N.lang : "en";
         unifiedFooter(content, names[locale]);
+        const multiviewEntry = home.querySelector('a[href="/workspace/multiview"]');
+        if (multiviewEntry && multiviewEntry.firstChild?.nodeType === Node.TEXT_NODE)
+            multiviewEntry.firstChild.textContent = multiviewLabel[locale] + " ";
         placeVersionBelowMenu(location.pathname.replace(/\/$/, "") === "/workspace/comfyui" ? document.querySelector("#comfy-navigation") : home, document.querySelector("#version"));
         // ComfyUI is a focused zone: ONLY its own navigation plus the
         // existing first "Back to Workspace" link in #comfy-navigation.
         // Never clone Home navigation into this area.
         const comfy = document.querySelector("#comfy-navigation");
         comfy?.querySelectorAll(".orki-global-nav").forEach(node => node.remove());
+        setupMobileNavigation();
     }
     function render() {
         if (document.querySelector("#home-navigation")) {
             renderWorkspaceChrome();
             return;
         }
-        const page = location.pathname === "/queue" ? "queue" : "datasets";
+        const page = location.pathname === "/queue" ? "queue" : location.pathname === "/workspace/multiview" ? "multiview" : "datasets";
         const nav = document.querySelector(page === "queue" ? ".queue-sidebar" : ".studio-navigation");
         const content = document.querySelector(page === "queue" ? ".queue-shell .wrap" : ".studio-content");
         const layout = document.querySelector(page === "queue" ? ".queue-shell" : ".studio-layout");
@@ -224,9 +438,9 @@
         };
         const words = help[locale] || help.en;
         context.classList.add("orki-app-context");
-        context.querySelector("#orki-shell-context-title").textContent = page === "queue" ? words[1] : words[3];
+        context.querySelector("#orki-shell-context-title").textContent = page === "queue" ? words[1] : page === "multiview" ? multiviewLabel[locale] : words[3];
         context.querySelector("#orki-shell-context-toggle-label").textContent = words[0];
-        context.querySelector("#orki-shell-context-description").textContent = page === "queue" ? words[2] : words[4];
+        context.querySelector("#orki-shell-context-description").textContent = page === "queue" ? words[2] : page === "multiview" ? multiviewIntro[locale] : words[4];
         // Canonical source of truth: read the real Workspace chrome instead of
         // reconstructing a similar-looking but divergent header and menu.
         syncCanonicalWorkspaceChrome(page, nav, content);
@@ -234,7 +448,7 @@
         // Complete fallback menu appears immediately, before /workspace is fetched.
         nav.replaceChildren();
         routes.forEach(([id, to, nameIndex]) => {
-            const label = id === "settings" ? (locale === "es" ? "Ajustes" : "Settings") :
+            const label = id === "multiview" ? multiviewLabel[locale] : id === "settings" ? (locale === "es" ? "Ajustes" : "Settings") :
                 id === "shutdown" ? (locale === "es" ? "Pausar todo y salir" : "Pause all and exit") :
                 t[nameIndex];
             const node = id === "settings" || id === "shutdown" ?
@@ -248,6 +462,7 @@
         });
         placeVersionBelowMenu(nav, document.querySelector("#version") || document.querySelector("#orki-shell-version"));
         unifiedFooter(content, t);
+        setupMobileNavigation();
     }
     async function syncCanonicalWorkspaceChrome(page, nav, content) {
         try {
@@ -304,7 +519,8 @@
             for (const a of canonical.querySelectorAll("a[href^='#']"))
                 a.href = "/workspace" + a.getAttribute("href");
             const current = canonical.querySelector(page === "queue" ?
-                'a[href="/queue"]' : 'a[href="/workspace/datasets"]');
+                'a[href="/queue"]' : page === "multiview" ?
+                'a[href="/workspace/multiview"]' : 'a[href="/workspace/datasets"]');
             if (current) current.setAttribute("aria-current", "page");
             for (const button of canonical.querySelectorAll("button")) {
                 const mode = button.id === "settings-open" ? "settings" :
@@ -323,6 +539,9 @@
             }
             nav.replaceWith(canonical);
             if (typeof I18N !== "undefined") I18N.apply(canonical);
+            const multiviewItem = canonical.querySelector('a[href="/workspace/multiview"]');
+            if (multiviewItem && multiviewItem.firstChild?.nodeType === Node.TEXT_NODE)
+                multiviewItem.firstChild.textContent = multiviewLabel[locale] + " ";
             const oldContext = content.querySelector(".orki-shell-workspace-context");
             if (oldContext) {
                 const titleText = oldContext.querySelector("#orki-shell-context-title")?.textContent || "";

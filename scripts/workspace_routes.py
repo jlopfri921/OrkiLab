@@ -10,6 +10,7 @@ import comfyui_connect
 import workflow_library
 import generation_studio
 import dataset_studio
+import multiview_studio
 import gpu_monitor
 import gpu_stats
 import project_layout
@@ -26,6 +27,7 @@ def register(app, base, load_config):
     workflow_library.register(app, base)
     generation_studio.register(app, base)
     dataset_studio.register(app, base)
+    multiview_studio.register(app, base)
     project_checkpoints.register(app, base)
     managed_checkpoints.register(app, base)
     checkpoint_reviews.register(app, base)
@@ -34,6 +36,10 @@ def register(app, base, load_config):
     @app.get("/workspace/datasets")
     def dataset_studio_page():
         return send_from_directory(str(base / "GUI"), "dataset_studio.html")
+
+    @app.get("/workspace/multiview")
+    def multiview_studio_page():
+        return send_from_directory(str(base / "GUI"), "multiview_studio.html")
 
     @app.get("/workspace/comfyui")
     @app.get("/workspace")
