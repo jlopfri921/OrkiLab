@@ -2,8 +2,9 @@
 
 **Prepared:** 2026-11-21
 **Version target:** `0.4.0-rc.1`
-**Release state:** SOURCE AVAILABLE IN `main` (PR #76 merged); GITHUB RELEASE/TAG NOT VERIFIED OR PUBLISHED
+**Release state:** `v0.4.0-rc.1` TAG VERIFIED; GITHUB PRERELEASE PUBLISHED (2026-11-21). Not stable `0.4.0`.
 **Source:** `main` after PR #76; subsequent Dataset Studio hardening in PR #77 (commit `0cd98ebbb91c7b380a40b5366ccc3aa4d17f9451`).
+**Published candidate:** [GitHub prerelease v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1)
 **Previous published prerelease:** `v0.3.0-rc.1`
 **Automated validation:** foundation run `44917024684` — SUCCESS; RC validation run `44917024693` — SUCCESS on candidate commit `45a10106be00492ab16a106503ab3b48b601ff22` (before updating this evidence register). Both include Windows and Ubuntu. The RC run completed **231 tests per platform, zero failures**, and checked version metadata. A further CI run on the final PR #76 commit passed before its merge; PR #77 subsequently passed 238 tests on both Windows and Ubuntu with zero failures.
 
@@ -43,4 +44,4 @@ This register distinguishes automated evidence, user-reported tests, and hardwar
 - OrkiLab can store user-entered training-time and hardware metrics but cannot reconstruct historical measurements that were never recorded.
 - Manually selected reference images are stored separately from immutable original LoRA weights.
 - Prepared training datasets are separate copies; original image files remain intact. Exact trainer-specific formats and valid train/validation split have not been certified across all engines.
-- The GitHub connector used for PR and code operations does not, by itself, establish that a release/tag exists. Do not claim publication without verifying it.
+- The `v0.4.0-rc.1` Git tag was verified via the repository ref after the prerelease-publication workflow. This status does not imply stable 0.4.0 or completed real GPU/Windows acceptance.
