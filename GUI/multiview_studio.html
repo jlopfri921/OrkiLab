@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OrkiLab — Multiview Studio 0.5 beta.1</title>
+<title>OrkiLab — Multiview Studio 0.5 beta.2</title>
 <link rel="icon" href="/assets/orkilab/orkilab-icon.svg">
 <script src="/i18n.js"></script>
 <style>
@@ -62,6 +62,20 @@ small{font-size:12px}.source-tag{color:#beddee}
 .mv-assisted-card form button{grid-column:1/-1}
 .mv-assisted-panel .row>button{min-height:43px}
 @media(max-width:760px){.mv-assisted-panel{padding:12px}.mv-assisted-card form{grid-template-columns:1fr}}
+
+/* beta.2 — independent, subject-safe dataset export */
+.mv-export-panel{background:#0d1b2c;border:1px solid #45617d;border-radius:12px;padding:16px;margin:4px 0 22px}
+.mv-export-panel h2{margin:0 0 10px}
+.mv-export-panel .mv-export-form{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+.mv-export-panel .mv-export-form>label:not(.mv-export-toggle){flex:1 1 140px}
+.mv-export-toggle{display:flex;flex:1 1 210px;flex-direction:row;gap:10px;align-items:center;min-height:44px}
+.mv-export-toggle input{min-width:20px;width:20px;height:20px}
+.mv-export-form button{min-height:43px}
+.mv-export-counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px;margin:12px 0}
+.mv-export-count{background:#111e31;border:1px solid #34506e;border-radius:10px;padding:12px;display:grid;gap:5px}
+.mv-export-count span{font-size:12px;color:#a4b4cc}
+.mv-export-count strong{font-size:16px;overflow-wrap:anywhere}
+@media(max-width:760px){.mv-export-panel{padding:12px}.mv-export-form button{flex:1 1 150px}}
 </style>
 <link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css">
 <link rel="stylesheet" href="/assets/orkilab/orkilab-shell.css">
@@ -75,7 +89,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 <a href="/workspace#gpu-manager">GPU Manager</a><a href="/queue">Job queue</a>
 <a href="/workspace/comfyui">ComfyUI Zone</a></nav>
 <main class="studio-content">
-<h1>Multiview Studio <small class="muted">0.5.0-beta.1</small></h1>
+<h1>Multiview Studio <small class="muted">0.5.0-beta.2</small></h1>
 <p>Organize multiple photographs of a subject by viewpoint, angle and distance. Real and synthetic sources are clearly distinguished. Your original files are never changed.</p>
 <section class="panel" aria-labelledby="project-heading">
 <h2 id="project-heading">Project</h2>
@@ -84,6 +98,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 <p class="muted">Use an existing project. Multiview metadata belongs to this project only.</p>
 </section>
 <section class="panel" id="mv-workspace" hidden>
+<div id="mv-export" class="no-i18n"></div>
 <h2>Subjects</h2>
 <form id="mv-subject-form" class="row"><label><span>Subject name</span><input id="mv-subject-name" maxlength="120" required placeholder="e.g. Sculpture or product"></label>
 <label><span>Notes (optional)</span><input id="mv-subject-notes" maxlength="1000"></label><button class="primary" type="submit">Create subject</button></form>
@@ -95,6 +110,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 </main></div>
 <script src="/assets/orkilab/multiview-alpha2.js"></script>
 <script src="/assets/orkilab/multiview-beta1.js"></script>
+<script src="/assets/orkilab/multiview-beta2.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -103,6 +119,7 @@ const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefi
 const url=(project,tail="")=>"/api/workspace/multiview/projects/"+encodeURIComponent(project)+tail;
 const SOURCE_TYPES=["real_photo","video_frame","synthetic","unknown"];
 let currentProject="",allSubjects=[],expandedSubjects=new Set(),expandedCaptures=new Set(),capturePaging=new Map();
+let exportPanel=null;
 function report(message){$("mv-status").textContent=message}
 async function api(path,options={}){
  const response=await fetch(path,{credentials:"same-origin",cache:"no-store",...options});
@@ -144,6 +161,7 @@ async function loadProjects(){
 }
 async function loadSubjects(){
  const project=$("mv-project").value;currentProject=project;
+ exportPanel?.reset();
  $("mv-workspace").hidden=!project;
  $("mv-subjects").replaceChildren();
  if(!project){report(t("Choose a project to begin."));return}
@@ -345,7 +363,11 @@ $("mv-subject-form").onsubmit=async event=>{
   expandedSubjects.add(result.id);await loadSubjects();report(t("Subject created."));
  }catch(e){report(e.message)}finally{submit.disabled=false}
 };
-document.addEventListener("DOMContentLoaded",()=>{I18N.apply(document.body);loadProjects()});
+document.addEventListener("DOMContentLoaded",()=>{
+ I18N.apply(document.body);
+ exportPanel=OrkiMultiviewExport.mount($("mv-export"),()=>currentProject,api);
+ loadProjects();
+});
 </script>
 <script src="/assets/orkilab/orkilab-shell.js"></script>
 </body></html>
