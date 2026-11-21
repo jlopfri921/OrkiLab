@@ -77,16 +77,16 @@ class DatasetStudioUiChecks(unittest.TestCase):
         expected = [
             "#overview", "#projects", "#engines", "trained-loras-nav", "#gpu-manager",
             "settings-open", "shutdown-open", "/queue",
-            "/workspace/comfyui", "/workspace/datasets"
+            "/workspace/comfyui", "/workspace/datasets", "/workspace/multiview"
         ]
         self.assertEqual(parser.order, expected)
         js = (ROOT / "assets" / "orkilab" / "orkilab-shell.js").read_text(encoding="utf-8")
-        keys = ("overview", "projects", "engines", "gpu", "settings", "shutdown", "queue", "comfy", "datasets")
+        keys = ("overview", "projects", "engines", "gpu", "settings", "shutdown", "queue", "comfy", "datasets", "multiview")
         fallback = [line.strip().split('"')[1] for line in js.splitlines()
                     if line.strip().startswith('["') and line.strip().split('"')[1] in keys]
         self.assertEqual(fallback, [
             "overview", "projects", "engines", "gpu", "settings",
-            "shutdown", "queue", "comfy", "datasets"
+            "shutdown", "queue", "comfy", "datasets", "multiview"
         ])
         for contract in ('source.querySelector("#home-navigation")',
                          'canonicalNav.cloneNode(true)',
