@@ -25,6 +25,20 @@ class InlineScripts(HTMLParser):
 
 class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
+    def test_multiview_inline_javascript_compiles(self):
+        parser=InlineScripts()
+        parser.feed((ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8"))
+        self.assertTrue(parser.scripts,"Multiview Studio must have an interactive script")
+        for index,source in enumerate(parser.scripts):
+            with self.subTest(script=index):
+                with tempfile.TemporaryDirectory() as directory:
+                    path=Path(directory)/"multiview-inline.js"
+                    path.write_text(source,encoding="utf-8")
+                    result=subprocess.run([shutil.which("node"),"--check",str(path)],
+                        capture_output=True,text=True,timeout=15)
+                    self.assertEqual(result.returncode,0,result.stderr)
+
+    @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
     def test_inline_workspace_javascript_compiles(self):
         parser=InlineScripts()
         parser.feed((ROOT/"GUI"/"workspace.html").read_text(encoding="utf-8"))
