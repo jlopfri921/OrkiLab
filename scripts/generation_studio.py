@@ -269,7 +269,7 @@ def register(app, base):
                 missing = [name for name in names if selected_models[name] not in choices]
                 if missing:
                     return jsonify(error="Checkpoints not installed in ComfyUI/models/loras",
-                                   detail="Copy the project checkpoint files into ComfyUI's LoRA folder and refresh ComfyUI model lists: "+", ".join(missing)[:300]),409
+                                   detail="ComfyUI does not recognize: "+", ".join(model_name(discovered["project_name"], name) for name in missing)[:300]+". Refresh its models or restart ComfyUI."),409
                 if len(prepared)+len(names)>20:
                     for key in list(prepared):
                         if key != token and len(prepared)+len(names)>20:
