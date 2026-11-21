@@ -14,10 +14,11 @@ import zipfile
 from contextlib import closing
 from pathlib import Path
 
-from flask import jsonify, request, send_file
+def identifier(value):
+    return isinstance(value, str) and len(value) == 32 and all(
+        ch in "0123456789abcdef" for ch in value)
 
-from dataset_studio import valid_origin
-from multiview_studio import identifier, source_path
+
 
 MAX_CAPTURES = 500
 MAX_TOTAL_BYTES = 350 * 1024 * 1024
@@ -151,6 +152,7 @@ def collect(project_db, mv_db, project_id, options):
 
 def verified_capture(path, entry):
     """Verify originals against indexed sha/length at point of export."""
+    from multiview_studio import source_path
     try:
         original = source_path(path)
         if original.stat().st_size != entry["bytes"]:
@@ -217,6 +219,8 @@ def write_export(target, manifest, originals):
 
 
 def register(app, base):
+    from flask import jsonify, request, send_file
+    from dataset_studio import valid_origin
     base=Path(base)
     project_db=base/"settings"/"orkilab"/"projects.sqlite3"
     mv_db=base/"settings"/"orkilab"/"multiview.sqlite3"
