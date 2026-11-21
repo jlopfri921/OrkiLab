@@ -89,15 +89,18 @@ def manage(base, project_id, directory, names, action):
                         raise FileExistsError(f"Destination exists and is not an unchanged OrkiLab-managed copy: {alias}")
                 else:
                     # Exclusive creation avoids overwriting external files.
+                    created = False
                     try:
-                        with source.open("rb") as src, target.open("xb") as dst:
-                            shutil.copyfileobj(src, dst, 1024 * 1024)
+                        with target.open("xb") as dst:
+                            created = True
+                            with source.open("rb") as src:
+                                shutil.copyfileobj(src, dst, 1024 * 1024)
                         digest = file_hash(target)
                         manifest[key] = {"project_id": project_id, "source": name, "sha256": digest}
                         save_manifest(base, manifest)
                         tracked = True
                     except BaseException:
-                        if key not in manifest:
+                        if created and key not in manifest:
                             target.unlink(missing_ok=True)
                         raise
             elif action == "uninstall":
