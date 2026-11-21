@@ -1,6 +1,5 @@
 """Project-scoped trainer dataset handoff without modifying shared trainer settings."""
 import json
-import os
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -78,7 +77,7 @@ def project_data(base, project_id, engine_id):
                     or len(image) > 220 or len(caption) > 220
                     or Path(image).name != image or Path(caption).name != caption
                     or image in (".", "..") or caption in (".", "..")
-                    or "\\\\" in image or "\\\\" in caption
+                    or "\\" in image or "\\" in caption
                     or Path(image).suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
                     or not caption.lower().endswith(".txt")
                     or Path(image).stem.casefold() != Path(caption).stem.casefold()):
