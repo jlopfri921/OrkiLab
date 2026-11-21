@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OrkiLab — Multiview Studio 0.5 beta.2</title>
+<title>OrkiLab — Multiview Studio 0.5 rc.1</title>
 <link rel="icon" href="/assets/orkilab/orkilab-icon.svg">
 <script src="/i18n.js"></script>
 <style>
@@ -76,6 +76,22 @@ small{font-size:12px}.source-tag{color:#beddee}
 .mv-export-count span{font-size:12px;color:#a4b4cc}
 .mv-export-count strong{font-size:16px;overflow-wrap:anywhere}
 @media(max-width:760px){.mv-export-panel{padding:12px}.mv-export-form button{flex:1 1 150px}}
+
+/* RC.1 — project provenance, diagnostics and explicit Dataset Studio linking. */
+.mv-recovery-panel{margin:8px 0 18px;padding:16px;border:1px solid #47637d;border-radius:12px;background:#0d1c30}
+.mv-recovery-panel h2{margin:0 0 12px}.mv-recovery-panel>button{margin-bottom:8px}
+.mv-recovery-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;margin:12px 0}
+.mv-recovery-stat{display:grid;gap:6px;background:#12273d;border:1px solid #38526a;padding:12px;border-radius:9px}
+.mv-recovery-stat small{color:#b7c9d9}.mv-recovery-stat strong{font-size:20px}
+.mv-recovery-actions{display:grid;gap:10px;padding:12px;background:#11233a;border:1px solid #38536d;border-radius:10px}
+.mv-recovery-actions h3{font-size:15px;margin:6px 0 0}
+.mv-recovery-candidates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;max-height:350px;overflow:auto}
+.mv-recovery-candidate{display:flex;flex-direction:row;align-items:center;gap:8px;padding:10px;background:#0b192a;border:1px solid #334e67;border-radius:10px;min-width:0;flex-wrap:wrap}
+.mv-recovery-candidate input{width:20px;min-width:20px;height:20px}
+.mv-recovery-name{overflow-wrap:anywhere;flex:1 1 125px}
+.mv-recovery-candidate small{width:100%;padding-left:28px}
+.mv-recovery-actions button{justify-self:start;min-height:42px}
+@media(max-width:760px){.mv-recovery-panel{padding:12px}.mv-recovery-candidates{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css">
 <link rel="stylesheet" href="/assets/orkilab/orkilab-shell.css">
@@ -89,7 +105,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 <a href="/workspace#gpu-manager">GPU Manager</a><a href="/queue">Job queue</a>
 <a href="/workspace/comfyui">ComfyUI Zone</a></nav>
 <main class="studio-content">
-<h1>Multiview Studio <small class="muted">0.5.0-beta.2</small></h1>
+<h1>Multiview Studio <small class="muted">0.5.0-rc.1</small></h1>
 <p>Organize multiple photographs of a subject by viewpoint, angle and distance. Real and synthetic sources are clearly distinguished. Your original files are never changed.</p>
 <section class="panel" aria-labelledby="project-heading">
 <h2 id="project-heading">Project</h2>
@@ -99,6 +115,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 <p id="mv-project-feedback" class="muted no-i18n" role="status" aria-live="polite"></p>
 </section>
 <section class="panel" id="mv-workspace" hidden>
+<div id="mv-recovery" class="no-i18n"></div>
 <div id="mv-export" class="no-i18n"></div>
 <h2>Subjects</h2>
 <form id="mv-subject-form" class="row"><label><span>Subject name</span><input id="mv-subject-name" maxlength="120" required placeholder="e.g. Sculpture or product"></label>
@@ -112,6 +129,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 <script src="/assets/orkilab/multiview-alpha2.js"></script>
 <script src="/assets/orkilab/multiview-beta1.js"></script>
 <script src="/assets/orkilab/multiview-beta2.js"></script>
+<script src="/assets/orkilab/multiview-rc1.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -120,7 +138,7 @@ const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefi
 const url=(project,tail="")=>"/api/workspace/multiview/projects/"+encodeURIComponent(project)+tail;
 const SOURCE_TYPES=["real_photo","video_frame","synthetic","unknown"];
 let currentProject="",allSubjects=[],expandedSubjects=new Set(),expandedCaptures=new Set(),capturePaging=new Map();
-let exportPanel=null;
+let exportPanel=null,recoveryPanel=null;
 function report(message){$("mv-status").textContent=message}
 async function api(path,options={}){
  const response=await fetch(path,{credentials:"same-origin",cache:"no-store",...options});
@@ -194,12 +212,17 @@ async function loadSubjects(){
  const project=$("mv-project").value;currentProject=project;
  exportPanel?.reset();
  $("mv-workspace").hidden=!project;
+ // Dispose running polling/listeners before rebuilding the project view.
+ for(const old of $("mv-subjects").querySelectorAll("details.subject")){
+   old._updates?.abort();old._assistant?.dispose();
+ }
  $("mv-subjects").replaceChildren();
- if(!project){report(t("Choose a project to begin."));return}
+ if(!project){allSubjects=[];report(t("Choose a project to begin."));return}
  try{
   const data=await api(url(project,"/subjects"));
   if(currentProject!==project)return;
   allSubjects=data.subjects;renderSubjects();
+  await recoveryPanel?.refresh();
   report("");
  }catch(e){
   report(e.message);
@@ -401,6 +424,7 @@ $("mv-subject-form").onsubmit=async event=>{
 document.addEventListener("DOMContentLoaded",()=>{
  I18N.apply(document.body);
  exportPanel=OrkiMultiviewExport.mount($("mv-export"),()=>currentProject,api);
+ recoveryPanel=OrkiMultiviewRecovery.mount($("mv-recovery"),()=>currentProject,()=>allSubjects,api,loadSubjects);
  loadProjects();
 });
 </script>
