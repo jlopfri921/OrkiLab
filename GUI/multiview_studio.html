@@ -92,6 +92,8 @@ small{font-size:12px}.source-tag{color:#beddee}
 .mv-recovery-candidate small{width:100%;padding-left:28px}
 .mv-recovery-actions button{justify-self:start;min-height:42px}
 @media(max-width:760px){.mv-recovery-panel{padding:12px}.mv-recovery-candidates{grid-template-columns:1fr}}
+/* Optional local AI assistant: isolated from saved geometry. */
+.mv-viewpoint-panel{border:1px solid #34536a;border-radius:10px;background:#0d1d2d;padding:14px;margin:16px 0;display:grid;gap:10px}.mv-viewpoint-panel h3,.mv-viewpoint-panel p{margin:0}.mv-viewpoint-panel button{justify-self:start}.mv-viewpoint-panel>div{display:grid;gap:10px}
 </style>
 <link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css">
 <link rel="stylesheet" href="/assets/orkilab/orkilab-shell.css">
@@ -130,6 +132,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 <script src="/assets/orkilab/multiview-beta1.js"></script>
 <script src="/assets/orkilab/multiview-beta2.js"></script>
 <script src="/assets/orkilab/multiview-rc1.js"></script>
+<script src="/assets/orkilab/multiview-viewpoint-ai.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -383,6 +386,10 @@ function renderCapture(capture,subjectId,refresh){
   const save=node("button",t("Save metadata"),"primary");save.type="submit";
   const remove=node("button",t("Remove reference"),"danger");remove.type="button";
   buttons.append(save,remove);form.append(buttons);container.append(form);
+  // Optional, read-only local AI classification; explicit second confirmation to save.
+  if(typeof OrkiViewpointAI!=="undefined"){
+   OrkiViewpointAI.mount(container,()=>currentProject,capture.id,api,refresh,capture);
+  }
   form.onsubmit=async event=>{
    event.preventDefault();save.disabled=true;
    try{
