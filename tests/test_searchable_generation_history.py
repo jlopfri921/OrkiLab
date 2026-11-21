@@ -1,5 +1,6 @@
 """Generation history filtering works before pagination, with safe ordering."""
 import sqlite3
+from contextlib import closing
 import sys
 import tempfile
 import unittest
@@ -12,7 +13,7 @@ class SearchableGenerationHistoryTests(unittest.TestCase):
         temp=tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         self.history=GenerationHistory(temp.name)
-        with self.history.connect() as con:
+        with closing(self.history.connect()) as con, con:
             for i in range(145):
                 name="Flux3 Test" if i%10==0 else ("Alpha" if i%2 else "Beta")
                 state="completed" if i%3 else "error"
