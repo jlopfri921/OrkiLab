@@ -23,6 +23,7 @@ class MultiviewMissingViewTests(unittest.TestCase):
                 self.skipTest("Flask/Pillow required")
             raise
         self.generator=multiview_generate_views
+        self.assist=multiview_assist
         self.temp=tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name)
@@ -92,6 +93,54 @@ class MultiviewMissingViewTests(unittest.TestCase):
         with patch.object(self.generator,"upload_reference") as upload:
             self.assertEqual(self.client.post(self.target,json=self.request_body()).status_code,409)
         upload.assert_not_called()
+
+    def test_requested_target_metadata_with_actual_reference_graph(self):
+        from generation_history import GenerationHistory
+        job="f"*32
+        with closing(sqlite3.connect(self.settings/"multiview.sqlite3")) as conn:
+            digest=conn.execute("SELECT sha256 FROM mv_captures WHERE id=?",(self.cid,)).fetchone()[0]
+        image_name="orkilab_"+self.cid+"_"+digest[:16]+".png"
+        graph={"1":{"class_type":"LoadImage","inputs":{"image":image_name}},
+               "2":{"class_type":"SaveImage","inputs":{"images":["1",0]}}}
+        history=GenerationHistory(self.root)
+        history.add(job,"http://127.0.0.1:8188","prompt-123",
+                    "workflow-ref","Reference view workflow",graph)
+        history.update(job,"completed",[
+            dict(filename="view.png",subfolder="",type="output",mime="image/png")])
+        request=dict(confirm=True,generation_id=job,output_index=0,
+                     requested_direction="back_left",requested_elevation="level",
+                     requested_distance="medium",reference_capture_ids=[self.cid],
+                     view_name="Back left requested")
+        with patch.object(self.assist,"read_image_output",return_value=self.source):
+            response=self.client.post(self.import_url,json=request)
+        self.assertEqual(response.status_code,201,response.get_json())
+        captures=self.client.get("/api/workspace/multiview/projects/"+
+            self.project+"/subjects/"+self.sid+"/captures").get_json()["captures"]
+        synthetic=next(x for x in captures if x["source_type"]=="synthetic")
+        self.assertEqual(synthetic["review"],"unreviewed")
+        self.assertEqual(synthetic["provenance"],"workflow")
+        self.assertIsNone(synthetic["azimuth_deg"])
+        self.assertEqual(synthetic["requested_direction"],"back_left")
+        self.assertEqual(synthetic["requested_elevation"],"level")
+        self.assertEqual(synthetic["requested_distance"],"medium")
+        self.assertEqual(json.loads(synthetic["reference_capture_ids_json"]),[self.cid])
+        self.assertEqual(self.image.read_bytes(),self.source)
+
+    def test_reject_fake_reference_lineage_from_text_only_job(self):
+        from generation_history import GenerationHistory
+        job="e"*32
+        history=GenerationHistory(self.root)
+        history.add(job,"http://127.0.0.1:8188","prompt-456",
+                    "workflow-text","Text only",{"1":{"class_type":"SaveImage","inputs":{}}})
+        history.update(job,"completed",[
+            dict(filename="view.png",subfolder="",type="output",mime="image/png")])
+        request=dict(confirm=True,generation_id=job,output_index=0,
+                     reference_capture_ids=[self.cid],requested_direction="front")
+        with patch.object(self.assist,"read_image_output",return_value=self.source) as read:
+            response=self.client.post(self.import_url,json=request)
+        self.assertEqual(response.status_code,400,response.get_json())
+        read.assert_not_called()
+        self.assertEqual(self.image.read_bytes(),self.source)
 
     def test_synthetic_metadata_schema_and_validation(self):
         # Migration is non-destructive and retains original capture records.
