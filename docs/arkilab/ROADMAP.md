@@ -13,6 +13,16 @@
 | 0.9 Desktop | portable application/installer | clean Windows/Linux install and rollback |
 | 1.0 Stable | documented supported matrix | regression and hardware validation |
 
+## Current milestone: 0.4.0-rc.1 — integrated dataset and curated LoRA candidate
+
+**Status:** version and docs prepared on `release/0.4.0-rc.1`; not a published tag or a claim of 0.4.0 stable acceptance. The last published prerelease remains `v0.3.0-rc.1` until GitHub Releases confirms otherwise.
+
+**In candidate:** project-linked Dataset Studio, captions, non-destructive derived export, optional local Ollama preview, project-specific trainer draft handoff, named ComfyUI checkpoint management and comparison, human LoRA ratings and a searchable curated library, collapsible and searchable generation history, common footer and sidebar version.
+
+**Release candidate gate:** Windows/Linux unit tests and frontend syntax; launch the Windows app and verify existing data/weights, one representative project dataset/caption/train handoff, one ComfyUI comparison workflow, persistence and reference images. Document skipped/on-device-only checks explicitly in [the acceptance register](RC_0_4_0_READINESS.md).
+
+**Stable 0.4.0 gate (not yet met):** complete documented supported-engine export profiles, train/validation reproducibility and round-trip manifests, GPU/Windows acceptance across a supported matrix, rollback/no-data-loss update and addressed release blockers. These remain planned, not hidden by a version number.
+
 ## Immediate milestone: 0.3.0-rc.1 — ComfyUI integration candidate
 
 **Status:** **published as a prerelease on 2026-11-21** (tag `v0.3.0-rc.1`, commit `3d7dde0ce19d1937320cd2517523a5b36860b098`). The release is not designated stable; further acceptance and follow-up fixes are tracked separately.
