@@ -942,7 +942,7 @@ function renderCheckpointReviews(){
  for(const entry of checkpointList){
   const data=checkpointReviews[entry.name]||{},box=el("article",undefined,"panel");
   box.append(el("strong",revLang("Step ","Paso ")+entry.step+" · "+entry.comfy_name,"no-i18n"));
-  const options=el("div",undefined,"row"),rating=el("select");rating.add(new Option(revLang("Unrated","Sin valorar"),""));
+  const options=el("div",undefined,"row"),rating=el("select");rating.add(new Option(t("Unrated"),""));
   for(let i=1;i<=5;i++)rating.add(new Option("★".repeat(i)+"☆".repeat(5-i),String(i)));
   rating.value=data.rating==null?"":String(data.rating);
   const best=el("input"),final=el("input");best.type=final.type="checkbox";best.checked=!!data.is_best;final.checked=!!data.is_final;
@@ -1012,9 +1012,9 @@ function renderTrainedLoras(models){
    card.open=expandedTrainedLoraIds.has(key);
    const summary=el("summary",undefined,"trained-lora-summary");
    const title=el("strong",m.project_name+" · "+revLang("Step ","Paso ")+m.step,"no-i18n");
-   const small=el("span",(m.is_final?revLang("Modelo definitivo","Modelo definitivo"):revLang("Best model","Mejor modelo"))+" · "+m.engine,"muted no-i18n");
-   const stars=el("span",m.rating==null?revLang("Unrated","Sin valorar"):"★".repeat(m.rating)+"☆".repeat(5-m.rating),"trained-lora-stars no-i18n");
-   stars.setAttribute("aria-label",m.rating==null?revLang("Unrated","Sin valorar"):String(m.rating)+"/5");
+   const small=el("span",(m.is_final?t("Final model"):t("Best model"))+" · "+m.engine,"muted no-i18n");
+   const stars=el("span",m.rating==null?t("Unrated"):"★".repeat(m.rating)+"☆".repeat(5-m.rating),"trained-lora-stars no-i18n");
+   stars.setAttribute("aria-label",m.rating==null?t("Unrated"):String(m.rating)+"/5");
    summary.append(title,small,stars);
    const content=el("div",undefined,"trained-lora-content");
    card.append(summary,content);
@@ -1024,21 +1024,21 @@ function renderTrainedLoras(models){
     rendered=true;
     const reference=el("section",undefined,"trained-lora-reference");
     const image=el("img");
-    image.alt=revLang("Reference for ","Imagen de referencia de ")+m.project_name;
+    image.alt=t("Reference image")+": "+m.project_name;
     image.loading="lazy";
     if(m.reference_url){
      image.src=m.reference_url+"?v="+encodeURIComponent(m.updated_at||"");
      reference.append(image);
-    }else reference.append(el("p",revLang("No reference image uploaded yet.","Aún no hay imagen de referencia."),"muted no-i18n"));
+    }else reference.append(el("p",t("No reference image uploaded yet."),"muted no-i18n"));
     const input=el("input");input.type="file";input.accept="image/png,image/jpeg,image/webp";
-    const upload=el("button",revLang("Save reference image","Guardar imagen de referencia"));
+    const upload=el("button",t("Save reference image"));
     upload.type="button";
     const message=el("small","","muted no-i18n");
     upload.onclick=async()=>{
      const file=input.files?.[0];
-     if(!file){message.textContent=revLang("Select an image first.","Selecciona una imagen.");return}
-     if(file.size>2000000){message.textContent=revLang("Maximum size: 2 MB.","Tamaño máximo: 2 MB.");return}
-     if(!["image/png","image/jpeg","image/webp"].includes(file.type)){message.textContent=revLang("Use PNG, JPEG or WebP.","Usa PNG, JPEG o WebP.");return}
+     if(!file){message.textContent=t("Select an image first.");return}
+     if(file.size>2000000){message.textContent=t("Maximum size: 2 MB.");return}
+     if(!["image/png","image/jpeg","image/webp"].includes(file.type)){message.textContent=t("Use PNG, JPEG or WebP.");return}
      upload.disabled=true;
      try{
       const bytes=new Uint8Array(await file.arrayBuffer());
@@ -1047,7 +1047,7 @@ function renderTrainedLoras(models){
       await post("/api/workspace/trained-loras/reference/"+encodeURIComponent(m.project_id),{
        filename:m.filename,image_base64:btoa(binary)
       });
-      message.textContent=revLang("Image saved.","Imagen guardada.");
+      message.textContent=t("Image saved.");
       const data=await api("/api/workspace/trained-loras");
       trainedLoraCache=data.models||[];
       expandedTrainedLoraIds.add(key);
