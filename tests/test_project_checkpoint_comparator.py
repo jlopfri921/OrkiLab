@@ -37,6 +37,7 @@ class ProjectCheckpointInventoryTests(unittest.TestCase):
         result = project_checkpoints.inventory(self.base, self.project)
         self.assertEqual(result["engine"], "flux3klein")
         self.assertEqual(result["project_name"], "Prueba")
+        self.assertTrue(all(c["comfy_name"].startswith("OrkiLab_Prueba_") for c in result["checkpoints"]))
         self.assertEqual([c["step"] for c in result["checkpoints"]], [100, 300, 500, 700, 1000])
         self.assertEqual(len(result["checkpoints"]), 5)
         self.assertTrue(all(c["size_bytes"] > 0 for c in result["checkpoints"]))
@@ -89,12 +90,14 @@ class ProjectCheckpointUiTests(unittest.TestCase):
             'project_checkpoints.inventory(base, project_id)',
             'node.get("class_type") not in ("LoraLoader", "LoraLoaderModelOnly")',
             'f["name"]=="lora_name"', '"name":"lora_name","value":selected_models[name]',
-            'validate_prompt(graph,item[6])',
+            'validate_prompt(graph,schemas)',
             'Checkpoints not installed in ComfyUI/models/loras',
+            'fresh_schema = node_schema(cfg["url"], node["class_type"], get_json)',
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.code)
         self.assertIn("project_checkpoints.register(app, base)", self.routes)
+        self.assertIn('entry.comfy_name||entry.name', self.html)
 
 
 if __name__ == "__main__":
