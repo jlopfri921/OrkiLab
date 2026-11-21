@@ -3,7 +3,7 @@
 <p align="center"><strong>Train. Adapt. Create.</strong><br>Local-first LoRA training for image, video and audio.</p>
 
 <p align="center">
-  <a href="VERSION_ARKILAB"><img alt="Version 0.4.0-rc.1" src="https://img.shields.io/badge/version-0.4.0--rc.1-087F91"></a>
+  <a href="VERSION_ARKILAB"><img alt="Version 0.5.0-rc.1" src="https://img.shields.io/badge/version-0.5.0--rc.1-087F91"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-315DB3"></a>
   <img alt="Windows and Linux" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-293C60">
   <a href="https://ko-fi.com/jorgelf"><img alt="Support OrkiLab on Ko-fi" src="https://img.shields.io/badge/Ko--fi-Support%20OrkiLab-FF5E5B?logo=kofi&logoColor=white"></a>
@@ -13,7 +13,13 @@
 
 # OrkiLab — LoRA Trainer Studio
 
-Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, local-first workspace for adapting generative models with LoRA. Workspace is the default interface. **OrkiLab 0.4.0-rc.1 was published as a GitHub prerelease on 2026-11-21; it is not the stable 0.4.0.** See [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) for source and release notes. The previous prerelease is [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1). See the [0.4 candidate readiness register](docs/arkilab/RC_0_4_0_READINESS.md) for verified and pending acceptance.
+Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, local-first workspace for adapting generative models with LoRA. Workspace is the default interface. **The current development candidate is 0.5.0-rc.1 (not yet a published GitHub release or stable 0.5.0).** The previous 0.4.0-rc.1 was published as a GitHub prerelease on 2026-11-21; it was not a stable 0.4.0. See [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) for source and release notes. The previous prerelease is [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1). See the [0.4 candidate readiness register](docs/arkilab/RC_0_4_0_READINESS.md) for verified and pending acceptance.
+
+## OrkiLab 0.5.0-rc.1 — release preparation (not published)
+
+The 0.5 candidate includes Multiview Studio: persistent subject/photo references, a 12-sector camera coverage diagram, manual angle metadata, per-image review and comparison, optional ComfyUI generation with explicitly recorded synthetic provenance, project-safe Dataset Studio photo linking and reproducible ZIP dataset export. The user reports seven real Windows/RTX 3090 acceptance checks passed; details and outstanding release gates are in [0.5 acceptance register](docs/arkilab/RC_0_5_0_READINESS.md). This is not evidence of universal training-engine support or a complete end-to-end training run.
+
+**Status:** RC.1 is being prepared in GitHub source code. No `v0.5.0` stable tag or published 0.5 prerelease is claimed. The final stable release requires successful Windows/Linux checks on the exact proposed release commit, documented supported workflow/trainer configuration, security and upgrade/rollback acceptance, and resolution of release blockers. Source images and original model weights must remain untouched.
 
 ## OrkiLab 0.4.0-rc.1 — published GitHub prerelease
 
@@ -47,7 +53,7 @@ The suggestion appears in a separate **read-only preview**. Only **Use suggestio
 
 ## OrkiLab 0.5.0 — Multiview Studio (development; no stable release)
 
-OrkiLab now contains development implementations of **alpha.1** (subject capture library), **alpha.2** (360° angular coverage, quality hints and photo comparison) and **beta.1** (explicit, optional ComfyUI generation with synthetic provenance), merged via PRs #80, #81 and #82. **Beta.2** adds a project-wide, non-destructive multiview dataset export with a reproducible ZIP. See the [0.5 roadmap and acceptance gates](docs/arkilab/MULTIVIEW_0_5_ROADMAP.md). These modules require real Windows/GPU and browser checks before stable 0.5 acceptance; no 0.5.0 tag or release is claimed.
+OrkiLab now contains development implementations of **alpha.1** (subject capture library), **alpha.2** (360° angular coverage, quality hints and photo comparison) and **beta.1** (explicit, optional ComfyUI generation with synthetic provenance), merged via PRs #80, #81 and #82. **Beta.2** adds a project-wide, non-destructive multiview dataset export with a reproducible ZIP. **RC.1**, merged through PR #85, adds recovery of existing Dataset Studio photos and persistent project linking; seven on-device checks are operator-reported as passed, while stable-release gates remain open. See the [0.5 roadmap and acceptance gates](docs/arkilab/MULTIVIEW_0_5_ROADMAP.md). These modules require real Windows/GPU and browser checks before stable 0.5 acceptance; no 0.5.0 tag or release is claimed.
 
 **Try it:** In Workspace → Projects create an **Image** project (for example *Multiview test · Sculpture*) with any available image engine, open **Multiview Studio**, select the project, create a subject and add existing image references with manually provided camera angles. Approve the images that you want included. In the project-level **Prepare multiview dataset** panel choose the validation percentage, seed and optional inclusion of approved synthetic views; select **Preflight and preview**, then explicitly **Download ZIP**.
 
