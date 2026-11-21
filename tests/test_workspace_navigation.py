@@ -38,10 +38,10 @@ class WorkspaceNavigationTests(unittest.TestCase):
         self.assertEqual(len(self.parsed.ids), len(set(self.parsed.ids)))
 
     def test_main_sections_are_independent(self):
-        self.assertEqual(set(self.parsed.views), {"overview", "projects", "engines"})
+        self.assertEqual(set(self.parsed.views), {"overview", "projects", "engines", "trained-loras"})
         self.assertIn('id="gpu-manager"', self.html)
         self.assertIn('function routeHome()', self.html)
-        for link in ("#overview", "#projects", "#engines", "#gpu-manager"):
+        for link in ("#overview", "#projects", "#engines", "#trained-loras", "#gpu-manager"):
             self.assertIn(link, self.parsed.nav)
 
     def test_root_launcher_navigation_and_dashboard_shortcuts(self):
