@@ -266,7 +266,7 @@ function updateComfyAccess(verified){
  $("comfy-welcome-status").textContent=t(verified?"ComfyUI is connected. All tools are available.":"ComfyUI is not connected. Configure and test the connection to unlock the tools.");
  if(location.pathname.replace(/\/$/,"")==="/workspace/comfyui")routeWorkspace();
 }
-function fillComfy(d){$("comfy-url").value=d.url;$("engine-mode").value=d.mode;$("model-folder").value=d.model_folder;syncEngineMode();}
+function fillComfy(d){$("comfy-url").value=d.url;$("engine-mode").value=d.mode;$("model-folder").value=d.model_folder;$("compare-checkpoint-folder").value=d.lora_folder||"";syncEngineMode();}
 async function loadComfy(){
  try{
   const settings=await api("/api/workspace/comfyui");fillComfy(settings);
@@ -276,7 +276,7 @@ async function loadComfy(){
  }catch{updateComfyAccess(false);}
  finally{comfyConnectionReady=true;updateComfyAccess(comfyConnectionVerified);}
 }
-async function saveComfy(){updateComfyAccess(false);fillComfy(await post("/api/workspace/comfyui",{url:$("comfy-url").value,mode:$("engine-mode").value,model_folder:$("model-folder").value}));}
+async function saveComfy(){updateComfyAccess(false);fillComfy(await post("/api/workspace/comfyui",{url:$("comfy-url").value,mode:$("engine-mode").value,model_folder:$("model-folder").value,lora_folder:$("compare-checkpoint-folder").value}));}
 $("engine-mode").onchange=syncEngineMode;
 $("comfy-save").onclick=async()=>{const b=$("comfy-save");b.disabled=true;try{await saveComfy();$("comfy-result").textContent=t("Saved");}catch(e){$("comfy-result").textContent=e.message;}finally{b.disabled=false;}};
 async function checkComfy(save){const buttons=$("comfy-form").querySelectorAll("button");buttons.forEach(b=>b.disabled=true);const out=$("comfy-result");out.textContent=t("Checking connection...");try{if(save){await saveComfy();}const d=await post("/api/workspace/comfyui/check",{});updateComfyAccess(true);out.textContent=t("Connected to ComfyUI")+(d.version?" · "+d.version:"")+(d.devices.length?" · "+d.devices.join(", "):"");}catch(e){updateComfyAccess(false);out.textContent=e.message;}finally{buttons.forEach(b=>b.disabled=false);syncEngineMode();}}
@@ -787,6 +787,12 @@ async function loadProjectCheckpoints(){
   updateCheckpointCount();
  }catch(error){$("compare-checkpoint-status").textContent=error.message}
 }
+async function rememberComfyLoraFolder(folder){
+ // Preserve the other saved connection fields instead of writing stale form values.
+ const settings=await api("/api/workspace/comfyui");
+ if(settings.lora_folder===folder)return;
+ await post("/api/workspace/comfyui",{...settings,lora_folder:folder});
+}
 async function manageSelectedCheckpoints(action){
  const project=$("compare-checkpoint-project").value,folder=$("compare-checkpoint-folder").value.trim(),names=chosenCheckpoints(),status=$("compare-checkpoint-manage-status");
  if(!project||!folder||!names.length){status.textContent=I18N.lang==="es"?"Selecciona un proyecto, la carpeta de LoRA y al menos un checkpoint.":"Choose a project, LoRA folder and at least one checkpoint.";return;}
@@ -796,6 +802,7 @@ async function manageSelectedCheckpoints(action){
  status.textContent=I18N.lang==="es"?"Procesando checkpoints…":"Processing checkpoints…";
  try{
   const result=await post("/api/workspace/projects/"+encodeURIComponent(project)+"/checkpoints/manage",{action,directory:folder,checkpoints:names});
+  await rememberComfyLoraFolder(result.directory);
   const installed=result.checkpoints.filter(x=>x.installed).length;
   status.textContent=(I18N.lang==="es"?"Copias instaladas: ":"Installed copies: ")+installed+"/"+result.checkpoints.length+". "+result.checkpoints.map(x=>x.comfy_name+": "+(x.installed?"✓":"—")).join(" · ")+(action==="status"?"":I18N.lang==="es"?" · Actualiza modelos en ComfyUI y prepara de nuevo el workflow.":" · Refresh models in ComfyUI and prepare the workflow again.");
   if(action!=="status")$("compare-confirm").checked=false;
