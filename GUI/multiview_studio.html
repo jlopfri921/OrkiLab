@@ -94,6 +94,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 @media(max-width:760px){.mv-recovery-panel{padding:12px}.mv-recovery-candidates{grid-template-columns:1fr}}
 /* Optional local AI assistant: isolated from saved geometry. */
 .mv-viewpoint-panel{border:1px solid #34536a;border-radius:10px;background:#0d1d2d;padding:14px;margin:16px 0;display:grid;gap:10px}.mv-viewpoint-panel h3,.mv-viewpoint-panel p{margin:0}.mv-viewpoint-panel button{justify-self:start}.mv-viewpoint-panel>div{display:grid;gap:10px}
+.mv-requested-generation{padding:16px;margin:20px 0;border:1px solid #3d6379;border-radius:14px;background:#0e2237;display:grid;gap:12px}.mv-requested-generation>p{margin:0;line-height:1.5}.mv-requested-generation label{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:5px 0}.mv-requested-generation label span{overflow-wrap:anywhere}.mv-requested-generation input[type=checkbox]{accent-color:#3cdbd0}.mv-requested-generation select,.mv-requested-generation textarea{max-width:100%;width:min(320px,100%)}.mv-request-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:12px}.mv-requested-generation button{justify-self:start}.mv-requested-output{border:1px solid #38526a;border-radius:10px;padding:12px;margin:12px 0}.mv-requested-output img{width:min(360px,100%);max-height:400px;object-fit:contain;display:block;margin-bottom:10px}
 </style>
 <link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css">
 <link rel="stylesheet" href="/assets/orkilab/orkilab-shell.css">
@@ -133,6 +134,7 @@ small{font-size:12px}.source-tag{color:#beddee}
 <script src="/assets/orkilab/multiview-beta2.js"></script>
 <script src="/assets/orkilab/multiview-rc1.js"></script>
 <script src="/assets/orkilab/multiview-viewpoint-ai.js"></script>
+<script src="/assets/orkilab/multiview-generate-view.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -218,7 +220,7 @@ async function loadSubjects(){
  $("mv-workspace").hidden=!project;
  // Dispose running polling/listeners before rebuilding the project view.
  for(const old of $("mv-subjects").querySelectorAll("details.subject")){
-   old._updates?.abort();old._assistant?.dispose();
+   old._updates?.abort();old._assistant?.dispose();old._missingView?.dispose();
  }
  $("mv-subjects").replaceChildren();
  if(!project){allSubjects=[];report(t("Choose a project to begin."));return}
@@ -237,7 +239,7 @@ async function loadSubjects(){
 function renderSubjects(){
  const root=$("mv-subjects");
  for(const old of root.querySelectorAll("details.subject")){
-   old._updates?.abort();old._assistant?.dispose();
+   old._updates?.abort();old._assistant?.dispose();old._missingView?.dispose();
  }
  root.replaceChildren();
  const q=$("mv-subject-search").value.trim().toLocaleLowerCase();
@@ -275,6 +277,13 @@ function renderSubjects(){
      // Keep the completed job and its other output cards available for import.
    });
    details._assistant=assistant;
+   const requestedHost=node("div");body.append(requestedHost);
+   if(typeof OrkiMultiviewGenerateViews!=="undefined"){
+     details._missingView=OrkiMultiviewGenerateViews.mount(
+       requestedHost,()=>currentProject,subject.id,api,async()=>{
+         await refresh();await coverage.refresh();
+       });
+   }
    const captureTitle=node("h2",t("Add a photograph"));captureTitle.style.marginTop="18px";body.append(captureTitle);
    const form=node("form");
    const first=node("div",undefined,"row");
