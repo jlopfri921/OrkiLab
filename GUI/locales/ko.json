@@ -2067,5 +2067,10 @@
   "Run comparison": "비교 실행",
   "Project": "프로젝트",
   "Stop after current": "현재 작업 후 중지",
-  "Compare results": "결과 비교"
+  "Compare results": "결과 비교",
+  "OrkiLab checkpoint manager": "OrkiLab 체크포인트 관리자",
+  "ComfyUI/models/loras folder (on this PC)": "ComfyUI/models/loras 폴더 (이 PC)",
+  "Install selected": "선택 항목 설치",
+  "Uninstall selected": "선택 항목 제거",
+  "Check installed": "설치 확인"
 }
