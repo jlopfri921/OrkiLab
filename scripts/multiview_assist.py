@@ -178,12 +178,28 @@ def register(app, base):
             if ref_ids:
                 with closing(sqlite3.connect(multiview_db,timeout=5)) as refdb:
                     marks=",".join("?" for _ in ref_ids)
-                    n=refdb.execute(
-                        "SELECT COUNT(*) FROM mv_captures WHERE project_id=? AND subject_id=? "
+                    refrows=refdb.execute(
+                        "SELECT id,sha256 FROM mv_captures WHERE project_id=? AND subject_id=? "
                         "AND id IN ("+marks+") AND source_type IN ('real_photo','unknown','video_frame')",
-                        (project_id,subject_id,*ref_ids)).fetchone()[0]
-                if n!=len(ref_ids):
+                        (project_id,subject_id,*ref_ids)).fetchall()
+                if len(refrows)!=len(ref_ids):
                     raise ValueError("Reference image does not belong to this subject")
+                # Claimed references must actually appear as LoadImage inputs in the
+                # immutable saved generation graph. A plain text-to-image job must
+                # never be labelled as reference-conditioned by user-supplied IDs.
+                loaded=[]
+                if isinstance(graph,dict):
+                    for node in graph.values():
+                        if (isinstance(node,dict) and "LoadImage" in
+                                str(node.get("class_type",""))):
+                            value=node.get("inputs",{}).get("image") if isinstance(
+                                node.get("inputs"),dict) else None
+                            if isinstance(value,str):
+                                loaded.append(value.replace("\\\\","/").rsplit("/",1)[-1])
+                for rid,sha in refrows:
+                    prefix="orkilab_"+rid+"_"+sha[:16]
+                    if not any(name.startswith(prefix) for name in loaded):
+                        raise ValueError("Generation graph does not reference the claimed source photo")
             # Preserve prompt/seed provenance in the recorded generation graph;
             # also keep selected seed values for quick inspection.
             graph_hash=hashlib.sha256(
