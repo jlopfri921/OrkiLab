@@ -40,3 +40,10 @@ Each catalog card includes:
 Catalog records use the local `settings/orkilab/checkpoint_reviews.sqlite3` database. The database stores metadata only; original .safetensors remain in the trainer Outputs directory. Unmarking Best/Final removes the entry from the curated library but retains its review and original file. Changing Final automatically clears the old Final designation within the same project, without removing a separate Best selection.
 
 The catalog currently covers the image-project checkpoint inventory available to the comparator. A future extension can ingest measured hardware/runtime telemetry directly from training history when available, including provenance; the current implementation does not promise historical automatic measurements.
+
+## Search and sorting across the workspace
+
+- **ComfyUI Zone → Generation history:** compact expandable jobs, server-side text search (generation name, workflow ID or generation ID), status filter, newest/oldest/name sorting, result totals and 100-item pages. Filtering is performed **before pagination**.
+- **Workspace → Projects:** name, engine, dataset path and notes search; category/engine filters; recently updated, oldest and alphabetical sorting; archived projects remain controlled by the existing Archived checkbox.
+- **Workspace → My trained LoRAs:** search across project, base model, workflow, checkpoint filename, GPU and notes; filter by engine and Best/Final designation; sort by date, score, training steps or project name. Filters operate over the currently retrieved full curated library and do not modify metadata.
+- All new filter controls are translated in the supported locale files. Clear Filters resets only the chosen view.
