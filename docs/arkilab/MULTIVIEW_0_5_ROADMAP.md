@@ -1,6 +1,6 @@
 # OrkiLab 0.5.0 — Multiview Studio roadmap
 
-**Status:** alpha.1 merged to `main` in PR #80, Windows/Linux checks passed; alpha.2 implementation on feature branch, pending CI and merge. No 0.5 tag/release published. 
+**Status:** alpha.1 merged in PR #80, alpha.2 merged in PR #81 with Windows/Linux checks passing; beta.1 under review, no 0.5 tag/release published. 
 **Baseline:** 0.4.0-rc.1 is available in `main` (release metadata); publication of a GitHub Release/tag and the 0.4.0 stable acceptance must be verified separately.
 **Owner workflow:** Projects → Dataset Studio → Multiview Studio → Training Engines / ComfyUI.
 
@@ -19,6 +19,17 @@
 - Localized keyboard-focusable 360° interactive angle diagram, quality candidate review buttons, and a two-image comparison dialog with shared zoom slider. Retains the mobile bottom nav and eight languages.
 - Comparer lists the first 5000 references (if more); sector totals and quality counters include every saved capture. No automatic rejection or generation.
 - Real-image and mobile-browser acceptance must be completed before the 0.5.0 stable release.
+
+## Beta.1 implementation (feature branch; operator acceptance pending)
+
+- Only preinstalled **image** workflows from the saved OrkiLab workflow library are offered. Prepare/validate via the existing ComfyUI conversion and schema validators. Any text or seed edits use validated editable fields; no automatic prompt or hidden model download.
+- Each generation requires explicit user confirmation, follows existing single-job/idle-queue safety, and uses OrkiLab's persisted generation history, status polling and targeted cancellation (never blindly clears the shared ComfyUI queue).
+- Completed, saved output images (PNG/JPEG/WebP from the *currently configured* validated ComfyUI endpoint) may be **explicitly** imported into an image project subject. Import streams a bounded maximum of 20 MiB, validates the image, and creates a private project-scoped snapshot. It never moves/deletes original photos or ComfyUI files.
+- Imported records are forced to `synthetic`, `provenance=workflow` and `review=unreviewed`. An auxiliary SQLite provenance table links the capture to the saved generation ID, ComfyUI prompt ID, workflow ID, graph hash, source filename, output index and integer seed values; the original graph remains in Generation History.
+- Camera angles, elevations and distances are optional **manual** metadata, never guessed from generated pixels or prompts. The installed model/workflow must actually support source-image conditioning and view changes; this integration does not guarantee it.
+- This phase uses the existing **launcher-local-only** generation endpoints. A phone browser on the LAN can open the shell, but generation/import actions cannot run from a remote IP. Expanding this safely is separately gated behind authenticated remote API review.
+- Generation is not an automatically managed multiview batch, nor a claim of 3D reconstruction; multiple views can be run one-at-a-time and manually associated with the subject.
+- Before a stable release, test with a real multiview-capable workflow installed on the user's GPU, a real subject collection, cancellation and import, and verify output quality on desktop and mobile.
 
 ## Product goal
 
