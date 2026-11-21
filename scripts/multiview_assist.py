@@ -183,6 +183,9 @@ def register(app, base):
                 properties=inspect_image(Path(tmp))
                 sharpness=sharpness_score(Path(tmp))
                 with closing(lineage_db()) as conn, conn:
+                    # Serialize check-and-link so simultaneous imports cannot
+                    # register the same generation output twice for a subject.
+                    conn.execute("BEGIN IMMEDIATE")
                     exists=conn.execute(
                         "SELECT l.capture_id FROM mv_generated_lineage l "
                         "JOIN mv_captures c ON c.id=l.capture_id "
