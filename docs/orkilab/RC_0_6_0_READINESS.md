@@ -1,11 +1,11 @@
 # OrkiLab 0.6.0 — B10.5 acceptance and RC1 release gate
 
-**State: implemented for operator acceptance; NOT RC-published.**
+**State: B10.5 accepted on operator report (283 benchmark tests); `0.6.0-rc1` source metadata staged on feature branch; NOT tagged, merged or published.**
 
 Target repo: [jlopfri921/OrkiLab](https://github.com/jlopfri921/OrkiLab)  
 Feature branch: `feat/0.6-benchmark-core`  
 Review: [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104) — keep **open/unmerged**.  
-Baseline: stable 0.5.0 in `main`; the feature branch may still contain older 0.5.0-rc.1 version metadata pending explicit release preparation.
+Baseline: `main` carries stable 0.5.0 metadata; the feature branch now stages `0.6.0-rc1`. Branches remain **diverged** (at initial inspection: 277 feature commits ahead, four main commits behind). The 0.5 stable acceptance file and publication workflow differ and require careful reconciliation, without rewriting history. Actual v0.5.0 GitHub Release status and CI on the 0.6 head still need verification.
 
 ## 0.6 scope and completed engineering
 
@@ -21,7 +21,7 @@ Baseline: stable 0.5.0 in `main`; the feature branch may still contain older 0.5
 ## Test evidence classification
 
 - Up to B10.4: **267 tests operator-reported PASS** via the shorthand `tok`, without an attached independent CI transcript for every slice.
-- B10.5: **16 new automated checks** (7 pure release gates, 1 read-only Flask report, 2 bilingual UI checks and 6 shared light/dark tests). **283 benchmark tests expected**. Tests added in code, **not yet verified on Windows by operator**; no claim of CI or real GPU execution from synthetic fixtures.
+- B10.5: **16 additional checks** (7 pure release gates, 1 read-only Flask report, 2 bilingual UI checks and 6 shared light/dark tests), now **283 benchmark tests operator-reported PASS** through `tok`. The operator did not attach the raw rerun transcript in this exchange; no claim of independent CI or real GPU execution from synthetic fixtures.
 - Frontend inline JavaScript syntax check can be performed independently. An automated test cannot substitute for a real light/dark responsive browser assessment.
 
 ## Required automated checks
@@ -48,7 +48,7 @@ Also run the application's **full regression suite** and review actual Windows/L
 
 | ID | Acceptance condition | Evidence required | Current status |
 | --- | --- | --- | --- |
-| B10.5-A | Benchmark 283 automated tests PASS | Windows terminal log | Pending |
+| B10.5-A | Benchmark 283 automated tests PASS | Operator `tok` (no full console log attached) | **PASS — operator reported; log still requested** |
 | B10.5-B | Whole-app regression (Workspace, Queue, trainers, projects, Dataset, Multiview) | terminal logs and functional notes | Pending |
 | B10.5-C | Linux/Windows CI at **exact candidate commit** | linked CI run and SHA | Pending |
 | B10.5-D | Benchmark standalone and ComfyUI embedded page remain readable and project-scoped | local browser screenshots/observations | Pending |
@@ -71,4 +71,4 @@ Also run the application's **full regression suite** and review actual Windows/L
 
 ## Release decision
 
-**No release tag, GitHub Release, branch merge, installer or 0.6.0-rc1 publication is authorized by this document.** Upon full A–J acceptance and explicit confirmation, update `VERSION_ORKILAB` to the exact RC version, reconcile the 0.5 baseline in the feature branch, fix any failing regression, obtain fresh CI on the exact resulting SHA, review PR #104, then publish the candidate. Stable `0.6.0` requires a separate explicit signoff after RC observations.
+**No release tag, GitHub Release, branch merge, installer or 0.6.0-rc1 publication is authorized by this document.** `VERSION_ORKILAB`, GUI launcher metadata and README are now staged as `0.6.0-rc1` on the feature branch only. Next reconcile the stable 0.5 baseline (`main`) with feature development, fix any failing regression, obtain fresh Windows/Linux CI on the exact resulting SHA, review PR #104, complete B–J evidence and explicitly authorize publication. Stable `0.6.0` requires a separate explicit signoff after the RC. Stable `0.6.0` requires a separate explicit signoff after RC observations.
