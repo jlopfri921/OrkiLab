@@ -3,17 +3,17 @@
 <p align="center"><strong>Train. Adapt. Create.</strong><br>Local-first LoRA training for image, video and audio.</p>
 
 <p align="center">
-  <a href="VERSION_ORKILAB"><img alt="Version 0.5.0-rc.1" src="https://img.shields.io/badge/version-0.5.0--rc.1-087F91"></a>
+  <a href="VERSION_ORKILAB"><img alt="Version 0.5.0" src="https://img.shields.io/badge/version-0.5.0--087F91"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-315DB3"></a>
   <img alt="Windows and Linux" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-293C60">
   <a href="https://ko-fi.com/jorgelf"><img alt="Support OrkiLab on Ko-fi" src="https://img.shields.io/badge/Ko--fi-Support%20OrkiLab-FF5E5B?logo=kofi&logoColor=white"></a>
 </p>
 
-<p align="center"><a href="#version-history--all-phases-010-to-060">Version history</a> · <a href="#orkilab-050-rc1--current-release-candidate">What’s new (0.5.0)</a> · <a href="#quick-start">Quick start</a> · <a href="#training-engines">Training engines</a> · <a href="docs/orkilab/ROADMAP.md">Roadmap</a> · <a href="CHANGELOG_ORKILAB.md">Changelog</a> · <a href="#credits">Credits</a></p>
+<p align="center"><a href="#version-history--all-phases-010-to-060">Version history</a> · <a href="#orkilab-050--stable-release-preparation">What’s new (0.5.0)</a> · <a href="#quick-start">Quick start</a> · <a href="#training-engines">Training engines</a> · <a href="docs/orkilab/ROADMAP.md">Roadmap</a> · <a href="CHANGELOG_ORKILAB.md">Changelog</a> · <a href="#credits">Credits</a></p>
 
 # OrkiLab — LoRA Trainer Studio
 
-Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, open-source and local-first workspace for adapting generative models with LoRA and connecting training, datasets and optional ComfyUI image-generation workflows. Workspace is the default interface. **Version v0.5.0-rc.1 is published as a GitHub prerelease; stable v0.5.0 remains pending final acceptance.** The preceding public prereleases are [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) and [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1).
+Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, open-source and local-first workspace for adapting generative models with LoRA and connecting training, datasets and optional ComfyUI image-generation workflows. Workspace is the default interface. **Stable candidate 0.5.0 is prepared with H1–H7 operator-confirmed PASS. The published GitHub release remains v0.5.0-rc.1 until the guarded stable publication completes.** The preceding public prereleases are [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) and [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1).
 
 ## Version history — all phases (0.1.0 to 0.6.0)
 
@@ -45,9 +45,9 @@ The following chronology separates **documented development phases**, **release 
 
 **Complete phase-by-phase details for every version:** [OrkiLab release history (0.1 → 1.0)](docs/orkilab/RELEASE_HISTORY.md), including the previously under-documented **0.1.0-rc.1 / rc.2** and **0.2.0-rc.1**; also see [Changelog](CHANGELOG_ORKILAB.md) and [Roadmap](docs/orkilab/ROADMAP.md). Versions 0.1–0.4 are not assigned invented alpha/beta releases.
 
-## OrkiLab 0.5.0-rc.1 — current release candidate
+## OrkiLab 0.5.0 — stable release preparation
 
-**Current source version: `0.5.0-rc.1`.** [**GitHub prerelease `v0.5.0-rc.1` is published**](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1), from validated commit `b4bc236bd61db2888aa035986b6dca84126dd83b` (2026-11-22). This is **not** stable `v0.5.0`. The preceding prerelease is [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1).
+**Stable candidate source version: `0.5.0` (pending exact-SHA CI and publication).** [**GitHub prerelease `v0.5.0-rc.1` is published**](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1), from validated commit `b4bc236bd61db2888aa035986b6dca84126dd83b` (2026-11-22). This is **not** stable `v0.5.0`. The preceding prerelease is [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1).
 
 **Why OrkiLab exists.** OrkiLab aims to be an independent, open-source, local-first workbench that connects projects, data preparation, LoRA training, compatible ComfyUI generation, model/GPU inspection and export. It coordinates tools and models installed by the user rather than being a model itself. The [eight-language in-app guide](http://127.0.0.1:4990/workspace/guide) now explains the overall philosophy, practical use, individual modules, limitations and future direction.
 
@@ -99,6 +99,8 @@ Further details: [Multiview implementation roadmap](docs/orkilab/MULTIVIEW_0_5_R
 Reported Windows/RTX 3090 acceptance includes saved projects/photos, persistence, representative ComfyUI generation, dataset ZIP and browser layout. The **newer** copy-to-input, guided official workflow import and full Multiview flow still need appropriately scoped evidence against the final installed code. A user-reported success does not automatically validate all Desktop/Portable versions, model families, complete training runs, custom nodes, remote-access safety or upgrade/rollback.
 
 **Published RC evidence:** Windows/Linux CI passed on commit `b4bc236`, and the [v0.5.0-rc.1 GitHub prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) is available. Stable `v0.5.0` is separately gated on actual device/workflow compatibility, non-destructive upgrade and rollback testing, safety and regression acceptance. The next milestone after stable is **0.6.0**.
+
+**Stable manual acceptance (2026-11-22):** H1–H7 were explicitly confirmed PASS without blocking issues by the operator; no independent logs, exact workflow/checkpoint, image hash values, or ComfyUI version were supplied. Final GitHub CI and stable-release publication remain pending. See [stable acceptance register](docs/orkilab/RC_0_5_0_STABLE_ACCEPTANCE.md).
 
 ## OrkiLab 0.4.0-rc.1 — published GitHub prerelease
 
