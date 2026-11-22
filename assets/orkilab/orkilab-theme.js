@@ -23,6 +23,15 @@
   const chosen=theme==="light"?"light":"dark";
   root.dataset.orkiTheme=chosen;
   if(persist){try{localStorage.setItem(KEY,chosen)}catch(e){}}
+  // Use existing contrasting OrkiLab logo variants in the shared header.
+  for(const logo of document.querySelectorAll('header img[src*="orkilab-logo-"]')){
+   const current=logo.getAttribute("src")||"";
+   if(current.endsWith("orkilab-logo-dark.svg")||current.endsWith("orkilab-logo-light.svg")){
+    logo.setAttribute("src",chosen==="light"?
+      "/assets/orkilab/orkilab-logo-light.svg":
+      "/assets/orkilab/orkilab-logo-dark.svg");
+   }
+  }
   for(const button of document.querySelectorAll(".orki-theme-toggle")){
    const light=chosen==="light";
    const labels=language();
