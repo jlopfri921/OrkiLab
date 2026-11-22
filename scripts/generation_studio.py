@@ -26,6 +26,7 @@ def register(app, base):
     jobs = {}
     records = GenerationHistory(base)
     prepared = {}
+    guided_targets = {}  # Single-use benchmark preparation token -> exact target tuple.
     # Ephemeral, opt-in GPU diagnostics: not persisted as benchmark observations.
     gpu_monitors = {}
     lock = threading.Lock()
@@ -331,6 +332,115 @@ def register(app, base):
             requires_confirmation=True,
         )
 
+    @app.post("/api/workspace/generation/benchmark/prepare-one")
+    def benchmark_prepare_one():
+        """Prepare exactly one declared variant; never POST to ComfyUI.
+
+        The subsequent /api/workspace/generation submit requires its own
+        explicit confirmation and exact benchmark binding.
+        """
+        if not local():
+            return jsonify(error="Benchmark preparation is launcher-local only"), 403
+        if request.mimetype != "application/json" or not 0 < (request.content_length or 0) <= 2048:
+            return jsonify(error="Invalid benchmark preparation request"), 400
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict) or set(body) != {
+            "project_id", "run_id", "variant_id", "repetition"
+        }:
+            return jsonify(error="Explicit variant and repetition required"), 400
+        project_id, run_id, variant_id = (body.get(k) for k in ("project_id", "run_id", "variant_id"))
+        repetition = body.get("repetition")
+        if (any(not isinstance(k, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,200}", k)
+                for k in (project_id, run_id, variant_id))
+                or type(repetition) is not int or not 0 <= repetition <= 99):
+            return jsonify(error="Invalid benchmark identifiers or repetition"), 400
+        cfg = config()
+        if cfg["mode"] == "native":
+            return jsonify(error="ComfyUI is disabled"), 409
+        if project_layout.training_in_progress(base):
+            return jsonify(error="Training is active"), 409
+        try:
+            from benchmark_repro_protocol import declared_protocol_readiness
+            from benchmark_b10_model_check import inspect_model_variants
+            from benchmark_job_binding import preflight_submission_binding
+            from benchmark_store import BenchmarkStore
+            from workspace_store import ProjectStore
+            projects_db = base / "settings" / "orkilab" / "projects.sqlite3"
+            bench_db = base / "settings" / "orkilab" / "benchmarks.sqlite3"
+            wf_db = base / "settings" / "orkilab" / "workflows.sqlite3"
+            if any(not p.is_file() for p in (projects_db, bench_db, wf_db)):
+                return jsonify(error="Required project, run or workflow unavailable"), 404
+            with closing(sqlite3.connect(projects_db.resolve().as_uri() + "?mode=ro",uri=True)) as con:
+                row = con.execute("SELECT id FROM projects WHERE id=? AND archived=0", (project_id,)).fetchone()
+            if row is None:
+                return jsonify(error="Active project unavailable"), 404
+            with BenchmarkStore(bench_db) as bench:
+                preflight_submission_binding(bench, project_id=project_id, run_id=run_id,
+                                             variant_id=variant_id, repetition=repetition)
+                run = bench.db.execute("SELECT protocol_json FROM benchmark_runs WHERE id=?",
+                                       (run_id,)).fetchone()
+                variants = bench.db.execute("SELECT id,run_id,config_json FROM benchmark_variants "
+                                            "WHERE run_id=? ORDER BY id LIMIT 21", (run_id,)).fetchall()
+            protocol = json.loads(run["protocol_json"])
+            report = {"run":{"id":run_id,"protocol":protocol},
+                      "variants":[dict(v) for v in variants]}
+            if declared_protocol_readiness(report)["status"] != "declared_unverified":
+                return jsonify(error="Complete reproducibility protocol required"), 409
+            if repetition >= protocol["repetitions"]:
+                return jsonify(error="Repetition is outside declared bounds"), 409
+            workflow_id = protocol["workflow_id"]
+            with closing(sqlite3.connect(wf_db.resolve().as_uri()+"?mode=ro",uri=True)) as con:
+                wf = con.execute("SELECT graph FROM workflows WHERE id=?", (workflow_id,)).fetchone()
+            if wf is None or len(wf[0]) > 2_000_000:
+                return jsonify(error="Saved workflow unavailable"), 404
+            graph = json.loads(wf[0])
+            variable = protocol["vary"]
+            kinds = ("CheckpointLoaderSimple",) if variable == "checkpoint" else ("LoraLoader","LoraLoaderModelOnly")
+            field = "ckpt_name" if variable == "checkpoint" else "lora_name"
+            # First check without any ComfyUI request, and fail closed.
+            preliminary=inspect_model_variants(graph,protocol,[dict(v) for v in variants],{})
+            if preliminary["reason_codes"] != ["node_options_unavailable"]:
+                return jsonify(error="Workflow not supported for guided comparison",
+                               reason_codes=preliminary["reason_codes"]), 409
+            nodes=[(nid,n) for nid,n in graph.items() if n["class_type"] in kinds]
+            target_id,node=nodes[0]
+            schemas={kind:node_schema(cfg["url"],kind,get_json)
+                     for kind in {n["class_type"] for n in graph.values()}}
+            model_check=inspect_model_variants(graph,protocol,[dict(v) for v in variants],
+                                               schemas[node["class_type"]])
+            if model_check["status"] != "static_candidate":
+                return jsonify(error="Candidate models are not advertised by ComfyUI",
+                               reason_codes=model_check["reason_codes"]), 409
+            selected=next((v for v in variants if v["id"]==variant_id),None)
+            if selected is None:
+                return jsonify(error="Variant not found"), 404
+            choice=json.loads(selected["config_json"])["controlled_value"]
+            proposal=json.loads(json.dumps(graph,ensure_ascii=False))
+            proposal[target_id]["inputs"][field]=choice
+            validate_prompt(proposal,schemas)
+            # Single variant, single-use prepared token, no disk writes.
+            token=uuid.uuid4().hex
+            source_hash=hashlib.sha256(wf[0].encode("utf-8")).hexdigest()
+            target=(project_id,run_id,variant_id,repetition)
+            with lock:
+                for key in list(guided_targets):
+                    if key not in prepared:
+                        guided_targets.pop(key,None)
+                while len(prepared)>=20:
+                    victim=next(iter(prepared))
+                    prepared.pop(victim,None)
+                    guided_targets.pop(victim,None)
+                prepared[token]=(time.monotonic(),workflow_id,cfg["url"],source_hash,
+                                 proposal,editable_fields(proposal,schemas),schemas)
+                guided_targets[token]=target
+            return jsonify(token=token,workflow_id=workflow_id,
+                           project_id=project_id,run_id=run_id,variant_id=variant_id,
+                           repetition=repetition,model_choice_advertised=True,
+                           graph_validated_against_live_node_schemas=True,
+                           execution_submitted=False,submission_requires_confirmation=True)
+        except (sqlite3.Error,OSError,ValueError,TypeError,KeyError,RecursionError) as exc:
+            return jsonify(error="Guided variant preparation failed",detail=str(exc)[:240]),409
+
     @app.post("/api/workspace/generation")
     def generation_submit():
         if not local():
@@ -385,6 +495,13 @@ def register(app, base):
                 return jsonify(error="Benchmark project authorization mismatch"), 403
             except (ValueError, TypeError, sqlite3.Error, OSError) as exc:
                 return jsonify(error="Invalid benchmark target", detail=str(exc)[:200]), 409
+        guided=guided_targets.get(token)
+        if guided is not None:
+            if benchmark_target is None or (
+                benchmark_target.get("project_id"),benchmark_target.get("run_id"),
+                benchmark_target.get("variant_id"),benchmark_target.get("repetition")
+            ) != guided:
+                return jsonify(error="Guided variant token is bound to another benchmark target"),409
         try:
             with lock:
                 item = prepared.get(token)
@@ -399,6 +516,7 @@ def register(app, base):
                 if queue["queue_running"] or queue["queue_pending"]:
                     return jsonify(error="ComfyUI queue is busy"), 409
                 prepared.pop(token, None)
+                guided_targets.pop(token, None)
                 ident, client_id = submit(cfg["url"], graph)
                 token = uuid.uuid4().hex
                 jobs[token] = (cfg["url"], ident)
