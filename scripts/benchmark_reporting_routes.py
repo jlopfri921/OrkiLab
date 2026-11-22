@@ -21,6 +21,7 @@ from benchmark_history_consistency import summarize_saved_history_matches
 from benchmark_b9_closure import summarize_b9_closure
 from benchmark_b10_preflight import inspect_comparison_plan
 from benchmark_b10_model_check import inspect_model_variants
+from benchmark_b10_results import describe_cross_variant_measurements
 from benchmark_draft_creation import create_confirmed_draft, validate_draft_payload
 
 ID = re.compile(r"^[A-Za-z0-9_-]{1,200}$")
@@ -353,6 +354,9 @@ def report_routes(app, base):
                             }
             result = summarize_benchmark_report(report)
             result["comparability"] = assess_duration_comparability(report)
+            result["b10_results"] = describe_cross_variant_measurements(
+                result, result["comparability"]
+            )
             result["reproducibility_protocol"] = declared_protocol_readiness(report)
             result["recorded_execution_evidence"] = verify_recorded_execution_evidence(report)
             result["saved_history_consistency"] = summarize_saved_history_matches(
