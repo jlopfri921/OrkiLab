@@ -195,6 +195,35 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
         self.assertEqual(self.observations(), first)
 
+    def test_cached_generation_retains_interval_only_as_audit_not_comparison(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {
+            "status": {
+                "completed": True, "status_str": "success",
+                "messages": [
+                    ["execution_start", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_000}],
+                    ["execution_cached", {"prompt_id": "prompt-comfy", "nodes": ["1"]}],
+                    ["execution_success", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_014}],
+                ],
+            },
+            "outputs": {},
+        }
+        status = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["state"], "completed")
+        rows = self.observations()
+        self.assertEqual(len(rows), 1)
+        self.assertIsNone(rows[0]["duration_ms"])
+        timing = rows[0]["generation_lineage"]["execution_timing"]
+        self.assertEqual(timing["duration_ms"], 14)
+        self.assertTrue(timing["execution_cached_event_observed"])
+        self.assertEqual(timing["comparability"], "cache_observed_not_comparable")
+        self.assertFalse(timing["full_inference_verified"])
+        self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
+        self.assertEqual(self.observations(), rows)
+
     def test_missing_comfyui_events_never_infers_duration(self):
         created = self.submit()
         self.assertEqual(created.status_code, 201, created.get_json())
