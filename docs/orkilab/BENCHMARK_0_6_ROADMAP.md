@@ -780,3 +780,23 @@ git pull --ff-only
 ```
 
 Restart OrkiLab and inspect a saved legacy or declared run in `http://127.0.0.1:4990/workspace/comfyui#benchmark`. **Preparación de comparación B10** must appear. A complete draft may show `Declarado, sin verificar`, but model availability, one-variable-only graph, inputs, GPU, cache and engine must all stay `Pendiente de comprobar`. A run lacking a v1 declaration must say `Declaración incompleta`. Do not create or execute a benchmark merely to see the preflight table.
+
+## B10.1 operator acceptance / B10.2 explicit model selector audit (pending operator tests)
+
+The operator confirmed **`tok`** after B10.1: record 231 benchmark tests as *operator-reported PASS* (no independent CI transcript). B10.2 implements a **user-invoked, launcher-local, strictly project/run-scoped read-only** model-choice audit via `GET /api/workspace/benchmark/model-check?project_id=...&run_id=...`.
+
+The endpoint requires a **complete** `orkilab-repro-v1` declaration and exactly one supported literal standard model-loader selector in a stored **ComfyUI API workflow**: `CheckpointLoaderSimple.ckpt_name` for checkpoint comparisons or `LoraLoader/LoraLoaderModelOnly.lora_name` for LoRA comparisons. Ambiguous multi-loader, visual/UI, dynamic-input, incomplete protocol and unrecognized custom-loader graphs fail closed; no ComfyUI call is performed for those cases. A supported graph triggers only a bounded GET of `/object_info/<class_type>` from the already configured private ComfyUI URL, using existing URL-validation and redirect restrictions. Actual `COMBO` choice lists from the node schema are compared to two-to-twenty *declared* distinct candidate names. If all are advertised, temporary **in-memory** graph copies are checked for one literal selector replacement while all other fields remain untouched, and the result is labeled **`static_candidate`**, *not* a verified runnable plan. No graph, original prompt, private host URL or model file contents leave the endpoint.
+
+The bilingual in-zone **Comprobar modelos y variantes (B10.2)** panel has an explicit **Comprobar variantes (solo lectura)** button and variant results. It does not automatically contact ComfyUI merely on page load. It clearly distinguishes node-advertised names from existence and integrity of model files. The previous B10.1 checklist continues to mark all operational gates as pending, because this separate B10.2 audit is a bounded observation, not full experimental validation. No ComfyUI queue submission, database writes, model downloads, GPU inference or rankings were added.
+
+B10.2 new tests: **9** pure static checks (`tests/test_benchmark_b10_model_check.py`), **4** Flask route tests (actual mocked node choices, remote/project denial, invalid/incomplete protocol must not contact ComfyUI, ambiguous loader must not contact ComfyUI), and **2** integrated bilingual UI tests. Total expected benchmark tests: **246** (231 previously user-confirmed + 15 new). Operator execution in Windows and UI check pending. Inline JavaScript parsed with a JS syntax check. Feature PR #104 stays open/unmerged; no stable release or workflow-error-catalogue expansion.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_b10_model_check.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Open `http://127.0.0.1:4990/workspace/comfyui#benchmark` after restarting. Select a real project/run, click **Comprobar variantes (solo lectura)**. For a complete v1 protocol and one standard API model selector, the ComfyUI-advertised candidates may be shown as provisional static candidates. A legacy/incomplete protocol or unsupported workflow should say that it cannot establish a comparison. **Never** interpret this result as a model actually loaded or a verified runnable workflow.
