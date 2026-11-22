@@ -164,6 +164,48 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         self.assertEqual(rows[0]["generation_lineage"]["generation_id"], token)
         self.assertIsNone(rows[0]["peak_vram_bytes"])
 
+    def test_real_comfyui_history_event_duration_is_stored_with_provenance(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {
+            "status": {
+                "completed": True,
+                "status_str": "success",
+                "messages": [
+                    ["execution_start", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_000}],
+                    ["execution_success", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_003_600}],
+                ],
+            },
+            "outputs": {},
+        }
+        result = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.get_json()["state"], "completed")
+        first = self.observations()
+        self.assertEqual(len(first), 1)
+        self.assertEqual(first[0]["duration_ms"], 3600)
+        self.assertEqual(
+            first[0]["generation_lineage"]["execution_timing"]["source"],
+            "comfyui_history_status_messages",
+        )
+        self.assertIsNone(first[0]["peak_vram_bytes"])
+        # Terminal polling and a launcher restart must never duplicate or
+        # rewrite the original measurement.
+        self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
+        self.assertEqual(self.observations(), first)
+
+    def test_missing_comfyui_events_never_infers_duration(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {"status": {"completed": True}, "outputs": {}}
+        self.assertEqual(
+            self.client.get("/api/workspace/generation/" + token).get_json()["state"],
+            "completed",
+        )
+        self.assertIsNone(self.observations()[0]["duration_ms"])
+
     def test_cross_project_request_denied_before_submission(self):
         result = self.submit(project_id="not-active")
         self.assertEqual(result.status_code, 404)
