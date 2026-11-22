@@ -1,5 +1,14 @@
 # Roadmap
 
+## Current work: OrkiLab 0.6.0 B10.5 — release readiness (not published)
+
+The 0.6 Benchmark Studio development remains on **[PR #104](https://github.com/jlopfri921/OrkiLab/pull/104)**. B10.1–B10.4 have been accepted by the local operator, with **267 benchmark checks operator-reported PASS**. B10.5 adds a conservative RC publication checklist, optional **light/dark UI mode** across Workspace/Benchmark/Queue/Dataset and shared shell screens, and 16 new tests. **283 benchmark checks expected**, not yet verified by the operator on Windows. Acceptance is documented in [RC_0_6_0_READINESS.md](RC_0_6_0_READINESS.md); detailed evidence history in [BENCHMARK_0_6_ROADMAP.md](BENCHMARK_0_6_ROADMAP.md).
+
+**B10 phase status:** B10.1 protocol declarations — accepted; B10.2 model-choice checks — accepted; B10.3 guided one-job submission — accepted by mocked tests/UI, real GPU still to certify; B10.4 descriptive pairwise results — accepted; **B10.5 final regression, web theme and RC acceptance — in development/pending tests**.
+
+Do **not** interpret a passed local Benchmark test suite as verified scientifically comparable inference or release authorization. Complete Windows/Linux CI at the final commit, real ComfyUI/GPU acceptance with explicit consent, full app regression, mobile/light-theme visual review, data safety, documentation and author signoff **before** tagging `v0.6.0-rc1`. The older 0.5.0 prerelease notes below are historical, not this branch's current release decision. No 0.6.0 release tag has been created here.
+
+
 | Release | Scope | Acceptance gate |
 |---|---|---|
 | 0.1 Foundation | branding, docs, safe update | review diff; launch existing UI; update tests |
