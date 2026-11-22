@@ -278,3 +278,23 @@ A record stores the values actually used, not just user-selected defaults. Later
 ## Deferred
 
 Full conversational Ollama Copilot belongs to 0.7; Hugging Face/Civitai Hub to 0.8; desktop packaging to 0.9. Advanced video and audio quality benchmarking is a separate later compatibility effort, not promised by 0.6 alpha.1.
+
+## B7.4 live evidence (2026-11-22)
+
+**PASS:** operator confirmed a real RTX 3090/ComfyUI job was automatically bound at submission, completed and finalized without recovery. Generation `e754fd5eed294fbeb32b281b6db6d4c3`, prompt `3324fc23-0062-4ff6-b50c-fc3a3489a9c0`, run `30229702-26b7-41d5-821b-8a02088f21b6`, variant `d4f65507-69ed-4c6a-9533-ea7486b6414c`, repetition 0. Final read-only audit: `completed`, one output, `benchmark_binding=bound`, `benchmark_observation=recorded`, `binding_workflow_matches=true`. Earlier 57/57 automated tests passed. These are real operator-provided results, not CI results.
+
+## B8.1 measured execution duration — feature branch, pending operator tests
+
+ComfyUI `/history/<prompt_id>` may return `status.messages` containing paired `execution_start` and `execution_success` events with millisecond timestamps and exact `prompt_id`. B8.1 parses these server-issued events **only for a successfully completed matching prompt**, subtracts `start` from `success`, excludes queue wait, rejects duplicates, reversed or malformed timestamps, and stores `duration_ms` plus `generation_lineage.execution_timing` provenance in the existing atomic observation record. These are ComfyUI server event measurements, **not** local poll intervals or GPU kernel-only timing. If valid events do not exist, `duration_ms` stays `null`, with no fallback estimate. Existing B7 observations remain unchanged (immutable).
+
+For this first iteration, capture occurs on the terminal HTTP poll while ComfyUI history is available. If an already-terminal generation is loaded from local history without an active ComfyUI entry, its duration remains unknown. B8.2 will address separate hardware monitoring and B8.3 output hashes; neither is claimed here.
+
+Validation without GPU:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_execution_timing.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Expected test counts: 4 timing, 10 mocked HTTP, **63 benchmark tests total** if no other changes have been made. A future new benchmark run+variant/repetition and a new ComfyUI generation are needed before claiming **live B8.1 duration measurement**, but not for the code/tests stage. Do not rerun B7.4's completed binding.
