@@ -47,6 +47,8 @@ class LiveTimingProbeTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         self.assertTrue(result["measured"])
         self.assertEqual(result["duration_ms"], 1500)
+        self.assertEqual(result["cache_status"], "undetermined")
+        self.assertFalse(result["full_inference_verified"])
         self.assertEqual(self.calls, [("http://127.0.0.1:8188", "/history/prompt")])
         self.assertEqual(db.read_bytes(), before)
         self.assertFalse((folder / "benchmarks.sqlite3").exists())
@@ -57,6 +59,16 @@ class LiveTimingProbeTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         self.assertFalse(result["measured"])
         self.assertIsNone(result["duration_ms"])
+
+    def test_cache_event_is_reported_without_claiming_full_inference(self):
+        self.messages.insert(
+            1, ["execution_cached", {"prompt_id": "prompt", "nodes": ["1"]}]
+        )
+        result = inspect(self.root, "gen", fetch=self.fetch)
+        self.assertTrue(result["measured"])
+        self.assertEqual(result["cache_status"], "cache_event_observed")
+        self.assertTrue(result["execution_cached_event_observed"])
+        self.assertFalse(result["full_inference_verified"])
 
     def test_bad_generation_makes_zero_http_calls(self):
         self.assertFalse(inspect(self.root, "other", fetch=self.fetch)["ok"])
