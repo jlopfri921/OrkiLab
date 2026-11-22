@@ -33,6 +33,8 @@ class BenchmarkReportsApiTests(unittest.TestCase):
                 CREATE TABLE benchmark_observations(
                     id TEXT,run_id TEXT,variant_id TEXT,repetition INT,status TEXT,
                     duration_ms INT,peak_vram_bytes INT);
+                CREATE TABLE benchmark_generation_lineage(
+                    observation_id TEXT,run_id TEXT,generation_id TEXT,snapshot_json TEXT);
                 INSERT INTO benchmark_runs VALUES
                   ('run-a','project-a','Comparison A','completed','{}','2026-11-22','2026-11-22'),
                   ('run-b','project-b','Other run','draft','{}','2026-11-22','2026-11-22');
