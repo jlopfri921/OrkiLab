@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from benchmark_generation_adapter import snapshot_generation
 from benchmark_history_consistency import (
     compare_saved_generation, summarize_saved_history_matches,
+    match_declared_literal_text_hashes,
 )
 
 
@@ -30,6 +31,35 @@ def report():
 
 
 class LocalHistoryConsistencyTests(unittest.TestCase):
+    def test_exact_declared_prompt_hash_matches_literal_graph_text_only(self):
+        import hashlib
+        positive = hashlib.sha256(b"hola").hexdigest()
+        negative = hashlib.sha256(b"").hexdigest()
+        proto = {"schema":"orkilab-repro-v1",
+                 "prompt_sha256":positive,
+                 "negative_prompt_sha256":negative}
+        outcome = match_declared_literal_text_hashes(record(), proto)
+        self.assertTrue(outcome["positive_digest_found"])
+        self.assertFalse(outcome["negative_digest_found"])
+        self.assertFalse(outcome["polarity_verified"])
+        self.assertFalse(outcome["input_file_verified"])
+
+    def test_dynamic_input_or_custom_node_does_not_assert_a_match(self):
+        import hashlib
+        proto = {"schema":"orkilab-repro-v1",
+                 "prompt_sha256":hashlib.sha256(b"hola").hexdigest(),
+                 "negative_prompt_sha256":hashlib.sha256(b"").hexdigest()}
+        case = record()
+        case["graph"] = json.dumps({
+            "1":{"class_type":"MyCustomTextNode",
+                 "inputs":{"text":"hola"}},
+            "2":{"class_type":"CLIPTextEncode",
+                 "inputs":{"text":["1",0]}}
+        })
+        result = match_declared_literal_text_hashes(case,proto)
+        self.assertFalse(result["positive_digest_found"])
+        self.assertEqual(result["supported_literal_nodes"],0)
+
     def test_exact_saved_history_records_match_without_verifying_inputs(self):
         snap = snapshot_generation(record())
         orig = copy.deepcopy(snap)
