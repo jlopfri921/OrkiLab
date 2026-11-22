@@ -1,0 +1,48 @@
+"""Regression checks for the Benchmark Studio navigation/design/i18n integration.
+
+Static, side-effect-free assertions for the shipped UI, no browser or GPU.
+"""
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.workspace = (ROOT / "GUI" / "workspace.html").read_text(encoding="utf-8")
+        cls.benchmark = (ROOT / "GUI" / "benchmark_reports.html").read_text(encoding="utf-8")
+        cls.routes = (ROOT / "scripts" / "workspace_routes.py").read_text(encoding="utf-8")
+
+    def test_benchmark_is_a_comfy_zone_navigation_module(self):
+        self.assertIn('href="#benchmark"', self.workspace)
+        self.assertIn('data-module="benchmark"', self.workspace)
+        self.assertIn('"compare","benchmark"', self.workspace)
+        self.assertIn('"welcome","comfyui","benchmark"', self.workspace)
+
+    def test_embedded_frame_uses_shell_and_no_duplicate_header(self):
+        self.assertIn('id="benchmark-frame"', self.workspace)
+        self.assertIn('data-src="/workspace/benchmark?embed=1"', self.workspace)
+        self.assertIn('body.embedded header{display:none}', self.benchmark)
+        self.assertIn('--accent:#3cdbd0', self.benchmark)
+        self.assertIn('orkilab-benchmark-height', self.workspace)
+        self.assertIn('orkilab-benchmark-language', self.benchmark)
+
+    def test_direct_benchmark_url_redirects_to_comfy_zone(self):
+        self.assertIn('request.args.get("embed") != "1"', self.routes)
+        self.assertIn('redirect("/workspace/comfyui#benchmark"', self.routes)
+
+    def test_spanish_accents_and_readable_diagnostics(self):
+        self.assertIn('<meta charset="utf-8">', self.benchmark)
+        for word in ("Comparabilidad", "Ejecución", "Política", "Resolución",
+                     "No se ha acreditado", "generación", "caché", "semillas"):
+            with self.subTest(word=word):
+                self.assertIn(word, self.benchmark)
+        self.assertIn('function reasons(values)', self.benchmark)
+        self.assertIn('reasonText[lang][code]', self.benchmark)
+
+
+if __name__ == "__main__":
+    unittest.main()
