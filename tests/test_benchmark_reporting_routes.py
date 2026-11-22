@@ -76,6 +76,19 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertIsNone(payload["best_variant"])
         self.assertTrue(payload["read_only"])
 
+    def test_comparability_exposes_evidence_gaps_without_sensitive_details(self):
+        self.fill()
+        response = self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        result = response.get_json()["comparability"]
+        self.assertEqual(result["status"], "not_established")
+        self.assertIn("missing_generation_lineage", result["variants"][0]["reason_codes"])
+        self.assertFalse(result["ranking_eligible"])
+        self.assertIsNone(result["best_variant"])
+        self.assertNotIn("generation_lineage", response.get_json()["variants"][0])
+
     def test_cross_project_detail_not_disclosed(self):
         self.fill()
         result = self.client.get(
