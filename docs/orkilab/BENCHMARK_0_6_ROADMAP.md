@@ -457,3 +457,26 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_live_capture.py" -v
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
+
+## B8.2g operator confirmation / B8.2h experimental opt-in Generation Studio bridge
+
+Operator confirmed **106/106 B8.2g benchmark tests PASS** after the Windows fixture SQLite connection fix (confirmation in chat; new raw logs not attached in that turn).
+
+B8.2h implements the first **explicitly optional** monitoring path on the existing `POST /api/workspace/generation` endpoint, alongside the current benchmark linkage. With **no** `gpu_monitor` field, existing generations remain unchanged. An experimental monitoring request must contain exactly:
+```json
+{"gpu_monitor":{"confirm":true,"gpu_uuid":"GPU-<REAL_DEVICE_UUID>","samples":40,"interval":0.3}}
+```
+The GPU UUID must be taken from the real local inventory (the literal placeholder above is NOT a usable UUID). Valid sample counts are 2–120 and intervals 0.2–5 seconds. A request without affirmative consent or invalid bounds is **rejected before any ComfyUI generation is submitted**. Experimental monitoring is available only when ComfyUI is configured on `http://127.0.0.1:8188`. The capability route advertises `experimental_gpu_monitor=true` and the field `gpu_monitor`.
+
+When a user **explicitly** includes the option and Generation Studio successfully persists the new generation record, the server schedules a **daemon** thread to run the existing passive `benchmark_gpu_live_capture.observe` with the just-submitted generation ID. That monitor is fail-open relative to generation submission: if it cannot start or fails, the already-submitted generation remains valid. The monitoring report is **ephemeral in process memory** (at most 100 entries, no restart persistence), retrievable via local-launcher-only GET `/api/workspace/generation/<generation_id>/gpu-monitor`. Possible states: `scheduled`, `running`, `completed`, `failed`. A monitor report cannot be treated as the completion status of the generation itself. This feature does **not** add or automatically activate any UI checkbox yet; it is an internal API/contract integration for testing. It is NOT enabled by default.
+
+No monitoring report writes SQLite or populates benchmark observations; every receipt declares `peak_vram_bytes=null` and `attributable_to_generation=false`. The only ComfyUI writes are those already caused by the user's explicit normal generation submission; the optional telemetry makes only read-only ComfyUI GET and `nvidia-smi` calls. Time-window analysis continues to report *observed device-global VRAM*, not WDDM-hidden per-process memory or exclusive job usage. Monitoring is best-effort and can miss short workflows; a 120-sample cap is intentional.
+
+Five pure validation tests and four mocked Flask integration tests added; **115 benchmark tests expected** after the confirmed 106 baseline, pending operator Windows execution. Test:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_monitor_contract.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+No live ComfyUI inference is required for these tests. Future work: expose the experimental option clearly in the Generation Studio UI, show real-time progress/status with explicit device-global labels, introduce cancellation for monitoring alone, and make results restart-safe if the user opts into persistence—without compromising immutable benchmark observations.
