@@ -18,7 +18,7 @@ Benchmark a model/LoRA combination with reproducible prompt, seeds, workflow, we
 
 ### Acceptance tests
 
-Run `python -m unittest discover -s tests -p 'test_benchmark_store.py'` from repository root. Tests cover persisted reopening, lifecycle rules, project/run isolation, unique repetitions and validation of numeric/hash inputs. CI and actual Windows/Linux results must be recorded before describing alpha.1 as validated.
+Run `python -m unittest discover -s tests -p 'test_benchmark_store.py'` and `python scripts/benchmark_smoke.py` from repository root. The smoke runner uses synthetic fixture measurements and **does not run ComfyUI or benchmark a real GPU**. Tests cover persisted reopening, lifecycle rules, project/run isolation, unique repetitions and validation of numeric/hash inputs. CI and actual Windows/Linux results must be recorded before describing alpha.1 as validated.
 
 ## Remaining 0.6 sequence
 
