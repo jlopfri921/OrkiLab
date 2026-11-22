@@ -71,6 +71,23 @@ class LocalHistoryConsistencyTests(unittest.TestCase):
         self.assertFalse(result["remote_execution_verified"])
         self.assertEqual(snap, orig)
 
+    def test_mismatched_local_graph_cannot_supply_prompt_hash_evidence(self):
+        import hashlib
+        case = report()
+        case["run"]["protocol"] = {
+            "schema": "orkilab-repro-v1",
+            "prompt_sha256": hashlib.sha256(b"hola").hexdigest(),
+            "negative_prompt_sha256": hashlib.sha256(b"").hexdigest(),
+        }
+        changed = record()
+        changed["graph"] = json.dumps({
+            "1": {"class_type": "CLIPTextEncode", "inputs": {"text": "hola"}}
+        })
+        result = summarize_saved_history_matches(case, {"gen1": changed})
+        item = result["variants"][0]
+        self.assertFalse(item["literal_prompt_evidence"]["positive_digest_found_in_any_record"])
+        self.assertEqual(item["status"], "mismatch")
+
     def test_changed_graph_bytes_are_flagged(self):
         altered = record()
         altered["graph"] = '{"3":{"class_type":"KSampler","inputs":{"seed":13}}}'
