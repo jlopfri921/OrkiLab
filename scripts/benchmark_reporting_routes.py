@@ -173,6 +173,51 @@ def report_routes(app, base):
         except (sqlite3.Error, OSError, ValueError, TypeError, KeyError, OverflowError):
             return jsonify(error="Could not verify saved workflow model choices"), 503
 
+    @app.post("/api/workspace/benchmark/start")
+    def benchmark_start_declared_run():
+        """Explicitly activate a complete draft; never submit ComfyUI work."""
+        if not local():
+            return jsonify(error="Benchmark activation is launcher-local only"),403
+        if request.mimetype!="application/json" or not 0<(request.content_length or 0)<=1024:
+            return jsonify(error="Invalid activation request"),400
+        payload=request.get_json(silent=True)
+        if (not isinstance(payload,dict) or set(payload)!={"project_id","run_id","confirm"}
+                or payload.get("confirm") is not True
+                or any(not isinstance(payload.get(k),str) or not ID.fullmatch(payload[k])
+                       for k in ("project_id","run_id"))):
+            return jsonify(error="Explicit project/run activation confirmation required"),400
+        try:
+            projects_db=Path(base)/"settings"/"orkilab"/"projects.sqlite3"
+            if not db.is_file() or not projects_db.is_file():
+                return jsonify(error="Benchmark or project unavailable"),404
+            with closing(sqlite3.connect(projects_db.resolve().as_uri()+"?mode=ro",uri=True)) as con:
+                active=con.execute("SELECT 1 FROM projects WHERE id=? AND archived=0",
+                                   (payload["project_id"],)).fetchone()
+            if active is None:
+                return jsonify(error="Active project not found"),404
+            from benchmark_store import BenchmarkStore
+            with BenchmarkStore(db) as store:
+                row=store.db.execute(
+                    "SELECT id,project_id,state,protocol_json FROM benchmark_runs "
+                    "WHERE id=? AND project_id=?",
+                    (payload["run_id"],payload["project_id"])).fetchone()
+                if row is None:
+                    return jsonify(error="Run not found in project"),404
+                if row["state"]!="draft":
+                    return jsonify(error="Only a draft can be activated"),409
+                variants=store.db.execute(
+                    "SELECT id,run_id,config_json FROM benchmark_variants WHERE run_id=?",
+                    (payload["run_id"],)).fetchall()
+                report={"run":{"id":row["id"],"protocol_json":row["protocol_json"]},
+                        "variants":[dict(v) for v in variants]}
+                if declared_protocol_readiness(report)["status"]!="declared_unverified":
+                    return jsonify(error="Complete declared protocol required"),409
+                store.transition(payload["run_id"],"running")
+            return jsonify(id=payload["run_id"],state="running",
+                           generation_submitted=False,execution_verified=False),200
+        except (sqlite3.Error,OSError,ValueError,TypeError):
+            return jsonify(error="Could not activate benchmark draft"),409
+
     @app.post("/api/workspace/benchmark/drafts")
     def create_benchmark_draft():
         """Explicitly create an inactive benchmark plan; never run ComfyUI."""
