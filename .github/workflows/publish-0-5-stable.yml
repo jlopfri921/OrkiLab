@@ -56,8 +56,8 @@ jobs:
           assert all(f"| H{i} |" in record for i in range(1,8))
           for i in range(1,8):
               row=next(row for row in record.splitlines() if row.startswith(f"| H{i} |"))
-              assert "**PENDING**" not in row, f"Missing manual approval: H{i}"
-          assert "**Status: release gate OPEN.**" not in record, "Release gate not signed off"
+              assert "| **PASS** |" in row, f"Missing explicit operator PASS: H{i}"
+          assert "**Status: RELEASE APPROVED — H1–H7 explicitly passed with no blocking incidents.**" in record, "Release gate not signed off"
       - name: Require successful Linux and Windows workflows for exact SHA
         shell: bash
         env:
