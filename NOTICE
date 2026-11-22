@@ -1,0 +1,13 @@
+OrkiLab
+Copyright 2026 Jorge López Frías and OrkiLab contributors
+(only for their respective original contributions)
+
+The original OrkiLab contributions are licensed under Apache License 2.0.
+The repository also contains material derived from Academia SD
+LoRAlab Trainer Studio, Copyright (c) 2026 Academia SD,
+licensed under the MIT License. The upstream copyright and full license
+text are preserved in LICENSES/MIT-ORIGINAL.
+
+See LICENSING.md for the licensing scope and instructions for
+retaining applicable third-party notices. Dependencies, model weights,
+extensions and assets may carry additional license conditions.
