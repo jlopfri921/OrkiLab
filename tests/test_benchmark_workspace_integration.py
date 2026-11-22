@@ -60,6 +60,33 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('No UUID will be invented.', self.benchmark)
         self.assertIn('if(seq!==optionsSeq||projectId!==$("project").value)return;', self.benchmark)
 
+    def test_b9_7_local_hashing_uses_exact_utf8_and_browser_subtle(self):
+        self.assertIn('new TextEncoder().encode(source)', self.benchmark)
+        self.assertIn('globalThis.crypto.subtle.digest("SHA-256",bytes)', self.benchmark)
+        self.assertIn('function hexDigest(bytes)', self.benchmark)
+        self.assertNotIn('source.trim()', self.benchmark)
+        self.assertNotIn('source.normalize(', self.benchmark)
+
+    def test_b9_7_file_hash_is_bounded_and_requires_explicit_click(self):
+        self.assertIn('id="draft-input-file" type="file"', self.benchmark)
+        self.assertIn('const HASH_FILE_LIMIT=20*1024*1024;', self.benchmark)
+        self.assertIn('if(file.size>HASH_FILE_LIMIT)', self.benchmark)
+        self.assertIn('const bytes=await file.arrayBuffer();', self.benchmark)
+        self.assertIn('addEventListener("click",hashSelectedFile)', self.benchmark)
+
+    def test_b9_7_source_edit_invalidates_digest_and_confirmation(self):
+        self.assertIn('hashGeneration[kind]++;', self.benchmark)
+        self.assertIn('if(generation!==hashGeneration[kind])return;', self.benchmark)
+        self.assertIn('if(generation!==hashGeneration.input)return;', self.benchmark)
+        self.assertIn('$("draft-confirm").checked=false;', self.benchmark)
+        self.assertIn('$("draft-"+kind).value="";', self.benchmark)
+
+    def test_b9_7_bilingual_local_only_data_disclosure(self):
+        self.assertIn('solo sus huellas se incorporan al borrador', self.benchmark)
+        self.assertIn('only their hashes are included in the draft', self.benchmark)
+        self.assertIn('Los textos y el archivo se procesan exclusivamente en este navegador', self.benchmark)
+        self.assertIn('Este navegador no admite SHA-256 local mediante Web Crypto', self.benchmark)
+
     def test_run_picker_repairs_only_displayed_legacy_encoding(self):
         self.assertIn('function readableName(value)', self.benchmark)
         self.assertIn('new TextDecoder("utf-8",{fatal:true})', self.benchmark)
