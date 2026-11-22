@@ -290,6 +290,43 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         fetch.assert_called_once_with("http://127.0.0.1:8188",
             "/object_info/LoraLoader",max_bytes=500_000,timeout=5)
 
+    def test_b10_2_ambiguous_workflow_returns_without_comfyui_request(self):
+        import json
+        from unittest.mock import patch
+        self.fill()
+        protocol = {
+            "schema":"orkilab-repro-v1", "vary":"lora", "workflow_id":"wf1",
+            "prompt_sha256":"a"*64, "negative_prompt_sha256":"b"*64,
+            "input_sha256":"c"*64, "gpu_uuid":"GPU-123",
+            "cache":"cold", "seed_policy":"fixed",
+            "repetitions":2, "resolution":[1024,1024],
+        }
+        with closing(sqlite3.connect(self.db)) as con, con:
+            con.execute("UPDATE benchmark_runs SET protocol_json=? WHERE id='run-a'",
+                        (json.dumps(protocol),))
+            con.execute("UPDATE benchmark_variants SET config_json=? WHERE id='variant-a'",
+                        (json.dumps({"controlled_value":"a.safetensors"}),))
+            con.execute("INSERT INTO benchmark_variants VALUES (?,?,?,?)",
+                        ("variant-b","run-a","Variant B",
+                         json.dumps({"controlled_value":"b.safetensors"})))
+        wf = self.base / "settings" / "orkilab" / "workflows.sqlite3"
+        with closing(sqlite3.connect(wf)) as con, con:
+            con.execute("CREATE TABLE workflows (id TEXT,graph TEXT)")
+            graph = {
+                "1":{"class_type":"LoraLoader","inputs":{"lora_name":"base.safetensors"}},
+                "2":{"class_type":"LoraLoader","inputs":{"lora_name":"base.safetensors"}},
+            }
+            con.execute("INSERT INTO workflows VALUES (?,?)",("wf1",json.dumps(graph)))
+        with patch("comfyui_connect.get_json") as fetch:
+            response=self.client.get(
+                "/api/workspace/benchmark/model-check?project_id=project-a&run_id=run-a"
+            )
+        self.assertEqual(response.status_code,200,response.get_json())
+        self.assertIn("exactly_one_model_loader_required",
+                      response.get_json()["reason_codes"])
+        self.assertFalse(response.get_json()["comparison_execution_authorized"])
+        fetch.assert_not_called()
+
     def test_b10_2_incomplete_declaration_denied_without_comfyui_query(self):
         import json
         from unittest.mock import patch
