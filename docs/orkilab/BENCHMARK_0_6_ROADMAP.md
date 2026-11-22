@@ -638,3 +638,24 @@ After updating the feature branch, restarting the Python launcher and Ctrl+F5 re
 ## Confirmed run title with irrecoverable question marks
 
 The operator supplied the exact malformed text **`vinculaci?n autom?tica`** in the context of the Benchmark Studio run selector. This is materially different from recoverable UTF-8 mojibake (`vinculaciÃ³n`); the original characters have already become literal question marks, so a general Unicode decoder cannot restore them. A bounded **display-only** exact Spanish phrase substitution in `GUI/benchmark_reports.html` shows `vinculación automática` (respecting initial capitalization). It does not change persisted SQLite data, run IDs, report semantics or unrelated question marks. The original unknown upstream encoding/serialization boundary still needs a sample of a new run or raw DB content to diagnose and repair universally; do not claim general resolution for other lost characters. A regression check was added to `tests/test_benchmark_workspace_integration.py`. Operator acceptance remains pending. Total expected benchmark tests: **171** (previous 170 expected + 1).
+
+## B9.5 / UX correction acceptance, B9.6 guided metadata choices (operator tests pending)
+
+The operator confirmed **`tok` and the interface now looks correct** after the run-selector Spanish text correction. This acknowledges user-side acceptance of the navigation/accents and **operator-reported 171 benchmark tests passing**; it is not evidence of raw CI or GPU telemetry.
+
+B9.6 reduces manual entry **without inventing execution evidence or SHA-256 hashes**:
+- A new launcher-local, project-scoped, **read-only** GET `/api/workspace/benchmark/draft-options?project_id=...` queries the existing active project and imported workflow records from `workflows.sqlite3` with SQLite `mode=ro`. It returns at most 200 actual `id`/`name`/`category` workflow references (not full graphs or sensitive source media). If the workflow DB is absent, no DB is created and the returned list is empty.
+- The same endpoint uses the existing 5-second-bounded `nvidia-smi` inventory probe to list **actual NVIDIA GPU UUIDs** or an explicit unavailable/empty response. It does not claim per-workflow VRAM, perform benchmark generation, touch observations, or persist monitor samples. Only verified local HTTP origin (127.0.0.1 or ::1) and an existing, non-archived `project_id` may query.
+- The bilingual in-zone `GUI/benchmark_reports.html` draft form now offers **Seleccionar workflow importado** and **Seleccionar GPU detectada** selectors; selection fills the existing manual ID/UUID fields. These fields remain editable for deliberate manual entry and do not get overwritten automatically by refreshed metadata. No workflow graph interpretation, model file hashes, prompt hashes or input image hashes are invented. Selecting a project and expanding the form loads choices, and stale asynchronous responses are ignored when switching projects.
+- Drafts continue to require all user-supplied fixed SHA-256 digests and explicit user confirmation. `draft-options` is read-only, while the pre-existing explicit POST draft creation remains separate.
+
+Three new isolated Flask route tests (actual metadata, absent DB/GPU, project/remote denial) and two UI regression tests were added. Total **176 benchmark tests expected** (171 user-reported baseline + 5), pending operator confirmation. This is a metadata prefill only; a model/workflow being listed does NOT prove that it is runnable or benchmarking-compatible. Per-workflow error diagnosis remains deferred at operator request.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart OrkiLab and open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Select an existing project, expand **Crear protocolo de Benchmark (borrador)** and inspect the new imported-workflow/NVIDIA-GPU selectors. Choose a real existing workflow and device; verify the exact identifiers populate the manual fields. Do not save a draft if actual prompt/negative/input SHA-256 fingerprints have not been established. Feature PR #104 remains open and unmerged.
