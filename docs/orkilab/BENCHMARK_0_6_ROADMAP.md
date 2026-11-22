@@ -433,3 +433,17 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 The next slice should safely collect epoch-based snapshots during a specifically tracked Generation Studio job (with explicit opt-in, bounded duration, adequate event coverage and process/queue concurrency flags), but this implementation alone neither starts a sampler nor performs a GPU job.
+
+## B8.2f operator PASS / B8.2g live opt-in read-only capture — pending tests
+
+Operator reported **101/101 benchmark tests PASS** for B8.2f (no raw test log attached in that turn). New `scripts/benchmark_gpu_live_capture.py` is an **operator-started, read-only passive capture** that requires an existing Generation Studio record in `queued` or `running` state and the exact configured localhost ComfyUI URL. The script cannot submit or cancel a job: it queries ComfyUI GET `/history/<prompt_id>` and GET `/queue` and samples a specific NVIDIA GPU UUID through `nvidia-smi`, with explicit 2–120 sample and 0.2–5 second interval bounds. Time stamps are UNIX epoch milliseconds taken at the midpoint of an individual subprocess measurement, so on the same local machine they can be compared with ComfyUI's history event times. Once completed history arrives it stops sampling; on an error or max-sample limit, it fails conservatively or indicates incomplete observation. The implementation does **not** call the launcher terminal status endpoint and therefore does not finalize or alter benchmark observations.
+
+The existing pure B8.2f analyzer labels maximum observed **device-global** usage and window coverage only. It cannot prove process memory or job isolation, especially on Windows WDDM. `peak_vram_bytes` stays NULL, `attributable_to_generation=false`, and `benchmark_database_modified=false`. An observed running queue entry is diagnostic only. This is **not** an automatic background monitor, nor a benchmark peak metric. Launch the monitor manually only after submitting a **new** job; it cannot retroactively monitor an already completed generation. Users must keep the launcher terminal GET/status workflow separate to finalize observations. No new inference should be initiated solely to test the fake unit cases.
+
+Five mocked tests added; **106 benchmark tests expected** from the operator-reported 101 baseline. Run:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_live_capture.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+No live GPU job is required for this acceptance gate. Future work: safe opt-in integration into the Generation Studio submission lifecycle, queue concurrency assessment, and more reliable per-process attribution where NVIDIA drivers provide that data. Only then consider adding dedicated memory columns or storing diagnostic series with explicit source and limitations.
