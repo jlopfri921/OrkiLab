@@ -208,6 +208,25 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         self.assertEqual(response.status_code,409,response.get_json())
         self.assertEqual(len(self.submitted_requests),0)
 
+    def test_b10_3_guided_token_cannot_be_modified_by_parameter_route(self):
+        self.configure_guided_variant_fixture()
+        schema={"input":{"required":{
+            "lora_name":[["base.safetensors","a.safetensors","b.safetensors"]]
+        }}}
+        with patch.object(generation_studio,"node_schema",return_value=schema):
+            response=self.client.post(
+                "/api/workspace/generation/benchmark/prepare-one",
+                json={"project_id":self.project_id,"run_id":self.run_id,
+                      "variant_id":self.variant_id,"repetition":0},
+            )
+        self.assertEqual(response.status_code,200,response.get_json())
+        token=response.get_json()["token"]
+        changed=self.client.post("/api/workspace/generation/parameters",json={
+            "token":token,"edits":[]
+        })
+        self.assertEqual(changed.status_code,409,changed.get_json())
+        self.assertEqual(len(self.submitted_requests),0)
+
     def test_b10_3_prepare_refuses_remote_wrong_project_and_repetition(self):
         self.configure_guided_variant_fixture()
         payload={"project_id":self.project_id,"run_id":self.run_id,
