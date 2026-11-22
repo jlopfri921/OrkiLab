@@ -34,6 +34,57 @@ def report_routes(app, base):
         conn.row_factory = sqlite3.Row
         return conn
 
+    @app.get("/api/workspace/benchmark/draft-options")
+    def benchmark_draft_options():
+        """Read-only list of real imported workflow IDs and NVIDIA UUIDs.
+
+        Neither workflows nor GPUs are inferred. Absence of a DB or NVIDIA
+        driver returns empty choices with explicit availability flags.
+        """
+        if not local():
+            return jsonify(error="Benchmark options available on launcher PC only"), 403
+        project_id = request.args.get("project_id", "")
+        if not ID.fullmatch(project_id):
+            return jsonify(error="Explicit project ID required"), 400
+        project_db = Path(base) / "settings" / "orkilab" / "projects.sqlite3"
+        if not project_db.is_file():
+            return jsonify(error="Project not found"), 404
+        try:
+            with closing(sqlite3.connect(project_db.resolve().as_uri() + "?mode=ro", uri=True)) as conn:
+                project = conn.execute(
+                    "SELECT id FROM projects WHERE id=? AND archived=0",
+                    (project_id,),
+                ).fetchone()
+            if project is None:
+                return jsonify(error="Active project not found"), 404
+            rows = []
+            wf_db = Path(base) / "settings" / "orkilab" / "workflows.sqlite3"
+            if wf_db.is_file():
+                with closing(sqlite3.connect(wf_db.resolve().as_uri() + "?mode=ro", uri=True)) as conn:
+                    rows = conn.execute(
+                        "SELECT id,name,category FROM workflows "
+                        "ORDER BY name COLLATE NOCASE,id LIMIT 200"
+                    ).fetchall()
+            from benchmark_gpu_memory_probe import sample_devices
+            sampled = sample_devices()
+            devices = ([{"uuid": dev["uuid"], "name": dev["name"],
+                         "index": dev["index"]}
+                        for dev in sampled.get("devices", [])]
+                       if sampled.get("ok") is True else [])
+            return jsonify(
+                project_id=project_id,
+                workflows=[{"id": row[0], "name": row[1], "category": row[2]}
+                           for row in rows],
+                devices=devices,
+                gpu_inventory_available=sampled.get("ok") is True,
+                read_only=True,
+                metadata_only=True,
+                auto_verified=False,
+                execution_submitted=False,
+            )
+        except (sqlite3.Error, OSError, TypeError, ValueError):
+            return jsonify(error="Benchmark options unavailable"), 503
+
     @app.post("/api/workspace/benchmark/drafts")
     def create_benchmark_draft():
         """Explicitly create an inactive benchmark plan; never run ComfyUI."""
