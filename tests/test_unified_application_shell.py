@@ -36,7 +36,9 @@ class UnifiedChromeTests(unittest.TestCase):
                 html = (ROOT / "GUI" / name).read_text(encoding="utf-8")
                 parsed = Elements()
                 parsed.feed(html)
-                self.assertEqual(parsed.css_links[-1], CSS_PATH)
+                self.assertEqual(parsed.css_links[-2:], [CSS_PATH, "/assets/orkilab/orkilab-light-theme.css"])
+                self.assertEqual(parsed.css_links.count(CSS_PATH),1)
+                self.assertIn("/assets/orkilab/orkilab-theme.js", parsed.scripts)
                 self.assertIn(JS_PATH, parsed.scripts)
                 self.assertEqual(parsed.scripts.count(JS_PATH), 1)
 
