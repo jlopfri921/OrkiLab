@@ -190,6 +190,20 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 
+## B6f operator PASS; B6g HTTP error/cancellation regression (pending)
+
+After the corrected Flask fixture and the venv retest, the operator reported B6f as OK: the 3 HTTP integration cases and cumulative 43 benchmark tests (Windows, Flask 3.1.3). The earlier broken fixture remains documented above for traceability. GitHub Actions and real ComfyUI remain unverified.
+
+**B6g adds three more Flask integration cases** to the same in-process, mocked ComfyUI harness: a terminal ComfyUI error becomes a single `failed` benchmark observation, a running job produces no premature observation, and a previously acknowledged cancellation becomes one `cancelled` observation after the prompt disappears from ComfyUI's queue. Tests exercise status polling and history persistence but **do not** send a real `/interrupt` request or perform real inference.
+
+Run in the OrkiLab Windows virtual environment:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+Expected after validation: six HTTP cases and 46 total benchmark tests. **B6g remains pending local operator acceptance**. Live ComfyUI cancellation, output integrity, timings, VRAM, and CI still need independent verification.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
