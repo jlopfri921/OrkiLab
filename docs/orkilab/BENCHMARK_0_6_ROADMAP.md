@@ -298,3 +298,9 @@ git pull --ff-only
 ```
 
 Expected test counts: 4 timing, 10 mocked HTTP, **63 benchmark tests total** if no other changes have been made. A future new benchmark run+variant/repetition and a new ComfyUI generation are needed before claiming **live B8.1 duration measurement**, but not for the code/tests stage. Do not rerun B7.4's completed binding.
+
+## B8.1 read-only live probe — first real observation
+
+The operator reported **66/66 benchmark tests PASS** and probed previously completed B7.4 generation `e754fd5eed294fbeb32b281b6db6d4c3` using the read-only historical timing probe. ComfyUI history returned valid paired events with `duration_ms=14` (`0.014 s`, no queue time). This is evidence of a **14 ms server event interval**, **NOT** proof of a full FLUX3 image inference benchmark; prompt caching or unchanged workflow inputs are plausible, but unconfirmed. The probe did not modify the benchmark database, and the existing B7.4 observation remains immutable.
+
+To prevent accidental interpretation as full inference, the probe now reports `execution_cached_event_observed`, `cache_status` (either `cache_event_observed` or `undetermined`) and `full_inference_verified=false` alongside the factual event interval. Absence of a cached event does **not** prove there was no cache. One additional mocked regression test covers an observed cache event (67 tests expected after the new change). The next full-inference benchmark will need an explicit fresh, legitimately varied workload with verified node execution and a new run/variant; do not compare the 14 ms interval as model throughput.
