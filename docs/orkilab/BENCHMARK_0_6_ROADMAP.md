@@ -511,3 +511,21 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 No new GPU generation required for these tests. After acceptance, perform *one consciously initiated small workflow* with the experimental monitor checked and inspect the result. Do not merge PR #104 before the live evidence is evaluated and critical regressions are resolved.
+
+## B8.2k real-device smoke test and deferred workflow compatibility register
+
+The operator reported that a **real opt-in NVIDIA GPU monitor generation completed successfully** in Generation Studio. This establishes an operator-reported functional smoke test, but no raw device-global sample report, actual peak number, trace ID or sampling coverage was supplied; **per-job VRAM attribution remains unverified and is not claimed**. They also reported some (not all) imported workflows show error messages; per-workflow troubleshooting is **explicitly deferred by operator request**. Create the workflow-error catalogue only when the operator resumes it, recording exact workflow/version, ComfyUI/nodes, message, cause, correction and verification; do not invent defects or alter workflows during Benchmark closeout.
+
+## B9.1 — read-only descriptive benchmark reporting (operator tests pending)
+
+A pure, non-I/O module `scripts/benchmark_report_summary.py` now accepts the exact existing `BenchmarkStore.report()` shape, validates project-run/variant/observation lineage and duplicate repetition keys, and returns *factual counts* per variant (completed/failed/cancelled, valid duration measurements, missing duration, present/missing per-job VRAM measurements). It computes descriptive duration min/median/max **only** from existing recorded durations for completed observations. This is **not** a performance ranking and never implies that measurements are comparable across configurations, caches or model families. A field in the report database marked `peak_vram_bytes = null` stays unknown; sampling of device-global VRAM is NEVER substituted for a per-job measurement. The original database and report are unmodified. No new visible benchmark UI or HTTP endpoint in B9.1.
+
+Eight synthetic read-only unit tests added. Following the operator-reported previous 119 benchmark tests, **127 benchmark tests are expected** once B9.1 tests are included (not yet confirmed on Windows).
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_report_summary.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+**Remaining to call OrkiLab 0.6.0 ready for RC:** user-facing Benchmark Studio run/variant comparison/report UI, approval and source/quality evidence on real comparisons, test coverage for Windows/Linux launchers and CI, migration/backwards compatibility and end-to-end update review. The benchmark source is still on the separate feature branch and PR #104; no merge, stable tag or release is authorized at this point.
