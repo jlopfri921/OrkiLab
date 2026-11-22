@@ -582,3 +582,20 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 Restart the OrkiLab launcher and inspect `http://127.0.0.1:4990/workspace/benchmark` with a saved run: legacy runs should explicitly say **Sin protocolo versionado; evidencia no acreditada**, rather than generating a guessed protocol or ranking. Feature PR #104 stays draft/open and must NOT merge or claim 0.6.0 release from this slice. The operator explicitly deferred the per-workflow error catalogue.
+
+## B9.4 operator acceptance / B9.5 guided and explicitly confirmed inactive protocol drafts
+
+Operator replied **`tok`**, explicitly defined by the operator as **`todo OK`**, after the B9.4 test checklist. Record **154/154 as operator-reported**, without raw test logs or CI claims.
+
+B9.5 introduces `scripts/benchmark_draft_creation.py`, an explicit-confirmation validator and an atomic SQL transaction that creates **only** a new `draft` benchmark run and its 2–20 uniquely named variants. The input contains a versioned `orkilab-repro-v1` protocol declaring workflow ID, fixed prompt/input SHA-256 fingerprints, an NVIDIA GPU UUID, seed/cache policies, resolution, repetitions and *one* varied checkpoint or LoRA field. The creation contract checks `declared_protocol_readiness` before writing; unknown or incomplete declarations are rejected. A new launcher-local JSON POST `/api/workspace/benchmark/drafts` validates the selected project is active using read-only access to the existing projects database. An archived/nonexistent project, remote caller, incomplete JSON, missing explicit confirmation, duplicate variant label or duplicate controlled value is rejected. Saving a draft **does not execute a workflow, transition the run to running or create observations**. No existing runs or observations are modified. The new responsive bilingual reports page contains a collapsible protocol-draft form that appears separately from the read-only reports. Users must manually supply SHA-256 fingerprints corresponding to the real inputs; these declarations are **not** verification of runtime equivalence and they do not automatically rank variants.
+
+Seven pure draft-creation tests (validation, no writes on rejection, project mismatch, duplicate values, atomic draft persistence) and two HTTP tests (successful draft with 2 variants/zero observations, remote/archived/invalid denied) added; **163 benchmark tests expected** after the operator-reported 154 baseline. These tests use isolated SQLite fixtures, **no actual ComfyUI generation or GPU sampling**. The normal report reads remain read-only. As the UI now explicitly supports draft creation, the top report remains read-only but the separate opt-in creation control is intentionally a write operation.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_draft_creation.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+After restarting the OrkiLab launcher, `http://127.0.0.1:4990/workspace/benchmark` displays a new **Crear protocolo de Benchmark (borrador)** section. It should not submit any inference on its own. A real draft should only be created when the operator has their own actual hashes, model/variant identifiers and deliberately opts in; no fake hashes should be used for a real report. The feature PR #104 stays open. Defer the requested per-workflow error catalogue.
