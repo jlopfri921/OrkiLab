@@ -836,7 +836,7 @@ B10.4 adds the pure module `scripts/benchmark_b10_results.py` for **descriptive,
 - Project-scoped read-only report detail now contains `b10_results`. The bilingual integrated **Diferencias observadas entre variantes (B10.4)** table shows only grounded pairwise descriptive values with prominent caveat, while preserving previously added B9 and B10 diagnostics.
 - This phase is an evidence-conservative **descriptive** B10.4, not a scientifically controlled ranking. B10.5 should focus on end-to-end regression, documentation, release readiness and explicit operator signoff; any truly controlled speedup/ranking requires further proof of executed model weights, input bytes, GPU/seed/cache and valid repeated inferencing, not merely sharing a benchmark run.
 
-**Twelve new tests**: 9 pure tests, 1 Flask route test, 2 UI tests; **266 benchmark tests expected** (254 operator-reported baseline + 12 new). JavaScript syntax parsed; Windows operator/browser suite remains pending. PR #104 remains open/unmerged.
+**Thirteen new tests**: 10 pure tests (including nonfinite median rejection), 1 Flask route test, 2 UI tests; **267 benchmark tests expected** (254 operator-reported baseline + 13 new). JavaScript syntax parsed; Windows operator/browser suite remains pending. PR #104 remains open/unmerged.
 
 ```powershell
 git pull --ff-only
