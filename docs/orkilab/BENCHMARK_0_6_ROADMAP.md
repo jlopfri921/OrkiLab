@@ -95,6 +95,22 @@ python -m unittest discover -s tests -p "test_benchmark*.py" -v
 
 Five new unit tests cover lineage persistence, project/confirmation rejection, queued-history rejection, exact identifier selection, and duplicate prevention. **B6b is unverified until these are executed.** Further work is required to prevent ambiguous association of a single generation across different benchmark runs, enforce API-side authentication and establish a durable binding at generation submission.
 
+## B6c — Bound generation identity (operator acceptance pending)
+
+**B6b:** Operator reports both 5/5 new association checks and the cumulative 25/25 benchmark unit suite as OK in local Windows/Python 3.13. Full terminal output was not supplied; this is reported acceptance, not independently observed CI.
+
+**B6c implementation:** `scripts/benchmark_job_binding.py` now provides a local, trusted-call binding API that reserves an exact, immutable generation token for one benchmark project/run/variant/repetition and expected workflow. The binding persists in `benchmark_generation_bindings` and enforces uniqueness of a generation across all benchmark runs. Result ingestion requires a matching prior binding, matching project/workflow and a terminal GenerationHistory record, then uses the tested atomic observation/lineage writer. It rejects a random historical generation with no binding and never sends ComfyUI requests.
+
+**Important deployment boundary:** The feature is **not yet called by Generation Studio at submission**, and no Benchmark Studio UI/HTTP endpoint exists. Both systems have separate databases and ComfyUI is external; registering the binding does not create an atomic transaction with a ComfyUI submission. The future actual launcher integration must pass the token from the same authorized submission flow, reconcile a submitted-but-unbound job, and enforce local authorization. Do not claim safe live queue integration or automatic cancellation yet.
+
+Test B6c on Windows:
+```powershell
+git pull --ff-only
+python -m unittest discover -s tests -p "test_benchmark_job_binding.py" -v
+python -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+Five new tests are included, with **30** total benchmark unit tests expected if all prior tests still pass. These results have **not yet been reported**.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
