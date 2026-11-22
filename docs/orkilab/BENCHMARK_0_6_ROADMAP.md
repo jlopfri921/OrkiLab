@@ -357,3 +357,18 @@ git pull --ff-only
 ```
 
 Next B8.2b: explicit start/stop capture linked to a specific Generation Studio job, session-bound to device UUID and preferably ComfyUI PID/process memory rather than device global memory, with sampling interval, baseline, max sample, and flags for observed concurrent GPU jobs/processes and missed windows. No attribution without isolation evidence and no extrapolated true peak beyond observed samples.
+
+## B8.2b — manual opt-in VRAM sample series (pending acceptance)
+
+The standalone `scripts/benchmark_gpu_memory_series.py` obtains a bounded series of read-only device-level NVIDIA VRAM snapshots at an explicitly selected GPU UUID. Default 10 samples, interval 0.5 s; sample count must be 2–120 and interval 0.2–5 seconds. Captures monotonically timestamped samples and summarizes baseline VRAM, maximum **observed device-global usage**, and maximum observed increase over the starting baseline. The UUID must remain available, and reported device capacity must not change. Failure of an individual sample aborts the capture, without partial reported metrics.
+
+These are **not per-generation or process measurements**. No PID/ComfyUI/Generation Studio attribution is possible from the data alone, so `peak_vram_bytes` stays NULL and `attributable_to_generation=false`. The observed increase is not ComfyUI's allocation: other GPU activity and persistent model caching can affect it. The sample maximum is not a continuous true peak. This phase does not update any database or attach results to a run; nor does it submit/cancel GPU jobs or alter GPU settings.
+
+5 mocked tests added; expected **83 benchmark tests if previous B8.2a 78 tests pass**. B8.2a operator-run tests and real GPU inventory have not been seen in this conversation; do not state they are confirmed. Test using:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_memory_series.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+.\\venv\\Scripts\\python.exe scripts/benchmark_gpu_memory_probe.py
+```
+Select the actual `devices[0].uuid` from the last command; only then optionally run `python scripts/benchmark_gpu_memory_series.py --gpu-uuid <ACTUAL_GPU_UUID> --samples 5 --interval 0.5` with the genuine UUID. Never paste a placeholder as a literal argument. The follow-on phase needs a generation-bounded recorder with explicit process identity and concurrency checks before assigning a VRAM metric to a benchmark observation.
