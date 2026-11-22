@@ -245,6 +245,20 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertNotIn("graph", str(check))
         self.assertNotIn("prompt-1", str(check))
 
+    def test_b10_1_declared_plan_does_not_authorize_execution(self):
+        self.fill()
+        before = self.db.read_bytes()
+        response = self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        preflight = response.get_json()["b10_comparison_preflight"]
+        self.assertEqual(preflight["declaration_status"], "incomplete")
+        self.assertFalse(preflight["comparison_execution_authorized"])
+        self.assertFalse(preflight["generation_submitted"])
+        self.assertFalse(preflight["ranking_eligible"])
+        self.assertEqual(self.db.read_bytes(), before)
+
     def test_b9_10_closeout_read_only_and_not_a_ranking(self):
         self.fill()
         before = self.db.read_bytes()
