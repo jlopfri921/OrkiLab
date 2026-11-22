@@ -402,3 +402,18 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe scripts/benchmark_comfyui_port_probe.py
 ```
 The pending future milestone is an explicit **per-generation, process-scoped** memory recording mechanism with Windows WDDM fallback; **not** to fill benchmark `peak_vram_bytes` from global memory maxima.
+
+## B8.2d real Windows acceptance / B8.2e read-only HTTP identity
+
+Operator reported **91/91 benchmark tests PASS** (2.345 seconds). Real `benchmark_comfyui_port_probe.py` found a single TCP port **8188** listener, **PID 32808**, executable `D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\standalone-env\\python.exe`, listening on **0.0.0.0** and listed in NVIDIA compute processes on GPU UUID `GPU-149248bf-feeb-0a40-a155-c7e4ca072dbd`. Separate operator `GET http://127.0.0.1:8188/system_stats` returned `comfyui_version=0.46.2`, `python_version=3.13.12`, `pytorch_version=2.12.1+cu130`, `deploy_environment=local-desktop2-standalone`. This confirms a valid ComfyUI HTTP response on that port and gives strong cross-source process correlation. However, **no GPU process isolation or per-process VRAM** is available in this WDDM environment. External LAN exposure may exist because listener is 0.0.0.0; operators should restrict access using firewall or bind to loopback where appropriate.
+
+**B8.2e** adds `scripts/benchmark_comfyui_identity_probe.py`. This *read-only* diagnostic checks the configured exact `http://127.0.0.1:8188` endpoint via GET `/system_stats`, then independently correlates the Windows listening port/PID and NVIDIA compute process on the same host. It reports protocol-level `http_comfyui_confirmed` and `http_tcp_gpu_correlated`, but retains `comfyui_process_verified=false`, `process_isolation_verified=false`, `peak_vram_bytes=null`, and `attributable_to_generation=false`. It neither submits generation nor modifies GPU/queue/SQLite. The check fails closed on missing HTTP identity, ambiguous listeners, no NVIDIA PID intersection, or wrong endpoint. Four mocked unit tests added. **95 benchmark tests** expected after previous confirmed 91; operator validation pending.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_comfyui_identity_probe.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+.\\venv\\Scripts\\python.exe scripts/benchmark_comfyui_identity_probe.py
+```
+
+Next: design a generation-window sampling protocol with reliable start/end and concurrency flags. Any global GPU memory remains expressly diagnostic and must not fill an attributed benchmark `peak_vram_bytes` field.
