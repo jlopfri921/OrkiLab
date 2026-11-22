@@ -5,6 +5,9 @@ ComfyUI job is prepared/validated/submitted through OrkiLab's existing
 generation endpoints. Original photo bytes and Multiview records are untouched.
 """
 import hashlib
+import os
+import tempfile
+import threading
 import json
 import sqlite3
 import uuid
@@ -70,11 +73,126 @@ def upload_reference(url, filename, data, mime):
     return "/".join([*segments, returned])
 
 
+def validate_input_folder(raw):
+    """Restrict manual local copies to an existing ComfyUI input directory."""
+    if (not isinstance(raw, str) or not 1 <= len(raw) <= 1024
+            or any(ord(char) < 32 for char in raw)):
+        raise ValueError("Specify an existing ComfyUI input directory")
+    # Never treat a UNC/network share as a local folder, including on Windows.
+    value = raw.strip()
+    if value.startswith(("\\\\", "//")):
+        raise ValueError("Network shares are not supported for local input copies")
+    folder = Path(value).expanduser()
+    if not folder.is_absolute() or folder.name.lower() != "input":
+        raise ValueError("Choose the input folder itself, not the ComfyUI root")
+    if folder.is_symlink() or not folder.is_dir():
+        raise ValueError("The ComfyUI input folder must already exist and cannot be a symlink")
+    resolved = folder.resolve(strict=True)
+    if resolved.name.lower() != "input":
+        raise ValueError("Input folder does not match its resolved location")
+    # ComfyUI may use a custom --input-directory elsewhere; do not assume
+    # it must have models/output siblings. The explicit user selection controls this.
+    return resolved
+
+
+def copy_to_input(folder, filename, data):
+    """Copy photo bytes only; never overwrite a file or move an original."""
+    target = folder / filename
+    # O_EXCL prevents preexisting file overwrites and blocks target symlinks.
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_BINARY"):
+        flags |= os.O_BINARY
+    try:
+        fd = os.open(target, flags, 0o600)
+    except FileExistsError:
+        # Existing identical copies are safe to reuse without modifying them.
+        with target.open("rb") as saved:
+            if saved.read(len(data) + 1) == data:
+                return filename
+        raise ValueError("A different file already uses this reference name")
+    try:
+        with os.fdopen(fd, "wb") as out:
+            out.write(data)
+    except BaseException:
+        try:
+            target.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+    return filename
+
+
+def browse_local_input_folder():
+    """Use the *launcher computer's* native OS folder dialog, not the browser picker."""
+    import tkinter
+    from tkinter import filedialog
+    # No network/server-picker; the dialog is visible on the local desktop.
+    root = tkinter.Tk()
+    try:
+        root.withdraw()
+        root.attributes("-topmost", True)
+        selection = filedialog.askdirectory(
+            parent=root, title="Choose ComfyUI input folder", mustexist=True)
+    finally:
+        root.destroy()
+    return selection
+
+
 def register(app, base):
     root = Path(base) / "settings" / "orkilab"
     projects_db = root / "projects.sqlite3"
     captures_db = root / "multiview.sqlite3"
     comfy_config = root / "comfyui.json"
+    input_pref = root / "multiview_input.json"
+    picker_lock = threading.Lock()
+
+    def local_only():
+        return request.remote_addr in ("127.0.0.1", "::1") and valid_origin()
+
+    @app.get("/api/workspace/multiview/comfyui-input")
+    def multiview_input_info():
+        if not local_only():
+            return jsonify(error="Local same-origin access required"), 403
+        folder = ""
+        try:
+            record = json.loads(input_pref.read_text(encoding="utf-8"))
+            folder = record.get("path", "") if isinstance(record, dict) else ""
+            if folder:
+                validate_input_folder(folder)
+        except (OSError, ValueError, TypeError):
+            folder = ""
+        return jsonify(path=folder)
+
+    @app.post("/api/workspace/multiview/comfyui-input/browse")
+    def multiview_input_browse():
+        if not local_only():
+            return jsonify(error="Local same-origin access required"), 403
+        if request.mimetype != "application/json" or (request.content_length or 0) > 128:
+            return jsonify(error="Invalid folder-picker request"), 400
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict) or body.get("confirm") is not True:
+            return jsonify(error="Folder selection requires confirmation"), 400
+        try:
+            cfg = validate_settings(json.loads(comfy_config.read_text(encoding="utf-8")),
+                                    DEFAULT_SETTINGS)
+            if cfg["mode"] == "native":
+                return jsonify(error="ComfyUI is disabled in native mode"), 409
+        except (OSError, ValueError, KeyError, TypeError):
+            return jsonify(error="Configure ComfyUI first"), 409
+        if not picker_lock.acquire(blocking=False):
+            return jsonify(error="A folder dialog is already open"), 409
+        try:
+            selected = browse_local_input_folder()
+            if not selected:
+                return jsonify(cancelled=True, path="")
+            folder = validate_input_folder(selected)
+            return jsonify(cancelled=False, path=str(folder))
+        except (OSError, ValueError, ImportError, RuntimeError) as exc:
+            return jsonify(error="Could not open a folder dialog on the launcher PC",
+                           detail=str(exc)[:160]), 422
+        finally:
+            picker_lock.release()
+
 
     @app.post("/api/workspace/multiview/projects/<project_id>/subjects/<subject_id>/reference-upload")
     def multiview_upload_references(project_id, subject_id):
@@ -134,11 +252,32 @@ def register(app, base):
                 ext = ".jpg" if path.suffix.lower() == ".jpeg" else path.suffix.lower()
                 name = "orkilab_" + capture_id + "_" + row[2][:16] + ext
                 safe.append((capture_id, name, data, mime))
+            method = body.get("transfer_mode", "api")
+            if method not in ("api", "folder"):
+                return jsonify(error="Unsupported reference transfer mode"), 400
+            folder = None
+            if method == "folder":
+                folder = validate_input_folder(body.get("input_folder"))
             uploaded = []
             for capture_id, name, data, mime in safe:
-                server_name = upload_reference(cfg["url"], name, data, mime)
+                server_name = (copy_to_input(folder, name, data) if folder is not None
+                               else upload_reference(cfg["url"], name, data, mime))
                 uploaded.append({"capture_id": capture_id, "comfy_name": server_name})
+            if folder is not None:
+                # Successful local selection is remembered for the next visit.
+                root.mkdir(parents=True, exist_ok=True)
+                with tempfile.NamedTemporaryFile("w", encoding="utf-8",
+                         dir=root, delete=False) as temp:
+                    json.dump({"path": str(folder)}, temp)
+                    temp_name = temp.name
+                try:
+                    os.replace(temp_name, input_pref)
+                finally:
+                    if os.path.exists(temp_name):
+                        os.unlink(temp_name)
             return jsonify(references=uploaded, endpoint=cfg["url"],
+                           transfer_mode=method,
+                           input_folder=str(folder) if folder is not None else None,
                            note="Reference copies staged. No generation has been submitted."), 200
         except (OSError, ValueError, TypeError, json.JSONDecodeError,
                 HTTPError, URLError) as exc:
