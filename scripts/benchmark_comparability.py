@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import Any
 
-CACHE_BLOCKERS = {"sampler_cached_not_comparable", "cached"}
 KNOWN_SOURCE = "comfyui_history_status_messages"
 
 
@@ -44,8 +43,10 @@ def assess_duration_comparability(report: Any) -> dict:
         if len(timed) < len(completed):
             reasons.append("incomplete_duration_coverage")
         workflow_ids, graph_hashes = set(), set()
-        provenances = []
-        for observation in timed:
+        # Inspect ALL completed observations for cached sampler evidence. A
+        # cached sampler deliberately has no measured duration and must not
+        # disappear from diagnostics merely because its duration is NULL.
+        for observation in completed:
             snap = observation.get("generation_lineage")
             if not isinstance(snap, dict):
                 reasons.append("missing_generation_lineage")
@@ -76,7 +77,6 @@ def assess_duration_comparability(report: Any) -> dict:
                 reasons.append("unclassified_sampler_cache")
             if timing.get("full_inference_verified") is not True:
                 reasons.append("full_inference_not_verified")
-            provenances.append(timing)
         if len(workflow_ids) > 1:
             blocking = True
             reasons.append("different_workflows_within_variant")
@@ -84,7 +84,7 @@ def assess_duration_comparability(report: Any) -> dict:
             # A changed graph might be a legitimate deliberate variable, so
             # it is *not* proof of incompatibility, but requires review.
             reasons.append("graph_changed_between_repetitions")
-        if timed:
+        if completed:
             reasons.extend(["hardware_equivalence_not_verified",
                             "seed_and_warmth_controls_not_verified"])
         result.append({
