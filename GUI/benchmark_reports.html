@@ -131,6 +131,11 @@ function reasons(values){
 // Never rewrite stored project/run names or their IDs; leave healthy Unicode untouched.
 function readableName(value){
  const text=String(value??"");
+ // Targeted repair for a confirmed legacy label whose accented bytes were
+ // irreversibly replaced by question marks; never guess other missing letters.
+ const corrected=text.replace(/vinculaci\\?n autom\\?tica/gi, match=>
+  match[0]===match[0].toUpperCase()?"Vinculación automática":"vinculación automática");
+ if(corrected!==text)return corrected;
  if(!/[ÃÂâ][\u0080-\u00BF\u2018-\u2122]/u.test(text))return text;
  const extra={"€":128,"‚":130,"ƒ":131,"„":132,"…":133,"†":134,
   "‡":135,"ˆ":136,"‰":137,"Š":138,"‹":139,"Œ":140,"Ž":142,
