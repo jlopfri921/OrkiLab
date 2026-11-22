@@ -55,6 +55,12 @@ def register(app, base, load_config):
     def dataset_studio_page():
         return send_from_directory(str(base / "GUI"), "dataset_studio.html")
 
+    @app.get("/workspace/benchmark")
+    def benchmark_reports_page():
+        if request.remote_addr not in ("127.0.0.1", "::1"):
+            return jsonify(error="Benchmark reports available on launcher PC only"), 403
+        return send_from_directory(str(base / "GUI"), "benchmark_reports.html")
+
     @app.get("/workspace/multiview")
     def multiview_studio_page():
         return send_from_directory(str(base / "GUI"), "multiview_studio.html")
