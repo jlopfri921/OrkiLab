@@ -48,6 +48,49 @@ def cache_evidence(entry: Any, prompt_id: str) -> dict:
     return result
 
 
+
+def sampler_cache_assessment(graph: Any, entry: Any, prompt_id: str) -> dict:
+    """Classify this saved API graph's KSampler nodes against ComfyUI cache.
+
+    The narrow KSampler/KSamplerAdvanced allowlist avoids guessing what
+    arbitrary custom sampler nodes do. No execution inference is made solely
+    from the absence of a node in execution_cached.
+    """
+    cache = cache_evidence(entry, prompt_id)
+    result = {
+        "cached_node_ids": cache["cached_node_ids"],
+        "execution_cached_event_observed": cache["execution_cached_event_observed"],
+        "sampler_node_ids": [],
+        "sampler_cached_node_ids": [],
+        "sampler_cache_status": "unknown",
+        "comparability": "unverified",
+        "full_inference_verified": False,
+    }
+    if not isinstance(graph, dict) or not graph or len(graph) > 2000:
+        return result
+    if any(not isinstance(k, str) or not isinstance(v, dict) for k, v in graph.items()):
+        return result
+    samplers = sorted(
+        node_id for node_id, node in graph.items()
+        if node.get("class_type") in ("KSampler", "KSamplerAdvanced")
+    )
+    result["sampler_node_ids"] = samplers
+    if not samplers:
+        return result
+    cached = sorted(set(samplers).intersection(cache["cached_node_ids"]))
+    result["sampler_cached_node_ids"] = cached
+    if cached:
+        result["sampler_cache_status"] = "cached"
+        result["comparability"] = "sampler_cached_not_comparable"
+    elif cache["execution_cached_event_observed"]:
+        result["sampler_cache_status"] = "not_listed_as_cached"
+        result["comparability"] = "sampler_cache_miss_partial_cache"
+    else:
+        result["sampler_cache_status"] = "no_cache_event"
+        result["comparability"] = "sampler_cache_unverified"
+    return result
+
+
 def measured_execution_timing(entry: Any, prompt_id: str) -> dict | None:
     if not isinstance(entry, dict) or not isinstance(prompt_id, str) or not prompt_id:
         return None
