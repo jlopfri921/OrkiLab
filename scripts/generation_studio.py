@@ -448,7 +448,7 @@ def register(app, base):
         except (OSError, ValueError, TypeError) as exc:
             return jsonify(error="Could not request memory release", detail=str(exc)[:300]), 502
 
-    def finalize_benchmark(token):
+    def finalize_benchmark(token, *, execution_entry=None):
         """Best-effort, local-only persistence; never changes generation outcome."""
         try:
             db_path = base / "settings" / "orkilab" / "benchmarks.sqlite3"
@@ -457,7 +457,7 @@ def register(app, base):
             from benchmark_store import BenchmarkStore
             from benchmark_job_binding import finalize_bound_history_generation
             with BenchmarkStore(db_path) as bench:
-                return finalize_bound_history_generation(bench, records, token)
+                return finalize_bound_history_generation(bench, records, token, execution_entry=execution_entry)
         except (OSError, ValueError, TypeError, PermissionError, sqlite3.Error, KeyError) as exc:
             app.logger.warning("Benchmark finalization deferred for %s: %s", token, exc)
             return "deferred"
@@ -552,7 +552,9 @@ def register(app, base):
             outputs = describe_outputs(entry)
             records.update(token,state,outputs)
             if state in ("completed", "error", "cancelled"):
-                finalize_benchmark(token)
+                # Use ComfyUI's historical per-prompt events when present.
+                # Never use local request/poll timing as execution duration.
+                finalize_benchmark(token, execution_entry=entry)
             return jsonify(state=state, outputs=outputs)
         except (OSError, ValueError, TypeError) as exc:
             return jsonify(error="Could not read generation status", detail=str(exc)[:300]), 502
