@@ -40,6 +40,10 @@ def files():
 def migrate(apply=False):
     changes = []
     for relative in files():
+        # GitHub Actions bot cannot push workflow file changes. The connector
+        # migrates these separately with its own repository permissions.
+        if relative.parts[:2] == (".github", "workflows"):
+            continue
         source = ROOT / relative
         if not source.is_file():
             continue
