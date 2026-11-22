@@ -40,6 +40,56 @@ def inspect_graph(graph):
     return {"format": fmt, "node_count": len(nodes), "node_types": sorted(types),
             "model_references": sorted(models)}
 
+def multiview_reference_profile(graph, category):
+    """Conservative static Multiview eligibility. Final schema validation
+    still happens in generation/prepare against the running ComfyUI."""
+    if category != "image" or not isinstance(graph, dict):
+        return {"likely_compatible": False, "image_inputs": 0,
+                "has_prompt": False, "reason": "not_image"}
+    image_inputs = 0
+    has_prompt = False
+    if isinstance(graph.get("nodes"), list):
+        # UI workflow: links map origin IDs to downstream consumers.
+        nodes = graph["nodes"]
+        sources = {str(link[1]) for link in graph.get("links", [])
+                   if isinstance(link, list) and len(link) >= 3}
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            kind = str(node.get("type", ""))
+            if "LoadImage" in kind and str(node.get("id")) in sources:
+                image_inputs += 1
+            if any(x in kind.lower() for x in ("cliptextencode", "prompt", "textencode")):
+                has_prompt = True
+    else:
+        connected = set()
+        for node in graph.values():
+            if not isinstance(node, dict):
+                continue
+            inputs = node.get("inputs", {})
+            if isinstance(inputs, dict):
+                for value in inputs.values():
+                    if (isinstance(value, list) and len(value) == 2
+                            and isinstance(value[0], (str, int))
+                            and isinstance(value[1], int)):
+                        connected.add(str(value[0]))
+        for ident, node in graph.items():
+            if not isinstance(node, dict):
+                continue
+            kind = str(node.get("class_type", ""))
+            inputs = node.get("inputs", {})
+            if "LoadImage" in kind and str(ident) in connected and isinstance(inputs, dict) and "image" in inputs:
+                image_inputs += 1
+            if isinstance(inputs, dict) and any(isinstance(value, str) and
+                    any(term in key.lower() for term in ("text", "prompt"))
+                    for key, value in inputs.items()):
+                has_prompt = True
+    return {"likely_compatible": bool(image_inputs and has_prompt),
+            "image_inputs": image_inputs, "has_prompt": has_prompt,
+            "reason": "candidate" if image_inputs and has_prompt else
+                      ("no_connected_loadimage" if not image_inputs else "no_prompt")}
+
+
 def register(app, base):
     path = Path(base) / "settings" / "orkilab" / "workflows.sqlite3"
 
@@ -84,6 +134,13 @@ def register(app, base):
                 result = []
                 for row in rows:
                     entry = public(row)
+                    try:
+                        entry["multiview_reference"] = multiview_reference_profile(
+                            json.loads(row["graph"]), row["category"])
+                    except (ValueError, TypeError, RecursionError):
+                        entry["multiview_reference"] = {
+                            "likely_compatible": False, "image_inputs": 0,
+                            "has_prompt": False, "reason": "invalid_graph"}
                     if project_engine is not None:
                         try:
                             entry["compatibility"] = assess_workflow(
