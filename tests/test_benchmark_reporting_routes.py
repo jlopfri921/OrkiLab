@@ -202,6 +202,58 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertFalse(readiness["ranking_eligible"])
         self.assertNotIn("prompt_sha256", readiness)
 
+    def test_b9_9_local_history_matches_immutable_lineage_without_backend_execution(self):
+        import json
+        from benchmark_generation_adapter import snapshot_generation
+        self.fill()
+        gen = {
+            "id": "generation-1",
+            "prompt_id": "prompt-1",
+            "workflow_id": "workflow-1",
+            "state": "completed",
+            "graph": json.dumps({"4":{"class_type":"KSampler","inputs":{"seed":14}}}),
+            "outputs": "[]",
+        }
+        snap = snapshot_generation(gen)
+        with sqlite3.connect(self.db) as conn:
+            conn.execute(
+                "INSERT INTO benchmark_generation_lineage VALUES (?,?,?,?)",
+                ("obs-a", "run-a", gen["id"], json.dumps(snap)),
+            )
+        history = self.base / "settings" / "orkilab" / "generations.sqlite3"
+        with sqlite3.connect(history) as conn:
+            conn.execute(
+                "CREATE TABLE generations (id TEXT,prompt_id TEXT,workflow_id TEXT,"
+                "state TEXT,graph TEXT,outputs TEXT)"
+            )
+            conn.execute(
+                "INSERT INTO generations VALUES (?,?,?,?,?,?)",
+                (gen["id"], gen["prompt_id"], gen["workflow_id"],
+                 gen["state"], gen["graph"], gen["outputs"]),
+            )
+        history_before = history.read_bytes()
+        response = self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        check = response.get_json()["saved_history_consistency"]
+        self.assertEqual(check["variants"][0]["counts"]["local_record_match"], 1)
+        self.assertFalse(check["remote_execution_verified"])
+        self.assertFalse(check["ranking_eligible"])
+        self.assertEqual(history.read_bytes(), history_before)
+        self.assertNotIn("graph", str(check))
+        self.assertNotIn("prompt-1", str(check))
+
+    def test_b9_9_missing_history_cannot_claim_local_record_match(self):
+        self.fill()
+        response = self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        check = response.get_json()["saved_history_consistency"]
+        self.assertEqual(check["variants"][0]["status"], "incomplete")
+        self.assertFalse(check["remote_execution_verified"])
+
     def test_b9_8_read_only_report_does_not_claim_submitted_content_proof(self):
         self.fill()
         response = self.client.get(
