@@ -144,6 +144,23 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         for lang in ("es","en","pt","fr","de","it","ja","ko"):
             self.assertIn(' '+lang+':{',source)
 
+    def test_multiview_official_workflows_are_in_creation_interface(self):
+        source=(ROOT/"assets"/"orkilab"/"multiview-generate-view.js").read_text(encoding="utf-8")
+        self.assertIn('officialPanel=elt("details")',source)
+        self.assertIn('officialPanel.open=true',source)
+        self.assertIn('officialSelect=elt("select")',source)
+        self.assertIn('officialText("zip")',source)
+        self.assertIn('officialText("import")',source)
+        self.assertIn('"/api/workspace/multiview/official-workflows/download"',source)
+        self.assertIn('"/api/workspace/multiview/official-workflows/install"',source)
+        self.assertIn('"/api/workspace/multiview/official-workflows/checkpoints"',source)
+        self.assertIn('if(upload.length!==1)',source)
+        self.assertIn('checkpoints.value',source)
+        self.assertIn('result.installed?"done":"already"',source)
+        self.assertIn('https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/tree/main/workflows/multiview',source)
+        for lang in ("es","en","pt","fr","de","it","ja","ko"):
+            self.assertIn(lang+":{",source)
+
     def test_general_guide_page_exists(self):
         page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
         for section in ('id="flow"','id="sections"','id="multiview"',

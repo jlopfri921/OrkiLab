@@ -32,6 +32,43 @@ File: `orkilab-multiview-core-img2img-api.json`
 - No LoRA, ControlNet or third-party nodes, no external service required;
   no claim that a fresh ComfyUI install comes with model weights.
 
+### Built-in workflow selector in Multiview Studio (RC.1)
+
+Inside **Generar vista faltante** the official library is available alongside
+the workflow selector, and automatically expands when no suitable workflow is
+detected. You can:
+
+- Download the offline **OrkiLab-Multiview-Workflows-0.5.0-rc1.zip** directly
+  from the running app. It contains three project-authored API JSON graphs,
+  this README, and a manifest with SHA-256 hashes and upstream references.
+  Internet access is **not required** for these starter templates.
+- Copy one photo to the configured ComfyUI input directory, choose one of the
+  three included templates and select a checkpoint already installed in the
+  running ComfyUI, then click **Import into OrkiLab**. The importer fills the
+  actual staged image filename and checkpoint, validates the core-only graph,
+  registers it in Workflow Library, and selects it in the generation panel.
+  It does **not** launch a generation job.
+- Visit the upstream ComfyUI Qwen-Image 2.1 and FLUX.3 Klein example templates
+  using their official GitHub links, clearly identified as **external and
+  unverified**. Do not expect those visual/template workflows to run through
+  OrkiLab's API preparation without a properly compatible converted graph.
+
+The three bundled starter graphs are:
+
+| Official workflow | Denoise | Intended use |
+| --- | --- | --- |
+| **OrkiLab · Multiview · Core Img2Img** | 0.55 | Balanced starter; not guaranteed camera control |
+| **OrkiLab · Multiview · Core Preserve** | 0.30 | More fidelity, less change of viewpoint |
+| **OrkiLab · Multiview · Core Variation** | 0.72 | Stronger image changes, more hallucination risk |
+
+**Compatibility caveat:** Core baseline graphs target compatible SD1.5/SDXL
+checkpoints with a standard VAE/CLIP loader structure. They are **not** correct
+drop-ins for Qwen, FLUX or other model families, even if those model filenames
+happen to appear in a checkpoint dropdown. The application validates the
+selected workflow again against the installed ComfyUI nodes and models before
+generation. Desktop and Portable share basic core nodes, but neither includes
+model weights by default.
+
 ### Level 2 — Family-specific, pending actual graph validation
 
 | Planned official name | Purpose | Dependencies |
