@@ -62,6 +62,27 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn('modeHelp.src="/assets/orkilab/orkilab-mode-help.js"',shell)
         self.assertIn('"/workspace/guide"',shell)
 
+    def test_multiview_spanish_visible_text_and_dynamic_labels(self):
+        import json
+        import re
+        page=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
+        translations=json.loads((ROOT/"GUI"/"locales"/"es.json").read_text(encoding="utf-8"))
+        keys=set(re.findall(r'\\bt\\(\\s*"([^"]+)"',page))
+        keys.update(re.findall(r'\\b(?:field|selector)\\(\\s*"([^"]+)"',page))
+        keys.update(re.findall(r'\\[\\s*"(?:real_photo|video_frame|synthetic|unknown|manual|workflow|embedded_exif|estimated|unreviewed|approved|rejected|newest|oldest|name|azimuth|distance)"\\s*,\\s*"([^"]+)"',page))
+        # These are runtime translation keys, not project names or protocol values.
+        missing=sorted(k for k in keys if k not in translations and k not in
+                       ("project","loading","found","none","archived","other","missing","error","remote"))
+        self.assertEqual(missing,[],f"Untranslated Multiview interface labels: {missing}")
+        static=(
+            "Organize multiple photographs of a subject by viewpoint, angle and distance. Real and synthetic sources are clearly distinguished. Your original files are never changed.",
+            "Choose a project","Manage projects","Use an existing image project. Multiview metadata belongs to this project only.",
+            "Subjects","Subject name","Create subject","Search subjects","Sort subjects","Most photographs")
+        self.assertTrue(all(translations.get(k) for k in static))
+        self.assertIn('localize(capture.requested_direction)',page)
+        rc=(ROOT/"assets"/"orkilab"/"multiview-rc1.js").read_text(encoding="utf-8")
+        self.assertIn('status.textContent=t("limit30")',rc)
+
     def test_general_guide_page_exists(self):
         page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
         for section in ('id="flow"','id="sections"','id="multiview"',
