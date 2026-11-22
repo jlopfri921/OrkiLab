@@ -417,3 +417,19 @@ git pull --ff-only
 ```
 
 Next: design a generation-window sampling protocol with reliable start/end and concurrency flags. Any global GPU memory remains expressly diagnostic and must not fill an attributed benchmark `peak_vram_bytes` field.
+
+## B8.2e operator confirmation and B8.2f temporal window logic
+
+Operator responded `todo ok` to B8.2e acceptance (expected **95** benchmark tests and an HTTP/GPU cross-source diagnostic); this is **operator-reported**, not an independently observed raw test transcript in this turn.
+
+B8.2f adds the pure, I/O-free module `scripts/benchmark_gpu_generation_window.py` to align GPU device-global samples carrying **UNIX epoch milliseconds** with exact ComfyUI `execution_start`/`execution_success` timestamps for one prompt. The pre-existing `benchmark_gpu_memory_series.py` supplies **monotonic timestamps**, so its outputs must **not** be passed directly as wall-clock timestamps or converted without obtaining a shared valid timebase. The new analyzer is not yet wired to live capture or Generation Studio.
+
+The analysis reports the maximum *observed global device usage* and its observed increase relative to the first in-window sample. It flags missing server events, no samples in the generation window, and incomplete cadence/endpoint coverage, never inventing samples. A concurrency flag (`true/false/null`) is annotation only and does not prove isolation. **The analyzer never fills `peak_vram_bytes`**, always declares `attributable_to_generation=false`, does not write SQLite and cannot infer ComfyUI-process usage under Windows WDDM. It also cannot prove true instantaneous peaks even when sampling cadence is within the configured maximum gap.
+
+Six isolated synthetic tests added; **101 benchmark tests expected** after previously operator-reported 95. Validation:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_generation_window.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+The next slice should safely collect epoch-based snapshots during a specifically tracked Generation Studio job (with explicit opt-in, bounded duration, adequate event coverage and process/queue concurrency flags), but this implementation alone neither starts a sampler nor performs a GPU job.
