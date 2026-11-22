@@ -202,6 +202,20 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertFalse(readiness["ranking_eligible"])
         self.assertNotIn("prompt_sha256", readiness)
 
+    def test_b9_8_read_only_report_does_not_claim_submitted_content_proof(self):
+        self.fill()
+        response = self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        verification = response.get_json()["recorded_execution_evidence"]
+        self.assertEqual(verification["status"], "no_execution_evidence")
+        self.assertFalse(verification["ranking_eligible"])
+        self.assertFalse(verification["variants"][0]["prompt_content_verified"])
+        self.assertIn("no_recorded_generation_lineage",
+                      verification["variants"][0]["reason_codes"])
+        self.assertNotIn("generation_lineage", response.get_json()["variants"][0])
+
     def test_cross_project_detail_not_disclosed(self):
         self.fill()
         result = self.client.get(
