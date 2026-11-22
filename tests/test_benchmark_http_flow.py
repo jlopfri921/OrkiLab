@@ -224,6 +224,62 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
         self.assertEqual(self.observations(), rows)
 
+    def test_warm_sampler_duration_kept_when_loader_cached(self):
+        self.graph["7"] = {"class_type": "KSampler", "inputs": {"seed": 43}}
+        with closing(sqlite3.connect(
+            self.root / "settings" / "orkilab" / "workflows.sqlite3"
+        )) as con, con:
+            con.execute("UPDATE workflows SET graph=? WHERE id=?",
+                        (json.dumps(self.graph), "workflow-1"))
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {
+            "status": {"completed": True, "status_str": "success", "messages": [
+                ["execution_start", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_000}],
+                ["execution_cached", {"prompt_id": "prompt-comfy", "nodes": ["1"]}],
+                ["execution_success", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_013_622}],
+            ]}, "outputs": {},
+        }
+        self.assertEqual(
+            self.client.get("/api/workspace/generation/" + token).get_json()["state"],
+            "completed",
+        )
+        observation = self.observations()[0]
+        self.assertEqual(observation["duration_ms"], 13622)
+        timing = observation["generation_lineage"]["execution_timing"]
+        self.assertEqual(timing["sampler_node_ids"], ["7"])
+        self.assertEqual(timing["sampler_cached_node_ids"], [])
+        self.assertEqual(timing["comparability"], "sampler_cache_miss_partial_cache")
+        self.assertFalse(timing["full_inference_verified"])
+
+    def test_cached_sampler_never_populates_comparison_duration(self):
+        self.graph["7"] = {"class_type": "KSampler", "inputs": {"seed": 42}}
+        with closing(sqlite3.connect(
+            self.root / "settings" / "orkilab" / "workflows.sqlite3"
+        )) as con, con:
+            con.execute("UPDATE workflows SET graph=? WHERE id=?",
+                        (json.dumps(self.graph), "workflow-1"))
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {
+            "status": {"completed": True, "status_str": "success", "messages": [
+                ["execution_start", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_000}],
+                ["execution_cached", {"prompt_id": "prompt-comfy", "nodes": ["1", "7"]}],
+                ["execution_success", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_014}],
+            ]}, "outputs": {},
+        }
+        self.assertEqual(
+            self.client.get("/api/workspace/generation/" + token).get_json()["state"],
+            "completed",
+        )
+        observation = self.observations()[0]
+        self.assertIsNone(observation["duration_ms"])
+        timing = observation["generation_lineage"]["execution_timing"]
+        self.assertEqual(timing["sampler_cached_node_ids"], ["7"])
+        self.assertEqual(timing["comparability"], "sampler_cached_not_comparable")
+
     def test_missing_comfyui_events_never_infers_duration(self):
         created = self.submit()
         self.assertEqual(created.status_code, 201, created.get_json())
