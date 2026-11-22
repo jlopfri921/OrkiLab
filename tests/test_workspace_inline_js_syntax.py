@@ -105,6 +105,44 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         page=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
         self.assertIn('translate("requestedLabel")',page)
 
+    @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
+    def test_guide_eight_languages_and_menu_version_order(self):
+        script=ROOT/"assets"/"orkilab"/"orkilab-guide-i18n.js"
+        result=subprocess.run([shutil.which("node"),"--check",str(script)],
+                              capture_output=True,text=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stderr)
+        source=script.read_text(encoding="utf-8")
+        page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
+        self.assertIn('src="/assets/orkilab/orkilab-guide-i18n.js"',page)
+        self.assertNotIn('const lang=locale==="es"?"es":"en"',page)
+        for lang in ("pt","fr","de","it","ja","ko"):
+            self.assertIn(lang+":{",source)
+        for section in ("hero","nav","flow","modules","multiview","modes","faq"):
+            self.assertIn(section+":",source)
+        self.assertIn('document.documentElement.lang=lang',source)
+        shell=(ROOT/"assets"/"orkilab"/"orkilab-shell.js").read_text(encoding="utf-8")
+        self.assertLess(shell.index('["guide", "/workspace/guide"'),
+                        shell.index("const names ="))
+        mode=(ROOT/"assets"/"orkilab"/"orkilab-mode-help.js").read_text(encoding="utf-8")
+        self.assertIn('nav.insertBefore(a,version)',mode)
+        self.assertIn('nav.append(indicator)',mode)
+
+    def test_multiview_semi_automatic_input_upload_controls(self):
+        source=(ROOT/"assets"/"orkilab"/"multiview-generate-view.js").read_text(encoding="utf-8")
+        self.assertIn('t("send")',source)
+        self.assertIn('mapMode.add(new Option(t("auto"),"auto"))',source)
+        self.assertIn('mapMode.add(new Option(t("semi"),"semi"))',source)
+        self.assertIn('mapMode.value==="auto"',source)
+        self.assertIn('ComfyUI/input/',source)
+        self.assertIn('transferTitle.hidden=false',source)
+        self.assertIn('status(t("chooseNode"))',source)
+        self.assertIn('if(!window.confirm(t("confirmStage")))',source)
+        preflight=source.index('const inspected=await post(api,"/api/workspace/generation/prepare"')
+        upload=source.index('const result=await post(api,u(originalProject,"/subjects/"+subjectId+"/reference-upload")')
+        self.assertLess(preflight,upload)
+        for lang in ("es","en","pt","fr","de","it","ja","ko"):
+            self.assertIn(' '+lang+':{',source)
+
     def test_general_guide_page_exists(self):
         page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
         for section in ('id="flow"','id="sections"','id="multiview"',
