@@ -677,3 +677,26 @@ git pull --ff-only
 ```
 
 Restart OrkiLab, open `http://127.0.0.1:4990/workspace/comfyui#benchmark`, select a project and expand the protocol draft form. Paste a *non-sensitive* known sample text into positive prompt, click **Calcular SHA-256 local**, and verify exactly 64 hex characters appear in the matching digest field. Change the text by one character and verify the digest clears. Try a small local file and verify a hash appears; changing the file must clear it. Verify Spanish/English labels, no generation job and no automatic draft storage. No need to save a draft. PR #104 remains open and unmerged, and per-workflow fault catalogue remains deferred.
+
+## B9.7 accepted / B9.8 conservative recorded execution-evidence audit
+
+The operator replied **`tok`** following B9.7's test and local SHA-256 UI checklist. Record **180 benchmark tests as operator-reported PASS**, not a separate CI run or attached raw test log.
+
+B9.8 adds `scripts/benchmark_execution_evidence.py`: a pure, read-only analyzer for **existing, saved terminal ComfyUI generation snapshots** attached to Benchmark observations. It distinguishes actual recorded evidence from declarations in `orkilab-repro-v1`:
+- Checks exact `workflow_id` from stored snapshot against the declared workflow ID when the run has a v1 protocol; flags explicit mismatch and missing records.
+- Checks that recorded `submitted_graph_sha256` has a valid digest form and whether **within a variant** all observed graph fingerprints match. This hash was generated from the submitted API graph by the existing `snapshot_generation` adapter, but it does **not** certify the original prompt bytes, input media bytes, model weights or unchanged graph settings between *different* variants.
+- Checks whether the saved ComfyUI execution-time provenance carries the exact `comfyui_prompt_id` already recorded in the same snapshot and a known timing source. Does not attribute cached sampler absence, full inference, per-job VRAM, or GPU identity from this evidence.
+- Explicitly marks **`no_execution_evidence`**, **`partially_verified`** (specific historical metadata only) and **`mismatch`**, returning only reason codes and bounded counts, never a ranking, best model or full raw graph/snapshot. Reports **never** assert that a full experiment has been validated even when some metadata matches. Legacy runs remain unverified when they lack a declared workflow. Empty/draft runs are not treated as evidence.
+- The existing local-only, project-scoped read-only report detail endpoint adds `recorded_execution_evidence`. The frontend adds **Evidencias de ejecución registradas** as a bilingual table in Benchmark Studio with Spanish diagnostics and an explicit warning that graph hashes do not prove prompts, model files or GPU conditions. The underlying SQLite records, engine, model files, generation flow, GPU monitoring and B9.7 client-local hashing are not modified. No new export, rerun or ComfyUI task is started.
+
+Nine pure tests in `tests/test_benchmark_execution_evidence.py` cover matching/mismatched workflow IDs, ComfyUI prompt ID timing provenance, changed graph, missing/legacy histories, bad scope and non-ranking; one Flask report test checks redaction and unknown evidence; two UI regressions check the visible bilingual evidence table/caveat. **192 benchmark tests expected** (180 user-reported previous + 12 new). These tests have been committed, but no real ComfyUI job evidence or independent CI/Windows execution of these new tests is claimed yet.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_execution_evidence.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart the launcher and open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Choose a saved run and inspect the evidence table. Runs with no linked generation snapshots must remain clearly **Sin evidencias de ejecución**, not falsely green; matching historical graph/workflow metadata may be **Registro parcial; no acreditado**, and mismatches must be shown as such. B9.8 is an **audit of already recorded source evidence**, not a cryptographic attestation of actual input files. That stronger cross-check against current ComfyUI job and artifact contents remains future work and requires explicit opt-in to inspect those sources. PR #104 stays open and unmerged; workflow-specific error-correction catalogue remains deliberately deferred.
