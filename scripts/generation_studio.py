@@ -431,6 +431,17 @@ def register(app, base):
         except (OSError, ValueError, TypeError) as exc:
             return jsonify(error="Could not request memory release", detail=str(exc)[:300]), 502
 
+    def finalize_benchmark(token):
+        """Best-effort, local-only persistence; never changes generation outcome."""
+        try:
+            from benchmark_store import BenchmarkStore
+            from benchmark_job_binding import finalize_bound_history_generation
+            with BenchmarkStore(base / "settings" / "orkilab" / "benchmarks.sqlite3") as bench:
+                return finalize_bound_history_generation(bench, records, token)
+        except (OSError, ValueError, PermissionError, sqlite3.Error, KeyError) as exc:
+            app.logger.warning("Benchmark finalization deferred for %s: %s", token, exc)
+            return "deferred"
+
     @app.post("/api/workspace/generation/<token>/cancel")
     def generation_cancel(token):
         """Cancel this job only, never clear the entire shared ComfyUI queue."""
@@ -474,6 +485,8 @@ def register(app, base):
                     raise ValueError("Cancellation not accepted by ComfyUI")
                 response.read(1024)
             records.update(token, state, [])
+            if state == "cancelled":
+                finalize_benchmark(token)
             return jsonify(state=state, cancelled=state == "cancelled")
         except (OSError, ValueError, TypeError) as exc:
             return jsonify(error="Could not cancel generation safely", detail=str(exc)[:300]), 502
@@ -486,6 +499,7 @@ def register(app, base):
             job = jobs.get(token)
         saved = records.get(token)
         if saved and saved["state"] in ("completed","error","cancelled"):
+            finalize_benchmark(token)
             return jsonify(state=saved["state"], outputs=json.loads(saved["outputs"]))
         if not job and saved:
             job = (saved["url"], saved["prompt_id"])
@@ -508,6 +522,7 @@ def register(app, base):
                         return jsonify(state=state, outputs=[])
                 if saved and saved["state"] == "cancelling":
                     records.update(token,"cancelled",[])
+                    finalize_benchmark(token)
                     return jsonify(state="cancelled", outputs=[])
                 return jsonify(state="unknown", outputs=[])
             status = entry.get("status") or {}
@@ -516,6 +531,8 @@ def register(app, base):
                 state = "cancelled"
             outputs = describe_outputs(entry)
             records.update(token,state,outputs)
+            if state in ("completed", "error", "cancelled"):
+                finalize_benchmark(token)
             return jsonify(state=state, outputs=outputs)
         except (OSError, ValueError, TypeError) as exc:
             return jsonify(error="Could not read generation status", detail=str(exc)[:300]), 502
