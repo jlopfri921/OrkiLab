@@ -219,7 +219,12 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         timing = rows[0]["generation_lineage"]["execution_timing"]
         self.assertEqual(timing["duration_ms"], 14)
         self.assertTrue(timing["execution_cached_event_observed"])
-        self.assertEqual(timing["comparability"], "cache_observed_not_comparable")
+        # The fixture has only SaveImage, no supported KSampler. A cached
+        # node cannot be mistaken for a known sampler; keep the
+        # comparison duration NULL and mark the sampler as unverified.
+        self.assertEqual(timing["comparability"], "unverified")
+        self.assertEqual(timing["sampler_node_ids"], [])
+        self.assertEqual(timing["sampler_cached_node_ids"], [])
         self.assertFalse(timing["full_inference_verified"])
         self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
         self.assertEqual(self.observations(), rows)
