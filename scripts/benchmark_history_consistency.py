@@ -131,7 +131,7 @@ def summarize_saved_history_matches(report: Any, history_records: Any, *, trunca
             if not isinstance(snap, dict) or not isinstance(snap.get("generation_id"), str):
                 continue
             record = history_records.get(snap["generation_id"])
-            if record is not None:
+            if record is not None and compare_saved_generation(snap, record)["record_consistent"]:
                 text_checks.append(match_declared_literal_text_hashes(record, protocol))
         counts = {state: results.count(state) for state in
                   ("local_record_match", "local_record_mismatch", "history_missing",
