@@ -87,6 +87,20 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('Los textos y el archivo se procesan exclusivamente en este navegador', self.benchmark)
         self.assertIn('Este navegador no admite SHA-256 local mediante Web Crypto', self.benchmark)
 
+    def test_b10_5_rc_readiness_is_visible_and_bilingual(self):
+        self.assertIn('id="b105-rows"', self.benchmark)
+        self.assertIn('report.b10_release_readiness||{}', self.benchmark)
+        self.assertIn('Validación final y publicación (B10.5)', self.benchmark)
+        self.assertIn('Final validation and release (B10.5)', self.benchmark)
+        self.assertIn('b105Check_explicit_release_authorization', self.benchmark)
+
+    def test_b10_5_ui_explicitly_disallows_tag_without_signoff(self):
+        self.assertIn('Este informe NO habilita una release', self.benchmark)
+        self.assertIn('Publicación aún no autorizada', self.benchmark)
+        self.assertIn('Release not yet authorized', self.benchmark)
+        self.assertIn('GPU real', self.benchmark)
+        self.assertIn('Autorización expresa del responsable', self.benchmark)
+
     def test_b10_4_pairwise_report_displays_actual_measures_without_rank(self):
         self.assertIn('id="b104-rows"', self.benchmark)
         self.assertIn('report.b10_results?.pairs', self.benchmark)
