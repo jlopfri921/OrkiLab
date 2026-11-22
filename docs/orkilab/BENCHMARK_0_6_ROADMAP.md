@@ -146,6 +146,23 @@ python -m unittest discover -s tests -p "test_benchmark*.py" -v
 
 Four new preflight tests are included; **34 benchmark unit tests** are expected if there are no regressions. These offline tests do not execute the new HTTP submission route, so end-to-end ComfyUI acceptance and real GPU telemetry remain pending.
 
+## B6d operator PASS and B6e terminal finalization (new, untested)
+
+The operator confirms B6d compilation, four new preflight tests and the cumulative **34 benchmark unit tests** as passing locally (Windows/Python 3.13). This is operator-reported, not independent CI verification.
+
+**B6e implementation:** Generation Studio now calls a best-effort finalizer after its existing history entry becomes `completed`, `error`, or `cancelled` (including safe pending cancellation and an already-terminal history entry). The helper reads only an **already-bound** generation token, checks the matching project/workflow, and writes an observation plus lineage atomically to the Benchmark SQLite store. It is idempotent after success and leaves other/unbound generations untouched. A failed optional benchmark finalization is logged and must not change the normal Generation Studio status or cancellation response. It does not submit additional ComfyUI jobs or change interruption policies. When no Benchmark database exists, normal generations do not create one on status checks.
+
+**Known constraints:** Generation Studio currently updates its history on status polling; B6e finalization likewise occurs on status polling/cancellation, not from a background worker or push event. If nobody polls, a completed job may remain unfinalized until the next status read. Separate ComfyUI/GenerationHistory/Benchmark databases mean cross-system exactly-once processing is not guaranteed under concurrent processes; the binding table and uniqueness constraints prevent successful duplication, and failures must remain visible in logs. No actual per-job VRAM/duration metric is yet sourced. API-side local permissions and ComfyUI execution still require integration tests.
+
+Validate B6e with:
+```powershell
+git pull --ff-only
+python -m py_compile scripts/generation_studio.py scripts/benchmark_job_binding.py
+python -m unittest discover -s tests -p "test_benchmark_terminal_finalizer.py" -v
+python -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+Six new tests have been added; **40** benchmark unit tests are expected if all earlier 34 still pass. These are offline tests; real ComfyUI and RTX 3090 acceptance remain pending.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
