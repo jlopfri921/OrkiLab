@@ -16,6 +16,7 @@ from flask import jsonify, request
 from benchmark_report_summary import summarize_benchmark_report
 from benchmark_comparability import assess_duration_comparability
 from benchmark_repro_protocol import declared_protocol_readiness
+from benchmark_execution_evidence import verify_recorded_execution_evidence
 from benchmark_draft_creation import create_confirmed_draft, validate_draft_payload
 
 ID = re.compile(r"^[A-Za-z0-9_-]{1,200}$")
@@ -184,7 +185,7 @@ def report_routes(app, base):
                 "observations": [
                     {**dict(o), "generation_lineage": {
                         key: value for key, value in snap.get(o["id"], {}).items()
-                        if key in ("workflow_id", "submitted_graph_sha256", "execution_timing")
+                        if key in ("workflow_id", "submitted_graph_sha256", "execution_timing", "comfyui_prompt_id")
                     } if o["id"] in snap else None}
                     for o in obs
                 ],
@@ -192,6 +193,7 @@ def report_routes(app, base):
             result = summarize_benchmark_report(report)
             result["comparability"] = assess_duration_comparability(report)
             result["reproducibility_protocol"] = declared_protocol_readiness(report)
+            result["recorded_execution_evidence"] = verify_recorded_execution_evidence(report)
             result["project_id"] = project_id
             result["name"] = row["name"]
             result["run_created_at"] = row["created_at"]
