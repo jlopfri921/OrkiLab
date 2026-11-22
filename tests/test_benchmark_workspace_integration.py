@@ -93,6 +93,11 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('Correspondencia con historial local', self.benchmark)
         self.assertIn('Local generation history consistency', self.benchmark)
 
+    def test_b9_9_prompt_hash_evidence_label_does_not_claim_polarity(self):
+        self.assertIn('savedPromptHashMatch:"Coincidencia de textos"', self.benchmark)
+        self.assertIn('sin verificar polaridad', self.benchmark)
+        self.assertIn('item.literal_prompt_evidence?.positive_digest_found_in_any_record', self.benchmark)
+
     def test_b9_9_no_remote_comfy_claim_or_raw_graph_in_ui(self):
         self.assertIn('Comprueba la coherencia de dos registros locales', self.benchmark)
         self.assertIn('Registros locales coherentes; contenido sin verificar', self.benchmark)
