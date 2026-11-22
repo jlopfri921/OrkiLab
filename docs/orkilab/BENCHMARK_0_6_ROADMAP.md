@@ -64,6 +64,12 @@ git pull --ff-only
 python -m unittest discover -s tests -p "test_benchmark_atomic_lineage.py" -v
 ```
 
+## B5 import failure identified and corrected in source (operator retest pending)
+
+The first B5 run on Windows/Python 3.13 failed during test module import, before any test cases ran. Source inspection identified **literal escaped `\\n` characters** in two Python source files introduced by the earlier edit and a missing definition of the lineage payload variables. The feature branch now corrects both syntax issues and restores the validated lineage payload initialization. No PASS is claimed for B5 until the operator reruns the tests.
+
+Run `python -m py_compile scripts/benchmark_store.py scripts/benchmark_generation_import.py scripts/benchmark_generation_adapter.py` first, then `python -m unittest discover -s tests -p "test_benchmark_atomic_lineage.py" -v`, and finally all benchmark tests.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
