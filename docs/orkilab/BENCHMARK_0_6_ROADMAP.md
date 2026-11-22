@@ -529,3 +529,21 @@ git pull --ff-only
 ```
 
 **Remaining to call OrkiLab 0.6.0 ready for RC:** user-facing Benchmark Studio run/variant comparison/report UI, approval and source/quality evidence on real comparisons, test coverage for Windows/Linux launchers and CI, migration/backwards compatibility and end-to-end update review. The benchmark source is still on the separate feature branch and PR #104; no merge, stable tag or release is authorized at this point.
+
+## B9.1 operator acceptance / B9.2 read-only Benchmark Studio report UI (pending tests)
+
+Operator confirmed the previous **127/127 benchmark tests** via `todo ok` in chat after the B9.1 commands (operator-reported; no new raw log). B9.2 adds actual **project- and run-scoped read-only report views**.
+
+- New `scripts/benchmark_reporting_routes.py` registers local-launcher-only GET `/api/workspace/benchmark/reports?project_id=...` and `/api/workspace/benchmark/reports/<run_id>?project_id=...`. Invalid IDs fail closed; a requested run must explicitly belong to the selected project. Connections use SQLite URI `mode=ro` and close deterministically. If the benchmark DB does not exist, listing is empty and DOES NOT create a database.
+- Summary endpoint validates the original report semantics via `benchmark_report_summary.summarize_benchmark_report`: completed/failed/cancelled, duration sample count/min/median/max and missing measures, null per-job VRAM, no automatic model ranking. Does not reveal graph JSON, model input prompts, stored error text, output filenames or source media. No mutation routes.
+- New responsive `GUI/benchmark_reports.html` opens as `/workspace/benchmark` and can be reached from the **Projects** workspace. The report page has Spanish/English switch, project and run selectors, status and summary table; it does not itself generate or import anything. UI uses `textContent`, not arbitrary HTML from the database.
+- `scripts/workspace_routes.py` mounts the read-only endpoints and local-only reports HTML. **No existing generation, training, dataset or ComfyUI route behavior changes**. There are no writes to Benchmark database.
+
+Seven new isolated, mocked/fixture Flask route tests cover missing DB, per-project index/counts, existing metrics, cross-project denial, remote access, invalid IDs and malformed database. Following the operator-reported 127 tests, **134 benchmark tests expected**. User acceptance pending; no new GPU generation required.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+Restart OrkiLab launcher to load the new route, then navigate via **Workspace → Projects → Benchmark Studio** or directly to `http://127.0.0.1:4990/workspace/benchmark`. If no saved benchmark runs exist, an empty-state message is correct; never fabricate runs. The feature branch and draft PR #104 remain open. Next gates: clearer comparison protocol and comparability markers, controlled real execution evidence, tests/CI and RC review. The requested per-workflow error catalogue remains deferred.
