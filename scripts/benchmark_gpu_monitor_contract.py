@@ -30,7 +30,7 @@ def validate_gpu_monitor_option(option: object) -> dict | None:
 
 def monitoring_receipt(state: str) -> dict:
     """Never conflate a queued monitor with an observed GPU metric."""
-    if state not in ("scheduled", "running", "completed", "failed"):
+    if state not in ("scheduled", "running", "completed", "partial", "failed"):
         raise ValueError("Invalid experimental monitor state")
     return {
         "state": state,
