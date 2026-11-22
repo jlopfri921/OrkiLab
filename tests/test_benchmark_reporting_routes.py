@@ -244,6 +244,22 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertNotIn("graph", str(check))
         self.assertNotIn("prompt-1", str(check))
 
+    def test_b9_10_closeout_read_only_and_not_a_ranking(self):
+        self.fill()
+        before = self.db.read_bytes()
+        response = self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        closure = response.get_json()["b9_closure"]
+        self.assertEqual(closure["status"], "not_fully_verified")
+        self.assertFalse(closure["ranking_eligible"])
+        self.assertFalse(closure["execution_verified"])
+        self.assertFalse(closure["generation_submitted"])
+        self.assertFalse(closure["database_modified"])
+        self.assertIsNone(closure["best_variant"])
+        self.assertEqual(self.db.read_bytes(), before)
+
     def test_b9_9_missing_history_cannot_claim_local_record_match(self):
         self.fill()
         response = self.client.get(
