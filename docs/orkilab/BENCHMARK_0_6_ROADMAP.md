@@ -389,3 +389,16 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe scripts/benchmark_gpu_process_probe.py
 ```
 Future work must identify the actual ComfyUI PID (with locally checked trusted process ownership) and handle WDDM's possible refusal of per-process VRAM. A generation-scoped series and externally attributed peak are **not yet implemented**.
+
+## B8.2c operator acceptance / B8.2d Windows PID-to-port correlation
+
+Operator supplied the complete Windows log: **87/87 tests PASS** and real `scripts/benchmark_gpu_process_probe.py` returned **27 NVIDIA-listed processes**, all with `used_gpu_memory_bytes=null`, consistent with Windows WDDM's lack of per-process GPU memory in this query. The list included candidate ComfyUI Python **PID 32808** (`D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\standalone-env\\python.exe`), Comfy Desktop **PID 21428**, another Python **PID 26860**, Blender **PID 22336**, and numerous other GPU users. This supports process discovery only, **not** verified ComfyUI ownership, process isolation, or per-job peak VRAM. No benchmark observations were changed.
+
+Added `scripts/benchmark_comfyui_port_probe.py` (Windows only) to correlate read-only `Get-NetTCPConnection -LocalPort 8188 -State Listen` owners with NVIDIA's process PIDs and GPU UUIDs; uses a fixed, non-interactive PowerShell command (no user-supplied script), retrieves executable name/path but deliberately **not command line**. Port 8188 may belong to a proxy/bridge rather than the ComfyUI Python worker, so `comfyui_process_verified=false` and `process_isolation_verified=false` remain hard false. It does NOT terminate processes, query secrets, submit ComfyUI work, modify GPU settings or benchmark DB, nor report a job peak. Four isolated mock tests added; expected **91 benchmark tests**, pending operator verification. Run:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_comfyui_port_probe.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+.\\venv\\Scripts\\python.exe scripts/benchmark_comfyui_port_probe.py
+```
+The pending future milestone is an explicit **per-generation, process-scoped** memory recording mechanism with Windows WDDM fallback; **not** to fill benchmark `peak_vram_bytes` from global memory maxima.
