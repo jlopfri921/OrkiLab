@@ -128,6 +128,101 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         with BenchmarkStore(self.benchmark_path) as bench:
             return bench.report(self.run_id)["observations"]
 
+    def configure_guided_variant_fixture(self):
+        """Two declared LoRA filenames; all other API graph inputs fixed."""
+        self.graph={
+            "1":{"class_type":"LoraLoader","inputs":{
+                "lora_name":"base.safetensors","strength_model":1.0,
+                "strength_clip":1.0}},
+            "2":{"class_type":"CLIPTextEncode","inputs":{"text":"fixed prompt"}},
+            "3":{"class_type":"KSampler","inputs":{"seed":123}},
+        }
+        settings=self.root/"settings"/"orkilab"
+        with closing(sqlite3.connect(settings/"workflows.sqlite3")) as con, con:
+            con.execute("UPDATE workflows SET graph=? WHERE id='workflow-1'",
+                        (json.dumps(self.graph),))
+        protocol={
+            "schema":"orkilab-repro-v1","vary":"lora","workflow_id":"workflow-1",
+            "prompt_sha256":"a"*64,"negative_prompt_sha256":"b"*64,
+            "input_sha256":"c"*64,"gpu_uuid":"GPU-mocked",
+            "cache":"cold","seed_policy":"fixed","repetitions":2,
+            "resolution":[1024,1024],
+        }
+        with closing(sqlite3.connect(self.benchmark_path)) as con, con:
+            con.execute("UPDATE benchmark_runs SET protocol_json=? WHERE id=?",
+                        (json.dumps(protocol),self.run_id))
+            con.execute("UPDATE benchmark_variants SET config_json=? WHERE id=?",
+                        (json.dumps({"controlled_value":"a.safetensors"}),self.variant_id))
+            con.execute(
+                "INSERT INTO benchmark_variants "
+                "(id,run_id,label,config_json) VALUES (?,?,?,?)",
+                ("variant-b",self.run_id,"Variant B",
+                 json.dumps({"controlled_value":"b.safetensors"}))
+            )
+
+    def test_b10_3_prepare_then_separate_confirmation_submits_one_variant(self):
+        self.configure_guided_variant_fixture()
+        schema={"input":{"required":{
+            "lora_name":[["base.safetensors","a.safetensors","b.safetensors"]]
+        }}}
+        with patch.object(generation_studio,"node_schema",return_value=schema):
+            response=self.client.post(
+                "/api/workspace/generation/benchmark/prepare-one",
+                json={"project_id":self.project_id,"run_id":self.run_id,
+                      "variant_id":self.variant_id,"repetition":0},
+            )
+        self.assertEqual(response.status_code,200,response.get_json())
+        prepared=response.get_json()
+        self.assertFalse(prepared["execution_submitted"])
+        self.assertTrue(prepared["submission_requires_confirmation"])
+        self.assertEqual(len(self.submitted_requests),0)
+        submission=self.client.post("/api/workspace/generation",json={
+            "workflow_id":"workflow-1","token":prepared["token"],"confirm":True,
+            "benchmark":{"project_id":self.project_id,"run_id":self.run_id,
+                         "variant_id":self.variant_id,"repetition":0,"confirm":True},
+        })
+        self.assertEqual(submission.status_code,201,submission.get_json())
+        self.assertEqual(submission.get_json()["benchmark_binding"],"bound")
+        self.assertEqual(len(self.submitted_requests),1)
+        graph=json.loads(self.submitted_requests[0].data)["prompt"]
+        self.assertEqual(graph["1"]["inputs"]["lora_name"],"a.safetensors")
+        self.assertEqual(graph["2"]["inputs"]["text"],"fixed prompt")
+        self.assertEqual(graph["3"]["inputs"]["seed"],123)
+
+    def test_b10_3_guided_token_cannot_be_submitted_for_other_variant(self):
+        self.configure_guided_variant_fixture()
+        schema={"input":{"required":{
+            "lora_name":[["base.safetensors","a.safetensors","b.safetensors"]]
+        }}}
+        with patch.object(generation_studio,"node_schema",return_value=schema):
+            prepared=self.client.post(
+                "/api/workspace/generation/benchmark/prepare-one",
+                json={"project_id":self.project_id,"run_id":self.run_id,
+                      "variant_id":self.variant_id,"repetition":0},
+            ).get_json()
+        response=self.client.post("/api/workspace/generation",json={
+            "workflow_id":"workflow-1","token":prepared["token"],"confirm":True,
+            "benchmark":{"project_id":self.project_id,"run_id":self.run_id,
+                         "variant_id":"variant-b","repetition":0,"confirm":True},
+        })
+        self.assertEqual(response.status_code,409,response.get_json())
+        self.assertEqual(len(self.submitted_requests),0)
+
+    def test_b10_3_prepare_refuses_remote_wrong_project_and_repetition(self):
+        self.configure_guided_variant_fixture()
+        payload={"project_id":self.project_id,"run_id":self.run_id,
+                 "variant_id":self.variant_id,"repetition":0}
+        self.assertEqual(self.client.post(
+            "/api/workspace/generation/benchmark/prepare-one",json=payload,
+            environ_overrides={"REMOTE_ADDR":"198.51.100.10"}).status_code,403)
+        self.assertEqual(self.client.post(
+            "/api/workspace/generation/benchmark/prepare-one",
+            json={**payload,"project_id":"other"}).status_code,404)
+        self.assertEqual(self.client.post(
+            "/api/workspace/generation/benchmark/prepare-one",
+            json={**payload,"repetition":2}).status_code,409)
+        self.assertEqual(len(self.submitted_requests),0)
+
     def test_capabilities_reports_live_benchmark_route_without_submitting(self):
         response = self.client.get("/api/workspace/generation/capabilities")
         self.assertEqual(response.status_code, 200)
