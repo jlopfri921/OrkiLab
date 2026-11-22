@@ -20,6 +20,22 @@ Benchmark a model/LoRA combination with reproducible prompt, seeds, workflow, we
 
 Run `python -m unittest discover -s tests -p 'test_benchmark_store.py'` and `python scripts/benchmark_smoke.py` from repository root. The smoke runner uses synthetic fixture measurements and **does not run ComfyUI or benchmark a real GPU**. Tests cover persisted reopening, lifecycle rules, project/run isolation, unique repetitions and validation of numeric/hash inputs. CI and actual Windows/Linux results must be recorded before describing alpha.1 as validated.
 
+## 2026-11-22 — Operator-reported Windows / Python 3.13 acceptance
+
+**Environment:** Windows PowerShell, Python 3.13, local checkout `D:\\orkilab\\orkilab-lora-trainerstudio`, branch `feat/0.6-benchmark-core`.
+
+| ID | Command / assertion | Reported result | Evidence boundary |
+| --- | --- | --- | --- |
+| B1 | `python scripts/benchmark_smoke.py` | **PASS**, one completed synthetic run with a variant and observation | Fixture duration 100 ms, VRAM and image hash `null`; no GPU or ComfyUI |
+| B2.1 | Lifecycle / immutable completed runs | **PASS** | Python unittest on Windows |
+| B2.2 | Persistence and report after SQLite reopen | **PASS** | Python unittest on Windows |
+| B2.3 | Reject invalid inputs | **PASS** | Python unittest on Windows |
+| B2.4 | Reject cross-run observations and duplicate repetitions | **PASS** | Python unittest on Windows |
+
+The operator reported `Ran 4 tests in 0.108s — OK` for `python -m unittest discover -s tests -p "test_benchmark_store.py" -v`. These are **five checks across two commands**, not five independent test suites, and are not evidence of CI or real RTX 3090 inference.
+
+**Still required before merging or claiming alpha.1 complete:** review state and schema boundaries, CI on the PR head for Windows/Linux, database migration strategy, safe authorization for any exposed API, and representative ComfyUI adapter/GPU acceptance. The source still implements an isolated persistence store, not an integrated benchmark feature.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
