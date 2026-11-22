@@ -1,7 +1,7 @@
 # OrkiLab 0.5.0-rc.1 — operator acceptance register
 
 **Reported:** 2026-11-21
-**Scope:** Multiview Studio 0.5.0-rc.1, PRs #80–#85 merged into `main`
+**Original on-device scope:** Multiview Studio PRs #80–#85; follow-up development through PR #99 documented separately below.
 **Evidence type:** seven affirmative checks reported by the operator in ChatGPT on the real Windows workstation; **not** independently captured logs, screenshots, or CI output.
 **Hardware declared for generation:** NVIDIA RTX 3090 24 GB, local ComfyUI.
 **Decision:** operator functional checklist complete (7/7); final stable-release gates **remain open**.
@@ -25,6 +25,18 @@
 - The ZIP check does not prove identical-byte exports across repeated runs or every optional synthetic capture case without additional evidence.
 - Mobile presentation being checked does not authorize remote/LAN-only generation or export endpoints.
 - This record does **not** certify the unresolved 0.4.0 stable criteria or promote previously experimental integrations.
+
+## Follow-up implementation since the original 7/7 report
+
+The first operator-reported acceptance covered PRs #80–#85. Subsequent changes through PR #99 and this release-preparation effort must **not** be retroactively represented as accepted on that original test run. The user has indicated that earlier changes have been tried and requested the 0.5.0 RC prerelease, but no detailed pass/fail logs have been attached for every new path.
+
+- **Optional local Ollama viewpoint assistance:** the operator reported successful recognition and saving of orientation and all related metadata.
+- **Input transfer:** typed folder path and native folder picker, alternative API upload and unmodified originals; automated tests exist, but record actual selected Desktop/Portable path and one transfer to a connected `LoadImage` before stable promotion.
+- **Official workflows:** three basic core-only one-image Img2Img examples with download ZIP and direct import; automated ZIP/import tests exist. A basic SD-family checkpoint must be installed. Their output cannot be called calibrated camera rotation.
+- **Multilingual full help and product overview:** eight-language content shipped; browser-level manual checks for layout and long translations remain advisable.
+- **Brand and documentation:** 0.5.0 work consolidated in README/changelog and the live application guide. Future Qwen/FLUX and multi-reference templates are explicitly deferred.
+
+**Promotion decision:** prerelease `v0.5.0-rc.1` is appropriate when exact commit Windows/Linux checks pass; stable `v0.5.0` waits for documented on-device source-to-output, cancellation/rollback, workflow compatibility and no-data-loss acceptance. The next milestone is **0.6.0**, only after stable 0.5.0.
 
 ## Remaining release gates
 
