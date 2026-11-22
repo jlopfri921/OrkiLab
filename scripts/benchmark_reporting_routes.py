@@ -20,6 +20,7 @@ from benchmark_execution_evidence import verify_recorded_execution_evidence
 from benchmark_history_consistency import summarize_saved_history_matches
 from benchmark_b9_closure import summarize_b9_closure
 from benchmark_b10_preflight import inspect_comparison_plan
+from benchmark_b10_model_check import inspect_model_variants
 from benchmark_draft_creation import create_confirmed_draft, validate_draft_payload
 
 ID = re.compile(r"^[A-Za-z0-9_-]{1,200}$")
@@ -88,6 +89,73 @@ def report_routes(app, base):
             )
         except (sqlite3.Error, OSError, TypeError, ValueError):
             return jsonify(error="Benchmark options unavailable"), 503
+
+    @app.get("/api/workspace/benchmark/model-check")
+    def benchmark_model_check():
+        """User-invoked, bounded read-only ComfyUI node-option inspection.
+
+        Only named fixed loader types and exact run/project IDs are considered.
+        No graph contents, complete inventory or private connection URL returned.
+        """
+        if not local():
+            return jsonify(error="Model check available on launcher PC only"), 403
+        project_id = request.args.get("project_id", "")
+        run_id = request.args.get("run_id", "")
+        if not ID.fullmatch(project_id) or not ID.fullmatch(run_id):
+            return jsonify(error="Explicit project/run IDs required"), 400
+        try:
+            con = open_ro()
+            if con is None:
+                return jsonify(error="Benchmark run unavailable"), 404
+            with closing(con):
+                row = con.execute(
+                    "SELECT project_id,protocol_json FROM benchmark_runs "
+                    "WHERE id=? AND project_id=?", (run_id, project_id)
+                ).fetchone()
+                if row is None:
+                    return jsonify(error="Benchmark run not found in project"), 404
+                variants = con.execute(
+                    "SELECT id,config_json FROM benchmark_variants WHERE run_id=? "
+                    "ORDER BY label,id LIMIT 21", (run_id,)
+                ).fetchall()
+            protocol = json.loads(row["protocol_json"])
+            if not isinstance(protocol, dict) or protocol.get("schema") != "orkilab-repro-v1":
+                return jsonify(error="Versioned comparison protocol required"), 409
+            workflow_id = protocol.get("workflow_id")
+            if not isinstance(workflow_id, str) or not ID.fullmatch(workflow_id):
+                return jsonify(error="Saved workflow reference required"), 409
+            wf_db = Path(base) / "settings" / "orkilab" / "workflows.sqlite3"
+            if not wf_db.is_file():
+                return jsonify(error="Saved workflow unavailable"), 404
+            with closing(sqlite3.connect(wf_db.resolve().as_uri() + "?mode=ro", uri=True, timeout=5)) as con:
+                stored = con.execute("SELECT graph FROM workflows WHERE id=?", (workflow_id,)).fetchone()
+            if stored is None or not isinstance(stored[0], str) or len(stored[0]) > 2_000_000:
+                return jsonify(error="Saved workflow unavailable"), 404
+            graph = json.loads(stored[0])
+            variable = protocol.get("vary")
+            kinds = ("CheckpointLoaderSimple",) if variable == "checkpoint" else (
+                "LoraLoader", "LoraLoaderModelOnly") if variable == "lora" else ()
+            # Fail closed for UI/custom or multi-loader graphs BEFORE network access.
+            preliminary = inspect_model_variants(graph, protocol, [dict(v) for v in variants], {})
+            if preliminary["reason_codes"] != ["node_options_unavailable"] or not kinds:
+                return jsonify(preliminary)
+            targets = [n for n in graph.values() if n.get("class_type") in kinds]
+            kind = targets[0]["class_type"]
+            config_path = Path(base) / "settings" / "orkilab" / "comfyui.json"
+            from comfyui_connect import DEFAULT_SETTINGS, validate_settings, get_json
+            if not config_path.is_file():
+                return jsonify(error="ComfyUI connection not configured"), 409
+            cfg = validate_settings(json.loads(config_path.read_text(encoding="utf-8")), DEFAULT_SETTINGS)
+            if cfg["mode"] == "native":
+                return jsonify(error="ComfyUI disabled in native mode"), 409
+            from urllib.parse import quote
+            info = get_json(cfg["url"], "/object_info/" + quote(kind, safe=""),
+                            max_bytes=500_000, timeout=5)
+            schema = info.get(kind) if isinstance(info, dict) else None
+            return jsonify(inspect_model_variants(
+                graph, protocol, [dict(v) for v in variants], schema))
+        except (sqlite3.Error, OSError, ValueError, TypeError, KeyError, OverflowError):
+            return jsonify(error="Could not verify saved workflow model choices"), 503
 
     @app.post("/api/workspace/benchmark/drafts")
     def create_benchmark_draft():
