@@ -314,3 +314,27 @@ One mocked Flask integration test added; expected **68 benchmark tests** followi
 ## B8.1.3 — prompt-scoped cache evidence (pending operator verification)
 
 After the operator reported the previous **68 benchmark tests PASS**, the cache detection was made prompt-specific: only `execution_cached` events whose `prompt_id` matches the exact ComfyUI job count as evidence. The read-only probe also returns the sorted, validated `cached_node_ids` from those events (diagnostic only). Unrelated prompt cache events are ignored, and missing cached events remain `undetermined`; neither case establishes full inference. This removes a possible false-positive cache warning in the previous probe. Two mocked tests added; **70 benchmark tests** expected. No ComfyUI submission and no modifications of previous observations.
+
+## B8.1.4 real RTX 3090 sampler rerun — operator PASS
+
+Operator manually copied the exact 10-node FLUX3 Klein API workflow and changed **only KSampler node 7 seed=42→43**, saved as workflow `c07586fe3219463d8cfe30842c1fbb33`. Real Generation Studio job `41b8689d219a4c10883533036ebd91c5`, ComfyUI prompt `63f447c1-9869-4c7d-8ecd-5c31fb4994dd`, run `5df86bc2-a31e-492a-afa2-4ffa5e83614b`, variant `6cba2ed2-a354-474f-b2bb-a148a2fde770`, repetition 0. Submission bound automatically, final job completed, output `OrkiLab_FLUX3_Klein_LoRA_00006_.png`, benchmark observation recorded. Live timing probe measured **13,622 ms**, excluding queue time. The cached-node list was `[1,2,3,4,5,6,8]`; sampler node **7 not cached**, nor nodes 9/10. Evidence is compatible with a *warm-model sampler rerun*, **not** full-cold inference verification. These are observational results, not CI.
+
+## B8.1.5 sampler-aware comparability — implementation, pending operator tests
+
+The prior rule excluded all durations if *any* `execution_cached` event was present. That penalized the legitimate warm-model case in B8.1.4. New rules inspect the **actual submitted API graph in GenerationHistory** (not user-entered claims), recognize only known `KSampler` and `KSamplerAdvanced` nodes, and compare those node IDs with the cached-node IDs from the **exact prompt**:
+
+- `sampler_cached_not_comparable`: any identified sampler explicitly cached. Keep measured server interval in immutable lineage but leave comparison `duration_ms=NULL`.
+- `sampler_cache_miss_partial_cache`: cache event exists for other nodes but no known sampler is in that list. Persist server event `duration_ms` for **warm-sampler** comparisons with category/provenance; **not** a full-cold inference measurement.
+- `sampler_cache_unverified`: known sampler, no cache event; retain the server interval with explicitly unverified inference classification. No cache event does not prove a sampler executed.
+- `unverified`: no supported sampler identifiable; when any cache event exists, comparison `duration_ms=NULL`, otherwise preserve previous B8.1 measured duration behavior with unknown sampler. Never infer arbitrary custom sampler semantics.
+
+Read-only historical probe now also reports `sampler_node_ids`, `sampler_cached_node_ids`, `sampler_cache_status` and `comparability` alongside previously reported timing/cache facts. Existing observations remain immutable. **B8.1.4's previously recorded comparison duration stays NULL**; its historical read-only probe reveals the new interpretation without backfilling. 2 new parser tests + 2 Flask tests added; **74 benchmark tests** expected after previously operator-confirmed 70, pending execution on Windows. No GPU calls or new inference required.
+
+Validation:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_execution_timing.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+.\\venv\\Scripts\\python.exe scripts/benchmark_live_timing_probe.py --generation-id 41b8689d219a4c10883533036ebd91c5
+```
