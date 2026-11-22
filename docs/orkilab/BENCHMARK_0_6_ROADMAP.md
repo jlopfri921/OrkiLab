@@ -219,6 +219,24 @@ git pull --ff-only
 ```
 Five new offline preflight tests have been added (**51** cumulative benchmark tests expected). The last command contacts the **real configured ComfyUI** read-only and returns `ready: true` only when the safety checks pass. A nonzero exit code with `ready: false` is a protective refusal, not necessarily an application fault. This probe is **not** a substitute for actual inference or RTX 3090 benchmark acceptance.
 
+## B7 supervised single-generation pilot (read-only audit available)
+
+Real ComfyUI preflight produced `ready:true`, version `0.46.2`, device `cuda:0 NVIDIA GeForce RTX 3090 : cudaMallocAsync`, running queue 0 and pending queue 0. This shows readiness at the time of the check, **not a completed generation**. The operator has not yet provided the result of the five B7 unit tests or the 51-test suite.
+
+The first GPU pilot is **one explicitly confirmed Generation Studio generation** with a previously validated, lightweight saved workflow. From launcher-local Workspace / ComfyUI / Generation Studio, select that saved workflow, prepare it and check the settings, then press the normal Generate control once. Wait for terminal status in Generation Studio. Do not run another job concurrently or start a trainer. Existing queue and safe cancellation rules remain in effect.
+
+After the generation, a **new read-only command** inspects the latest persisted history result and (if any) its benchmark linkage, without submitting or contacting ComfyUI:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe scripts/benchmark_comfyui_preflight.py
+# Then run ONE generation through the existing Generation Studio UI.
+.\\venv\\Scripts\\python.exe scripts/benchmark_live_audit.py
+# To inspect a particular job:
+.\\venv\\Scripts\\python.exe scripts/benchmark_live_audit.py --generation-id YOUR_ID
+```
+
+The audit reports `state`, `output_count`, actual `generation_id`/`prompt_id` and optionally `benchmark_binding`/`benchmark_observation`. **A plain Generation Studio run is not automatically a Benchmark run**; without the opt-in benchmark payload, binding should correctly be `none`. Do not describe the pilot as a measured or bound benchmark unless an actual binding exists. No per-job runtime, output digest or peak VRAM is inferred from history. A separate opt-in benchmark run / UI integration is required before true B7 performance comparison.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
