@@ -16,6 +16,7 @@ from flask import jsonify, request
 from benchmark_report_summary import summarize_benchmark_report
 from benchmark_comparability import assess_duration_comparability
 from benchmark_repro_protocol import declared_protocol_readiness
+from benchmark_draft_creation import create_confirmed_draft, validate_draft_payload
 
 ID = re.compile(r"^[A-Za-z0-9_-]{1,200}$")
 
@@ -32,6 +33,39 @@ def report_routes(app, base):
         conn = sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True, timeout=5)
         conn.row_factory = sqlite3.Row
         return conn
+
+    @app.post("/api/workspace/benchmark/drafts")
+    def create_benchmark_draft():
+        """Explicitly create an inactive benchmark plan; never run ComfyUI."""
+        if not local():
+            return jsonify(error="Create drafts on the launcher PC only"), 403
+        if request.mimetype != "application/json" or not 0 < (request.content_length or 0) <= 8192:
+            return jsonify(error="Invalid draft request"), 400
+        payload = request.get_json(silent=True)
+        try:
+            validated = validate_draft_payload(payload)
+            # Reject absent or archived projects; no ProjectStore side-effect
+            # when the local projects database is missing.
+            project_db = Path(base) / "settings" / "orkilab" / "projects.sqlite3"
+            if not project_db.is_file():
+                return jsonify(error="Project not found"), 404
+            with closing(sqlite3.connect(project_db.resolve().as_uri() + "?mode=ro", uri=True)) as projects:
+                project = projects.execute(
+                    "SELECT id FROM projects WHERE id=? AND archived=0",
+                    (validated["project_id"],)
+                ).fetchone()
+            if project is None:
+                return jsonify(error="Active project not found"), 404
+            run_id = create_confirmed_draft(
+                base, payload, authorized_project_id=validated["project_id"]
+            )
+            return jsonify(id=run_id, project_id=validated["project_id"],
+                           state="draft", generation_submitted=False,
+                           execution_verified=False), 201
+        except PermissionError:
+            return jsonify(error="Project authorization failed"), 403
+        except (ValueError, TypeError, sqlite3.Error, OSError):
+            return jsonify(error="Invalid benchmark draft declaration"), 400
 
     @app.get("/api/workspace/benchmark/reports")
     def benchmark_reports_index():
