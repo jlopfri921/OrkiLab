@@ -34,6 +34,12 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('request.args.get("embed") != "1"', self.routes)
         self.assertIn('redirect("/workspace/comfyui#benchmark"', self.routes)
 
+    def test_workspace_navigation_regex_must_be_valid_js(self):
+        # Prior regression: /\\\\/$/ was parsed as a closed regex + bad flags,
+        # preventing all Workspace JavaScript, including language controls.
+        self.assertNotIn('location.pathname.replace(/\\\\/$/', self.workspace)
+        self.assertIn('location.pathname.replace(/\\/$/', self.workspace)
+
     def test_spanish_accents_and_readable_diagnostics(self):
         self.assertIn('<meta charset="utf-8">', self.benchmark)
         for word in ("Comparabilidad", "Ejecución", "Política", "Resolución",
