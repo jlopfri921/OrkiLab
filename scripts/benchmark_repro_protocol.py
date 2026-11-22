@@ -40,7 +40,7 @@ def declared_protocol_readiness(report: Any) -> dict:
     def bad(name):
         reasons.append(name)
     variable = protocol.get("vary")
-    if variable not in ALLOWED_VARIABLES:
+    if not isinstance(variable, str) or variable not in ALLOWED_VARIABLES:
         bad("invalid_controlled_variable")
     wf = protocol.get("workflow_id")
     if not isinstance(wf, str) or not 0 < len(wf) <= 200:
@@ -53,10 +53,10 @@ def declared_protocol_readiness(report: Any) -> dict:
     if not isinstance(gpu, str) or not gpu.startswith("GPU-") or len(gpu) > 128:
         bad("missing_gpu_identity")
     cache = protocol.get("cache")
-    if cache not in ALLOWED_CACHE:
+    if not isinstance(cache, str) or cache not in ALLOWED_CACHE:
         bad("missing_cache_policy")
     seed = protocol.get("seed_policy")
-    if seed not in ALLOWED_SEED:
+    if not isinstance(seed, str) or seed not in ALLOWED_SEED:
         bad("missing_seed_policy")
     repetitions = protocol.get("repetitions")
     if type(repetitions) is not int or not 1 <= repetitions <= 100:
@@ -95,7 +95,7 @@ def declared_protocol_readiness(report: Any) -> dict:
     return {"schema": "orkilab-repro-v1",
             "status": "declared_unverified" if not reasons else "incomplete",
             "reason_codes": sorted(set(reasons)), "variants": result,
-            "controlled_variable": variable if variable in ALLOWED_VARIABLES else None,
+            "controlled_variable": variable if isinstance(variable, str) and variable in ALLOWED_VARIABLES else None,
             "execution_verified": False, "ranking_eligible": False,
             "benchmark_database_modified": False,
             "limitations": ("Declarations are not execution evidence: ComfyUI "
