@@ -1,0 +1,151 @@
+"""B6f: Flask route integration using a fake ComfyUI; never contacts a GPU.
+
+Exercises the real Generation Studio HTTP endpoints, generation history,
+benchmark binding and finalization in isolated temporary SQLite databases.
+"""
+import json
+import sqlite3
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from flask import Flask
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import generation_studio
+from benchmark_store import BenchmarkStore
+from workspace_store import ProjectStore
+
+
+class BenchmarkHttpFlowTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        settings = self.root / "settings" / "orkilab"
+        settings.mkdir(parents=True)
+        (settings / "comfyui.json").write_text(
+            json.dumps({"mode": "hybrid", "url": "http://127.0.0.1:8188"}),
+            encoding="utf-8",
+        )
+        self.graph = {"1": {"class_type": "SaveImage", "inputs": {}}}
+        with sqlite3.connect(settings / "workflows.sqlite3") as con:
+            con.execute("CREATE TABLE workflows (id TEXT PRIMARY KEY, name TEXT, graph TEXT)")
+            con.execute(
+                "INSERT INTO workflows VALUES (?,?,?)",
+                ("workflow-1", "Fixture workflow", json.dumps(self.graph)),
+            )
+        project_store = ProjectStore(settings / "projects.sqlite3")
+        project = project_store.create({
+            "name": "Fixture project", "engine": "fixture", "category": "image"
+        }, {"fixture"})
+        self.project_id = project["id"]
+        self.benchmark_path = settings / "benchmarks.sqlite3"
+        with BenchmarkStore(self.benchmark_path) as bench:
+            self.run_id = bench.create_run(self.project_id, "Integration", {"seed": 42})
+            self.variant_id = bench.add_variant(self.run_id, "checkpoint-1", {"weight": 0.5})
+            bench.transition(self.run_id, "running")
+        self.app = Flask(__name__)
+        generation_studio.register(self.app, self.root)
+        self.client = self.app.test_client()
+        self.mock_queue = {"queue_running": [], "queue_pending": []}
+        self.history_entry = None
+        self.patches = [
+            patch.object(generation_studio, "inspect_graph", return_value={"format": "api"}),
+            patch.object(generation_studio, "node_schema", return_value={}),
+            patch.object(generation_studio, "validate_prompt", return_value=None),
+            patch.object(generation_studio, "editable_fields", return_value=[]),
+            patch.object(generation_studio, "submit", return_value=("prompt-comfy", "client-test")),
+            patch.object(generation_studio.project_layout, "training_in_progress", return_value=False),
+            patch.object(generation_studio, "get_json", side_effect=self.fake_comfyui),
+        ]
+        for mocked in self.patches:
+            mocked.start()
+
+    def tearDown(self):
+        for mocked in reversed(self.patches):
+            mocked.stop()
+        self.temp.cleanup()
+
+    def fake_comfyui(self, url, path, **kwargs):
+        if path == "/queue":
+            return self.mock_queue
+        if path == "/history/prompt-comfy":
+            return {"prompt-comfy": self.history_entry} if self.history_entry else {}
+        raise AssertionError("Unexpected external request: " + path)
+
+    def prepare(self):
+        response = self.client.post(
+            "/api/workspace/generation/prepare", json={"workflow_id": "workflow-1"}
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        return response.get_json()["token"]
+
+    def submit(self, with_benchmark=True, project_id=None):
+        payload = {
+            "workflow_id": "workflow-1", "confirm": True,
+            "token": self.prepare(),
+        }
+        if with_benchmark:
+            payload["benchmark"] = {
+                "project_id": project_id or self.project_id,
+                "run_id": self.run_id,
+                "variant_id": self.variant_id,
+                "repetition": 0,
+                "confirm": True,
+            }
+        return self.client.post("/api/workspace/generation", json=payload)
+
+    def observations(self):
+        with BenchmarkStore(self.benchmark_path) as bench:
+            return bench.report(self.run_id)["observations"]
+
+    def test_benchmark_submission_and_terminal_status_records_once(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        job = created.get_json()
+        self.assertEqual(job["benchmark_binding"], "bound")
+        token = job["id"]
+        self.history_entry = {"status": {"completed": True, "status_str": "success"},
+                              "outputs": {}}
+        status = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["state"], "completed")
+        self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
+        rows = self.observations()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["generation_lineage"]["generation_id"], token)
+        self.assertIsNone(rows[0]["peak_vram_bytes"])
+
+    def test_cross_project_request_denied_before_submission(self):
+        result = self.submit(project_id="not-active")
+        self.assertEqual(result.status_code, 404)
+        self.assertEqual(self.observations(), [])
+        generation_rows = sqlite3.connect(
+            self.root / "settings" / "orkilab" / "generations.sqlite3"
+        ).execute("SELECT count(*) FROM generations").fetchone()[0] if (
+            self.root / "settings" / "orkilab" / "generations.sqlite3"
+        ).is_file() else 0
+        self.assertEqual(generation_rows, 0)
+
+    def test_normal_generation_does_not_create_binding(self):
+        created = self.submit(with_benchmark=False)
+        self.assertEqual(created.status_code, 201)
+        self.assertNotIn("benchmark_binding", created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {"status": {"completed": True}, "outputs": {}}
+        self.assertEqual(
+            self.client.get("/api/workspace/generation/" + token).get_json()["state"],
+            "completed",
+        )
+        self.assertEqual(self.observations(), [])
+        with BenchmarkStore(self.benchmark_path) as bench:
+            count = bench.db.execute(
+                "SELECT COUNT(*) FROM benchmark_generation_bindings"
+            ).fetchone()[0]
+            self.assertEqual(count, 0)
+
+
+if __name__ == "__main__":
+    unittest.main()
