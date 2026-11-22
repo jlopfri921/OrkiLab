@@ -290,6 +290,23 @@ def register(app, base):
         except (OSError,ValueError,TypeError,KeyError,RecursionError) as exc:
             return jsonify(error="Checkpoint comparison preparation failed",detail=str(exc)[:300]),400
 
+    @app.get("/api/workspace/generation/capabilities")
+    def generation_capabilities():
+        """Report capabilities of the *running* launcher, not checkout files.
+
+        An old launcher process will not expose this route, even after git
+        pull. A read-only probe: no ComfyUI calls, history writes or GPU work.
+        """
+        if not local():
+            return jsonify(error="Inspect generation capabilities on the launcher PC"), 403
+        return jsonify(
+            generation_studio="benchmark-submission-v1",
+            benchmark_submit=True,
+            benchmark_terminal_finalization=True,
+            benchmark_field="benchmark",
+            requires_confirmation=True,
+        )
+
     @app.post("/api/workspace/generation")
     def generation_submit():
         if not local():
