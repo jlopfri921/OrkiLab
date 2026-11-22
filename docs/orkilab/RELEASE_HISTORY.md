@@ -82,7 +82,7 @@ The names **alpha.1**, **beta.1** and similar within the development history des
 | **RC.1** | Exportable reproducible reports and hardware/CI checks | Final exact-SHA validation |
 | **Stable** | Release documentation, supported matrix and non-destructive upgrades | All blockers resolved |
 
-See [Benchmark 0.6 roadmap](BENCHMARK_0_6_ROADMAP.md) for the draft implementation scope.
+See [the project roadmap](ROADMAP.md) for the planned 0.6 scope. A dedicated benchmark roadmap is being developed independently in draft PR #104 and will only become available in main when that change is merged.
 
 ## Beyond 0.6
 
