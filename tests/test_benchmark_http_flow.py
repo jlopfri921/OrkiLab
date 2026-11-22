@@ -179,6 +179,50 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
             ).fetchone()[0]
             self.assertEqual(count, 0)
 
+    def test_comfyui_error_records_failed_observation(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {"status": {"completed": False, "status_str": "error"},
+                              "outputs": {}}
+        response = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["state"], "error")
+        rows = self.observations()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["status"], "failed")
+        self.assertEqual(rows[0]["generation_lineage"]["generation_id"], token)
+
+    def test_running_job_does_not_finalize_benchmark(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.mock_queue = {
+            "queue_running": [[1, "prompt-comfy"]],
+            "queue_pending": [],
+        }
+        response = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["state"], "running")
+        self.assertEqual(self.observations(), [])
+
+    def test_cancelled_generation_history_records_cancelled_once(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        # The existing status handler finalizes a previously acknowledged
+        # cancellation when ComfyUI no longer lists its prompt in the queue.
+        from generation_history import GenerationHistory
+        GenerationHistory(self.root).update(token, "cancelling", [])
+        response = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["state"], "cancelled")
+        self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
+        rows = self.observations()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["status"], "cancelled")
+
+
 
 if __name__ == "__main__":
     unittest.main()
