@@ -26,7 +26,28 @@ def register(app, base):
     jobs = {}
     records = GenerationHistory(base)
     prepared = {}
+    # Ephemeral, opt-in GPU diagnostics: not persisted as benchmark observations.
+    gpu_monitors = {}
     lock = threading.Lock()
+
+    def run_gpu_monitor(generation_id, option):
+        from benchmark_gpu_live_capture import observe
+        from benchmark_gpu_monitor_contract import monitoring_receipt
+        with lock:
+            gpu_monitors[generation_id] = monitoring_receipt("running")
+        try:
+            report = observe(base, generation_id, gpu_uuid=option["gpu_uuid"],
+                             samples_limit=option["samples_limit"],
+                             interval_seconds=option["interval_seconds"])
+            state = "completed" if report.get("ok") is True else "failed"
+            payload = {**report, **monitoring_receipt(state)}
+        except Exception as exc:
+            app.logger.warning("Experimental VRAM monitor failed: %s", exc)
+            payload = {**monitoring_receipt("failed"),
+                       "reason": "GPU diagnostic unavailable; generation unaffected"}
+        with lock:
+            gpu_monitors[generation_id] = payload
+
 
     def config():
         try:
@@ -304,6 +325,8 @@ def register(app, base):
             benchmark_submit=True,
             benchmark_terminal_finalization=True,
             benchmark_field="benchmark",
+            experimental_gpu_monitor=True,
+            gpu_monitor_field="gpu_monitor",
             requires_confirmation=True,
         )
 
@@ -316,9 +339,16 @@ def register(app, base):
         body = request.get_json(silent=True)
         if not isinstance(body, dict) or body.get("confirm") is not True or not isinstance(body.get("workflow_id"), str):
             return jsonify(error="Explicit generation confirmation required"), 400
+        from benchmark_gpu_monitor_contract import validate_gpu_monitor_option
+        try:
+            monitor_option = validate_gpu_monitor_option(body.get("gpu_monitor"))
+        except ValueError as exc:
+            return jsonify(error=str(exc)), 400
         cfg = config()
         if cfg["mode"] == "native":
             return jsonify(error="ComfyUI is disabled in native mode"), 409
+        if monitor_option and cfg["url"] != "http://127.0.0.1:8188":
+            return jsonify(error="Experimental GPU monitoring needs local ComfyUI on 127.0.0.1:8188"), 409
         raw = read_graph(body["workflow_id"])
         if raw is None:
             return jsonify(error="Workflow not found"), 404
@@ -401,6 +431,27 @@ def register(app, base):
                 while len(jobs) > 100:
                     jobs.pop(next(iter(jobs)))
             result = dict(id=token, prompt_id=ident, client_id=client_id)
+            if monitor_option is not None:
+                # An explicit request cannot change success of an already
+                # submitted generation if optional monitoring cannot start.
+                if history_saved:
+                    from benchmark_gpu_monitor_contract import monitoring_receipt
+                    with lock:
+                        gpu_monitors[token] = monitoring_receipt("scheduled")
+                        while len(gpu_monitors) > 100:
+                            gpu_monitors.pop(next(iter(gpu_monitors)))
+                    try:
+                        threading.Thread(
+                            target=run_gpu_monitor, args=(token, monitor_option),
+                            daemon=True, name="orkilab-gpu-monitor"
+                        ).start()
+                        result["gpu_monitor"] = "scheduled"
+                    except RuntimeError:
+                        with lock:
+                            gpu_monitors[token] = monitoring_receipt("failed")
+                        result["gpu_monitor"] = "failed_to_start"
+                else:
+                    result["gpu_monitor"] = "history_unavailable"
             if benchmark_target is not None:
                 result["benchmark_binding"] = benchmark_link
                 if benchmark_link != "bound":
@@ -410,6 +461,19 @@ def register(app, base):
             return jsonify(error="ComfyUI rejected the request", detail=f"HTTP {exc.code}"), 502
         except (OSError, ValueError, TypeError) as exc:
             return jsonify(error="Generation submission could not be confirmed. Check ComfyUI before retrying.", detail=str(exc)[:300]), 502
+
+    @app.get("/api/workspace/generation/<generation_id>/gpu-monitor")
+    def generation_gpu_monitor_status(generation_id):
+        """Read ephemeral opt-in device-global diagnostics. No DB writes."""
+        if not local():
+            return jsonify(error="View GPU monitoring on the launcher PC"), 403
+        if not isinstance(generation_id, str) or len(generation_id) > 200:
+            return jsonify(error="Invalid generation ID"), 400
+        with lock:
+            report = gpu_monitors.get(generation_id)
+        if report is None:
+            return jsonify(error="No opted-in GPU monitoring for this generation"), 404
+        return jsonify(report)
 
     @app.post("/api/workspace/comfyui/memory/release")
     def release_comfyui_memory():
