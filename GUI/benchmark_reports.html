@@ -44,8 +44,8 @@ body.embedded header{display:none}body.embedded main{padding:4px 0 32px;max-widt
 <label><span data-i18n="draftPositive">SHA-256 del prompt positivo</span><input id="draft-positive" minlength="64" maxlength="64" required pattern="[a-f0-9]{64}"></label>
 <label><span data-i18n="draftNegative">SHA-256 del prompt negativo</span><input id="draft-negative" minlength="64" maxlength="64" required pattern="[a-f0-9]{64}"></label>
 <label><span data-i18n="draftInput">SHA-256 de la entrada</span><input id="draft-input" minlength="64" maxlength="64" required pattern="[a-f0-9]{64}"></label>
-<label><span data-i18n="draftCache">Política de caché</span><select id="draft-cache"><option value="warm_sampler">Warm sampler</option><option value="cold">Cold</option></select></label>
-<label><span data-i18n="draftSeed">Política de semilla</span><select id="draft-seed"><option value="fixed">Fixed</option><option value="enumerated">Enumerated</option></select></label>
+<label><span data-i18n="draftCache">Política de caché</span><select id="draft-cache"><option value="warm_sampler" data-i18n="cacheWarm">Muestreador precargado</option><option value="cold" data-i18n="cacheCold">Desde cero</option></select></label>
+<label><span data-i18n="draftSeed">Política de semilla</span><select id="draft-seed"><option value="fixed" data-i18n="seedFixed">Fija</option><option value="enumerated" data-i18n="seedEnumerated">Enumerada</option></select></label>
 <label><span data-i18n="draftRepetitions">Repeticiones</span><input type="number" id="draft-repetitions" required value="3" min="1" max="100"></label>
 <label><span data-i18n="draftWidth">Ancho</span><input type="number" id="draft-width" required value="1024" min="64" max="16384"></label>
 <label><span data-i18n="draftHeight">Alto</span><input type="number" id="draft-height" required value="1024" min="64" max="16384"></label>
@@ -73,10 +73,60 @@ body.embedded header{display:none}body.embedded main{padding:4px 0 32px;max-widt
 "use strict";
 const $=id=>document.getElementById(id);
 const labels={
-es:{draftTitle:"Crear protocolo de Benchmark (borrador)",draftExplanation:"Solo guarda un plan; no ejecuta ComfyUI. Los hashes SHA-256 deben corresponder a los datos reales y son declaraciones pendientes de verificar.",draftName:"Nombre del protocolo",draftVary:"Variable que cambia",draftWorkflow:"ID del workflow guardado",draftGpu:"UUID de GPU NVIDIA",draftPositive:"SHA-256 del prompt positivo",draftNegative:"SHA-256 del prompt negativo",draftInput:"SHA-256 de la entrada",draftCache:"Política de caché",draftSeed:"Política de semilla",draftRepetitions:"Repeticiones",draftWidth:"Ancho",draftHeight:"Alto",draftVariantA:"Variante A",draftVariantB:"Variante B",draftConsent:"Confirmo guardar solo un borrador, sin iniciar ninguna generación.",draftSave:"Guardar borrador",draftChoose:"Selecciona un proyecto antes de guardar.",draftSaved:"Borrador guardado. No se ha ejecutado ninguna generación.",draftError:"No se pudo guardar el borrador.",protocolTitle:"Protocolo reproducible",protocolCaveat:"Una configuración declarada no demuestra que las ejecuciones hayan seguido ese protocolo.",protocolLegacy:"Sin protocolo versionado; evidencia no acreditada",protocolIncomplete:"Declaración incompleta",protocolDeclared:"Declarado, pendiente de comprobar en ejecuciones reales",comparabilityTitle:"Comparabilidad de resultados",comparabilityStatus:"Estado",comparabilityReasons:"Evidencias pendientes o incompatibles",unverified:"No acreditada",blocked:"Bloqueada",comparabilityExplanation:"Ninguna variante se clasifica automáticamente como comparable o ganadora.",language:"Idioma",back:"← Proyectos",title:"Informes de Benchmark Studio",intro:"Consulta por proyecto las ejecuciones registradas y prepara borradores de comparación. No se inicia ninguna generación automáticamente.",project:"Proyecto",run:"Ejecución",refresh:"Actualizar",warning:"Estos tiempos son descriptivos: no acreditan igualdad de condiciones, ausencia de caché ni un modelo ganador. Las mediciones de VRAM desconocidas permanecen vacías.",variants:"Variantes y mediciones",variant:"Variante",completed:"Completadas",failed:"Fallidas",cancelled:"Canceladas",measured:"Tiempos medidos",median:"Mediana (ms)",range:"Mín.–máx. (ms)",missing:"Tiempos desconocidos",vram:"Picos VRAM por trabajo confirmados",scope:"No se muestra ranking automático. La VRAM global muestreada no se atribuye a un workflow.",choose:"Selecciona un proyecto",chooseRun:"Selecciona una ejecución",empty:"Este proyecto todavía no tiene ejecuciones de Benchmark.",noProjects:"No hay proyectos disponibles.",noData:"Sin medición",runs:"Ejecuciones",observations:"Observaciones",missingVram:"VRAM por trabajo desconocida",variantsCount:"Variantes",loadError:"No se pudieron consultar los informes.",draft:"Borrador",running:"En curso",completedState:"Completada",failedState:"Fallida",cancelledState:"Cancelada"},
-en:{draftTitle:"Create benchmark protocol (draft)",draftExplanation:"Stores a plan only; no ComfyUI execution. SHA-256 hashes must match real inputs and remain unverified declarations.",draftName:"Protocol name",draftVary:"Variable to change",draftWorkflow:"Saved workflow ID",draftGpu:"NVIDIA GPU UUID",draftPositive:"Positive prompt SHA-256",draftNegative:"Negative prompt SHA-256",draftInput:"Input SHA-256",draftCache:"Cache policy",draftSeed:"Seed policy",draftRepetitions:"Repetitions",draftWidth:"Width",draftHeight:"Height",draftVariantA:"Variant A",draftVariantB:"Variant B",draftConsent:"I confirm saving a draft only, without submitting a generation.",draftSave:"Save draft",draftChoose:"Select a project before saving.",draftSaved:"Draft saved. No generation was executed.",draftError:"Could not save draft.",protocolTitle:"Reproducibility protocol",protocolCaveat:"A declared configuration does not prove that the executions followed it.",protocolLegacy:"No versioned protocol; evidence not established",protocolIncomplete:"Incomplete declaration",protocolDeclared:"Declared, not yet verified against real executions",comparabilityTitle:"Result comparability",comparabilityStatus:"Status",comparabilityReasons:"Unverified or incompatible evidence",unverified:"Not established",blocked:"Blocked",comparabilityExplanation:"No variant is automatically classified as comparable or a winner.",language:"Language",back:"← Projects",title:"Benchmark Studio reports",intro:"Browse project run reports and prepare comparison drafts. No generation is started automatically.",project:"Project",run:"Run",refresh:"Refresh",warning:"These times are descriptive: they do not prove identical conditions, absence of caching, or a winning model. Unknown VRAM measurements remain unknown.",variants:"Variants and measurements",variant:"Variant",completed:"Completed",failed:"Failed",cancelled:"Cancelled",measured:"Measured durations",median:"Median (ms)",range:"Min–max (ms)",missing:"Unknown durations",vram:"Verified per-job VRAM peaks",scope:"There is no automatic ranking. Sampled device-global VRAM is not attributed to an individual workflow.",choose:"Select a project",chooseRun:"Select a run",empty:"This project has no benchmark runs yet.",noProjects:"No projects available.",noData:"No measurement",runs:"Runs",observations:"Observations",missingVram:"Unknown per-job VRAM",variantsCount:"Variants",loadError:"Reports could not be loaded.",draft:"Draft",running:"Running",completedState:"Completed",failedState:"Failed",cancelledState:"Cancelled"}};
+es:{cacheWarm:"Muestreador precargado",cacheCold:"Desde cero",seedFixed:"Fija",seedEnumerated:"Enumerada",draftTitle:"Crear protocolo de Benchmark (borrador)",draftExplanation:"Solo guarda un plan; no ejecuta ComfyUI. Los hashes SHA-256 deben corresponder a los datos reales y son declaraciones pendientes de verificar.",draftName:"Nombre del protocolo",draftVary:"Variable que cambia",draftWorkflow:"ID del workflow guardado",draftGpu:"UUID de GPU NVIDIA",draftPositive:"SHA-256 del prompt positivo",draftNegative:"SHA-256 del prompt negativo",draftInput:"SHA-256 de la entrada",draftCache:"Política de caché",draftSeed:"Política de semilla",draftRepetitions:"Repeticiones",draftWidth:"Ancho",draftHeight:"Alto",draftVariantA:"Variante A",draftVariantB:"Variante B",draftConsent:"Confirmo guardar solo un borrador, sin iniciar ninguna generación.",draftSave:"Guardar borrador",draftChoose:"Selecciona un proyecto antes de guardar.",draftSaved:"Borrador guardado. No se ha ejecutado ninguna generación.",draftError:"No se pudo guardar el borrador.",protocolTitle:"Protocolo reproducible",protocolCaveat:"Una configuración declarada no demuestra que las ejecuciones hayan seguido ese protocolo.",protocolLegacy:"Sin protocolo versionado; evidencia no acreditada",protocolIncomplete:"Declaración incompleta",protocolDeclared:"Declarado, pendiente de comprobar en ejecuciones reales",comparabilityTitle:"Comparabilidad de resultados",comparabilityStatus:"Estado",comparabilityReasons:"Evidencias pendientes o incompatibles",unverified:"No acreditada",blocked:"Bloqueada",comparabilityExplanation:"Ninguna variante se clasifica automáticamente como comparable o ganadora.",language:"Idioma",back:"← Proyectos",title:"Informes de Benchmark Studio",intro:"Consulta por proyecto las ejecuciones registradas y prepara borradores de comparación. No se inicia ninguna generación automáticamente.",project:"Proyecto",run:"Ejecución",refresh:"Actualizar",warning:"Estos tiempos son descriptivos: no acreditan igualdad de condiciones, ausencia de caché ni un modelo ganador. Las mediciones de VRAM desconocidas permanecen vacías.",variants:"Variantes y mediciones",variant:"Variante",completed:"Completadas",failed:"Fallidas",cancelled:"Canceladas",measured:"Tiempos medidos",median:"Mediana (ms)",range:"Mín.–máx. (ms)",missing:"Tiempos desconocidos",vram:"Picos VRAM por trabajo confirmados",scope:"No se muestra ranking automático. La VRAM global muestreada no se atribuye a un workflow.",choose:"Selecciona un proyecto",chooseRun:"Selecciona una ejecución",empty:"Este proyecto todavía no tiene ejecuciones de Benchmark.",noProjects:"No hay proyectos disponibles.",noData:"Sin medición",runs:"Ejecuciones",observations:"Observaciones",missingVram:"VRAM por trabajo desconocida",variantsCount:"Variantes",loadError:"No se pudieron consultar los informes.",draft:"Borrador",running:"En curso",completedState:"Completada",failedState:"Fallida",cancelledState:"Cancelada"},
+en:{cacheWarm:"Warm sampler",cacheCold:"Cold",seedFixed:"Fixed",seedEnumerated:"Enumerated",draftTitle:"Create benchmark protocol (draft)",draftExplanation:"Stores a plan only; no ComfyUI execution. SHA-256 hashes must match real inputs and remain unverified declarations.",draftName:"Protocol name",draftVary:"Variable to change",draftWorkflow:"Saved workflow ID",draftGpu:"NVIDIA GPU UUID",draftPositive:"Positive prompt SHA-256",draftNegative:"Negative prompt SHA-256",draftInput:"Input SHA-256",draftCache:"Cache policy",draftSeed:"Seed policy",draftRepetitions:"Repetitions",draftWidth:"Width",draftHeight:"Height",draftVariantA:"Variant A",draftVariantB:"Variant B",draftConsent:"I confirm saving a draft only, without submitting a generation.",draftSave:"Save draft",draftChoose:"Select a project before saving.",draftSaved:"Draft saved. No generation was executed.",draftError:"Could not save draft.",protocolTitle:"Reproducibility protocol",protocolCaveat:"A declared configuration does not prove that the executions followed it.",protocolLegacy:"No versioned protocol; evidence not established",protocolIncomplete:"Incomplete declaration",protocolDeclared:"Declared, not yet verified against real executions",comparabilityTitle:"Result comparability",comparabilityStatus:"Status",comparabilityReasons:"Unverified or incompatible evidence",unverified:"Not established",blocked:"Blocked",comparabilityExplanation:"No variant is automatically classified as comparable or a winner.",language:"Language",back:"← Projects",title:"Benchmark Studio reports",intro:"Browse project run reports and prepare comparison drafts. No generation is started automatically.",project:"Project",run:"Run",refresh:"Refresh",warning:"These times are descriptive: they do not prove identical conditions, absence of caching, or a winning model. Unknown VRAM measurements remain unknown.",variants:"Variants and measurements",variant:"Variant",completed:"Completed",failed:"Failed",cancelled:"Cancelled",measured:"Measured durations",median:"Median (ms)",range:"Min–max (ms)",missing:"Unknown durations",vram:"Verified per-job VRAM peaks",scope:"There is no automatic ranking. Sampled device-global VRAM is not attributed to an individual workflow.",choose:"Select a project",chooseRun:"Select a run",empty:"This project has no benchmark runs yet.",noProjects:"No projects available.",noData:"No measurement",runs:"Runs",observations:"Observations",missingVram:"Unknown per-job VRAM",variantsCount:"Variants",loadError:"Reports could not be loaded.",draft:"Draft",running:"Running",completedState:"Completed",failedState:"Failed",cancelledState:"Cancelled"}};
 let lang="es",projects=[],runs=[],requestSeq=0;
 function t(k){return labels[lang][k]||k}
+const reasonText={
+ es:{
+  no_completed_measured_duration:"Sin duraciones completadas y medidas",
+  incomplete_duration_coverage:"Faltan duraciones en algunas ejecuciones",
+  missing_generation_lineage:"No consta la procedencia de la generación",
+  missing_workflow_identity:"No se identificó el workflow",
+  missing_graph_fingerprint:"Falta la huella del grafo enviado",
+  missing_timing_provenance:"No consta el origen de la medición temporal",
+  unverified_timing_source:"Origen del tiempo sin verificar",
+  cached_sampler_observed:"Se observó un sampler reutilizado desde caché",
+  unclassified_sampler_cache:"No se pudo clasificar la caché del sampler",
+  full_inference_not_verified:"No se ha acreditado la inferencia completa",
+  different_workflows_within_variant:"Una misma variante contiene workflows diferentes",
+  graph_changed_between_repetitions:"Cambió el grafo entre repeticiones",
+  hardware_equivalence_not_verified:"No se ha acreditado la equivalencia del hardware",
+  seed_and_warmth_controls_not_verified:"Semillas y condiciones de caché sin verificar",
+  no_versioned_reproducibility_protocol:"No hay un protocolo reproducible versionado",
+  invalid_controlled_variable:"La variable controlada no es válida",
+  missing_workflow_id:"Falta identificar el workflow",
+  missing_gpu_identity:"Falta identificar la GPU",
+  missing_cache_policy:"No se definió una política de caché",
+  missing_seed_policy:"No se definió una política de semillas",
+  invalid_repetitions:"Número de repeticiones no válido",
+  invalid_resolution:"Resolución no válida",
+  at_least_two_variants_required:"Se necesitan al menos dos variantes",
+  variant_declarations_incomplete:"Falta completar la declaración de alguna variante"
+ },
+ en:{
+  no_completed_measured_duration:"No completed measured durations",
+  incomplete_duration_coverage:"Some runs have no duration",
+  missing_generation_lineage:"Generation provenance unavailable",
+  missing_workflow_identity:"Workflow identity missing",
+  missing_graph_fingerprint:"Submitted graph fingerprint missing",
+  missing_timing_provenance:"Timing provenance unavailable",
+  unverified_timing_source:"Timing source not verified",
+  cached_sampler_observed:"Cached sampler observed",
+  unclassified_sampler_cache:"Sampler cache status unclassified",
+  full_inference_not_verified:"Full inference not verified",
+  different_workflows_within_variant:"Different workflows within one variant",
+  graph_changed_between_repetitions:"Graph changed between repetitions",
+  hardware_equivalence_not_verified:"Hardware equivalence not verified",
+  seed_and_warmth_controls_not_verified:"Seed and cache warmth conditions not verified",
+  no_versioned_reproducibility_protocol:"No versioned reproducibility protocol"
+ }
+};
+function reasons(values){
+ return (Array.isArray(values)?values:[]).map(code=>
+  reasonText[lang][code]||code.replaceAll("_"," ")).join(" · ");
+}
+
 function option(text,value){const o=document.createElement("option");o.textContent=text;o.value=value;return o}
 function clearReport(){ $("report").hidden=true;$("metrics").replaceChildren();$("rows").replaceChildren();$("comparability-rows").replaceChildren()}
 async function get(path){const response=await fetch(path,{cache:"no-store",credentials:"same-origin"});const obj=await response.json();if(!response.ok)throw Error(obj.error||"HTTP "+response.status);return obj}
@@ -125,7 +175,7 @@ function draw(report){
   (proto.status==="declared_unverified"?t("protocolDeclared"):
    proto.status==="incomplete"?t("protocolIncomplete"):t("protocolLegacy"))+
   (Array.isArray(proto.reason_codes)&&proto.reason_codes.length?
-   " · "+proto.reason_codes.join(" · "):"");
+   " · "+reasons(proto.reason_codes):"");
  const v=report.variants||[];
  $("metrics").append(stat(t("variantsCount"),v.length),stat(t("observations"),report.observation_count),
   stat(t("missingVram"),v.reduce((sum,x)=>sum+(x.missing_per_job_peak_vram_count||0),0)));
@@ -135,7 +185,7 @@ function draw(report){
   const tr=document.createElement("tr");
   const label=(v.find(x=>x.variant_id===item.variant_id)||{}).label||item.variant_id;
   const status=item.status==="blocked"?t("blocked"):t("unverified");
-  tr.append(td(label),td(status),td((item.reason_codes||[]).join(" · ")));
+  tr.append(td(label),td(status),td(reasons(item.reason_codes)));
   compareBody.append(tr);
  }
  const body=$("rows");
