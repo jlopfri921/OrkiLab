@@ -14,12 +14,29 @@
 .qa details{border-top:1px solid #36516a;padding:12px 0}.qa summary{cursor:pointer;font-weight:650}.qa p{margin:8px 0}
 code{background:#0b1727;border:1px solid #30465e;padding:2px 6px;border-radius:5px}
 [hidden]{display:none!important}
-@media(max-width:850px){.studio-layout{display:block;padding:14px}.studio-navigation{display:none}.grid{grid-template-columns:1fr}}
-</style></head>
+@media(max-width:850px){.grid{grid-template-columns:1fr}}
+</style>
+<link rel="stylesheet" href="/assets/orkilab/orkilab-queue-theme.css">
+<link rel="stylesheet" href="/assets/orkilab/orkilab-shell.css">
+<link rel="stylesheet" href="/assets/orkilab/orkilab-app-shell.css">
+</head>
 <body class="orki-queue-theme orki-app-frame orki-standalone-shell">
-<div class="studio-layout"><nav class="studio-navigation" aria-label="Navegación OrkiLab"><a href="/workspace#overview">Panel general</a><a href="/workspace#projects">Proyectos</a><a href="/workspace#engines">Entrenadores</a><a href="/workspace/datasets">Dataset Studio</a><a href="/workspace/multiview">Multiview Studio</a><a href="/workspace?dialog=settings">Ajustes</a></nav>
-<main class="studio-content">
-<div class="no-i18n">
+<div class="studio-layout"><nav class="studio-navigation" aria-label="OrkiLab navigation">
+<a href="/workspace#overview">Panel general</a>
+<a href="/workspace#projects">Proyectos</a>
+<a href="/workspace#engines">Entrenadores</a>
+<a href="/workspace#trained-loras">Mis LoRA entrenados</a>
+<a href="/workspace#gpu-manager">Gestor GPU</a>
+<a href="/workspace?dialog=settings">Ajustes</a>
+<a href="/workspace?dialog=shutdown">Pausar todo y salir</a>
+<a href="/queue">Cola de trabajo</a>
+<a href="/workspace/comfyui">Zona ComfyUI</a>
+<a href="/workspace/datasets">Dataset Studio</a>
+<a href="/workspace/multiview">Estudio multivista</a>
+<a href="/workspace/guide" aria-current="page">Guía y ayuda</a>
+</nav>
+<main class="studio-content orki-guide-content">
+<div class="no-i18n orki-guide-body">
 <section class="hero" data-lang="es"><span class="tag">OrkiLab / Ayuda 0.5.0 RC.1</span><h1>Guía de OrkiLab</h1>
 <p>Un recorrido claro por la estructura de la aplicación, los proyectos, los datos, el entrenamiento y las funciones opcionales de IA. Trabaja a tu ritmo: ningún workflow se ejecuta ni se descarga ningún modelo por consultar esta guía.</p></section>
 <section class="hero" data-lang="en" hidden><span class="tag">OrkiLab / Help 0.5.0 RC.1</span><h1>OrkiLab user guide</h1>
