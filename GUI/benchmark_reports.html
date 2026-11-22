@@ -133,7 +133,7 @@ function readableName(value){
  const text=String(value??"");
  // Targeted repair for a confirmed legacy label whose accented bytes were
  // irreversibly replaced by question marks; never guess other missing letters.
- const corrected=text.replace(/vinculaci\\?n autom\\?tica/gi, match=>
+ const corrected=text.replace(/vinculaci\?n autom\?tica/gi, match=>
   match[0]===match[0].toUpperCase()?"Vinculación automática":"vinculación automática");
  if(corrected!==text)return corrected;
  if(!/[ÃÂâ][\u0080-\u00BF\u2018-\u2122]/u.test(text))return text;
