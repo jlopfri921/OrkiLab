@@ -128,6 +128,24 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         with BenchmarkStore(self.benchmark_path) as bench:
             return bench.report(self.run_id)["observations"]
 
+    def test_capabilities_reports_live_benchmark_route_without_submitting(self):
+        response = self.client.get("/api/workspace/generation/capabilities")
+        self.assertEqual(response.status_code, 200)
+        body = response.get_json()
+        self.assertEqual(body["generation_studio"], "benchmark-submission-v1")
+        self.assertIs(body["benchmark_submit"], True)
+        self.assertIs(body["benchmark_terminal_finalization"], True)
+        self.assertEqual(self.submitted_requests, [])
+        self.assertEqual(self.observations(), [])
+
+    def test_capabilities_rejects_nonlocal_client(self):
+        response = self.client.get(
+            "/api/workspace/generation/capabilities",
+            environ_overrides={"REMOTE_ADDR": "192.0.2.10"},
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.submitted_requests, [])
+
     def test_benchmark_submission_and_terminal_status_records_once(self):
         created = self.submit()
         self.assertEqual(created.status_code, 201, created.get_json())
