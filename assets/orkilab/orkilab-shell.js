@@ -520,7 +520,8 @@
                 a.href = "/workspace" + a.getAttribute("href");
             const current = canonical.querySelector(page === "queue" ?
                 'a[href="/queue"]' : page === "multiview" ?
-                'a[href="/workspace/multiview"]' : 'a[href="/workspace/datasets"]');
+                'a[href="/workspace/multiview"]' : page === "guide" ?
+                'a[href="/workspace/guide"]' : 'a[href="/workspace/datasets"]');
             if (current) current.setAttribute("aria-current", "page");
             for (const button of canonical.querySelectorAll("button")) {
                 const mode = button.id === "settings-open" ? "settings" :
