@@ -87,6 +87,19 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('Los textos y el archivo se procesan exclusivamente en este navegador', self.benchmark)
         self.assertIn('Este navegador no admite SHA-256 local mediante Web Crypto', self.benchmark)
 
+    def test_b10_2_explicit_model_check_is_integrated_and_bilingual(self):
+        self.assertIn('id="b10-model-check"', self.benchmark)
+        self.assertIn('id="b10-model-rows"', self.benchmark)
+        self.assertIn('Comprobar variantes (solo lectura)', self.benchmark)
+        self.assertIn('Check variants (read-only)', self.benchmark)
+        self.assertIn('/api/workspace/benchmark/model-check?project_id=', self.benchmark)
+
+    def test_b10_2_model_check_is_not_automatically_triggered(self):
+        self.assertIn('addEventListener("click",async()=>{', self.benchmark)
+        self.assertIn('if(seq!==b10CheckSeq||projectId!==$("project").value', self.benchmark)
+        self.assertIn('No se comprueban los archivos ni se ejecuta el workflow', self.benchmark)
+        self.assertIn('sin verificar archivos', self.benchmark)
+
     def test_b10_1_offline_comparison_gate_is_bilingual_and_visible(self):
         self.assertIn('id="b10-rows"', self.benchmark)
         self.assertIn('report.b10_comparison_preflight||{}', self.benchmark)
