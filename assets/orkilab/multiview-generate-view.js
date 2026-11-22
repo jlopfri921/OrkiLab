@@ -58,7 +58,7 @@ function mount(host,getProject,subjectId,api,onImport){
    for(const c of candidates){
      const label=elt("label"),box=elt("input");box.type="checkbox";box.value=c.id;
      label.append(box,elt("span",c.view_name||c.name));refs.append(label);
-     box.onchange=()=>{if(checked().length>4){box.checked=false;status("Maximum 4 references.")}resetPrepared()};
+     box.onchange=()=>{if(checked().length>4){box.checked=false;status(typeof I18N!=="undefined"&&I18N.lang==="es"?"Selecciona un máximo de cuatro fotografías de referencia.":"Select up to four reference photographs.")}resetPrepared()};
    }
    if(!candidates.length)refs.append(elt("p",t("noRefs")));
    installed=(workflows.workflows||[]).filter(x=>x.category==="image");
