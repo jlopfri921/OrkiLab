@@ -720,3 +720,24 @@ git pull --ff-only
 ```
 
 Restart OrkiLab and open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Select a saved execution and check **Correspondencia con historial local**: missing history must not display a green confirmed state; a matching local snapshot may show **Registros locales coherentes; contenido sin verificar**, explicitly without implying remote verification. The optional literal prompt digest may show that SHA-256 appears in recorded CLIPTextEncode text, with polarity still unverified. Feature PR #104 stays open and unmerged. Operator-requested per-workflow error catalog remains deferred.
+
+## B9.9 accepted / B9.10 closure review and sampler cache regression
+
+The operator answered **`tok`** after B9.9 validation, recording **209 benchmark tests operator-reported PASS**. No raw console test output or independent CI evidence is attached.
+
+**B9.10 closeout** introduces the read-only, pure module `scripts/benchmark_b9_closure.py` and a bilingual UI table **Estado de validación B9**. It combines four existing diagnostic sections (declared reproducibility protocol, duration comparability, recorded execution evidence and matching local generation history) into explicit statuses: **`contradiction_detected`** if any reported blocker/mismatch exists, otherwise **`not_fully_verified`**. Checklist rows use `recorded_only` for bounded documentary facts that were found and `pending` for conditions not proven. Neither status is an experimental verification. **In all cases**, `comparability_verified=false`, `execution_verified=false`, `ranking_eligible=false`, and `best_variant=null`; declared prompts and media, verified model bytes, GPU equality, seed policy, cache conditions and full inference are still unproven. The existing launcher-local project-scoped GET report remains read-only. No database schema changes or ComfyUI calls are added. No PR merge/release is authorized by these tests.
+
+During this closeout, a **real B9.3 logic gap** was fixed in `scripts/benchmark_comparability.py`: previously cache-blocking evidence was only inspected on completed observations with non-NULL measured durations. But a sampler-cache event can legitimately suppress the timing measurement; that meant an actual cached sampler with `duration_ms=NULL` could be missed. Now lineage/cache is inspected on **every completed observation** while only valid measured durations contribute to the count, and explicit sampler cache remains a **blocking** condition even when no duration was recorded. Two regression tests cover cached sampler without duration and a mix of timed/untimed repetitions.
+
+B9.10 adds 8 pure closeout tests, 1 Flask read-only report test and 2 bilingual UI regression tests; with the two cache tests this yields **222 expected benchmark tests** (209 user-reported prior + 13 new). Newly added tests are pending Windows operator execution; a JavaScript syntax parse of the new Benchmark UI inline script passed. The B9.10 checklist is a **phase review**, not permission to show speed rankings, export source media or attribute VRAM.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_b9_closure.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_comparability.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart OrkiLab and open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Choose a saved run and inspect **Estado de validación B9**: checks should say either **Solo constancia documental** or **Pendiente de acreditar** (never *experiment fully verified*), with a visible **Validación completa pendiente** or **Se han detectado incompatibilidades** heading. A legacy run or missing local history stays pending. Cache evidence on completed observations with unknown duration still blocks comparability. Preserve open PR #104, do not merge or publish 0.6.0, and continue to defer the separate workflow error correction catalogue unless asked.
