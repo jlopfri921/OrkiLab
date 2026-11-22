@@ -2,6 +2,22 @@
    Never rewrites queue controls, image controls or their listeners. */
 (function () {
     "use strict";
+    // Theme resources are also loaded on standalone trainer/Multiview pages
+    // that use the shared shell but do not include explicit <link>/<script>.
+    // Never insert duplicates in Workspace, Benchmark, Dataset or Queue.
+    if(!document.querySelector('link[href="/assets/orkilab/orkilab-light-theme.css"]')){
+        const themeCss=document.createElement("link");
+        themeCss.rel="stylesheet";
+        themeCss.href="/assets/orkilab/orkilab-light-theme.css";
+        document.head.appendChild(themeCss);
+    }
+    if(!document.querySelector('script[src="/assets/orkilab/orkilab-theme.js"]')){
+        const themeScript=document.createElement("script");
+        themeScript.src="/assets/orkilab/orkilab-theme.js";
+        themeScript.defer=true;
+        document.head.appendChild(themeScript);
+    }
+
     // Every menu transition must begin at the top, not at the previous
     // section's scroll offset (including browser back/forward restoration).
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
