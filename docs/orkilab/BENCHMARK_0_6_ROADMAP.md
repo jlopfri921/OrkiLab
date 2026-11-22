@@ -564,3 +564,21 @@ git pull --ff-only
 ```
 
 Restart the OrkiLab launcher and open `http://127.0.0.1:4990/workspace/benchmark`. A new **Comparabilidad de resultados** section should appear for a selected stored run, with `No acreditada` or `Bloqueada` and specific reason codes. If no run is saved, there is correctly nothing to compare. Do not merge PR #104 or release 0.6.0 from B9.3 alone; pending: richer benchmarking protocol, explicit evidence approval, complete UI flow, CI/regression reviews and user acceptance. The workflow error catalog remains deferred by operator request.
+
+## B9.3 operator acceptance / B9.4 versioned reproducibility declarations
+
+The operator introduced **`tok` = `todo OK`** and explicitly confirmed B9.3 after the Windows test checklist. This is treated as **operator-reported 143/143 tests PASS** (raw command output not included in this turn). Future short `tok` messages mean the operator confirms the immediately requested tests/verification as successful; do not mistake them for a recorded CI run.
+
+B9.4 adds a **pure, opt-in declaration contract** in `scripts/benchmark_repro_protocol.py` under `schema: "orkilab-repro-v1"`. The run-level declaration specifies the *single variable allowed to change* (`checkpoint` or `lora`), workflow ID, SHA-256 digests of positive prompt, negative prompt and input image/content, NVIDIA GPU UUID, cache policy (`cold` or `warm_sampler`), seed policy (`fixed` or `enumerated`), 1–100 planned repetitions and resolution width/height. Each variant must declare its distinct `controlled_value`. A graph override or variant variable mismatch requires independent review; missing fixed-field declarations or fewer than two variants are flagged. This is not an attempt to validate the actual ComfyUI graph, model hashes or hardware. A declaration could be inaccurate: the module explicitly marks a complete declaration **`declared_unverified`**, not fully comparable, never a ranked/winning model. Existing legacy run protocols (arbitrary stored JSON) remain **`legacy_unverified`** and continue to work without database migration.
+
+The existing project-scoped, launcher-local **read-only** report detail endpoint now adds a `reproducibility_protocol` diagnostics object with status and coded reasons, but no raw prompt, source hash, model path, secret or full protocol payload. The bilingual report UI displays a new **Protocolo reproducible** section clearly distinguishing declarations from evidence. All operations remain read-only and no generation or GPU sampling is triggered. This module **does not add an editing/creation UI** or mark pre-existing benchmark runs invalid. A future separate workflow will collect/confirm these declarations with clear user consent.
+
+Ten new pure tests and one Flask integration test: **154 benchmark tests expected** after the operator-reported 143 baseline; pending Windows operator verification.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_repro_protocol.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+Restart the OrkiLab launcher and inspect `http://127.0.0.1:4990/workspace/benchmark` with a saved run: legacy runs should explicitly say **Sin protocolo versionado; evidencia no acreditada**, rather than generating a guessed protocol or ranking. Feature PR #104 stays draft/open and must NOT merge or claim 0.6.0 release from this slice. The operator explicitly deferred the per-workflow error catalogue.
