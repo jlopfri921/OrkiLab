@@ -655,8 +655,9 @@ $("generation-form").onsubmit=async e=>{
    if(i%3===0&&(status.state==="running"||status.state==="queued"))await sampleGenerationMemory("peak");
    const label=t(({queued:"Queued",running:"Running",cancelling:"Cancellation requested",cancelled:"Generation cancelled",completed:"Completed",error:"Generation failed",unknown:"Status unknown"})[status.state]||"Status unknown");
    out.textContent=label+" · "+d.prompt_id;
-   if(status.state==="completed"){executionStep(t("Completed"),t("Workflow execution finished"),100);renderGenerationMedia(results,d.id,status.outputs);await sampleGenerationMemory("after");if($("comfy-auto-release").checked){const accepted=await releaseComfyMemory(true);if(accepted){await new Promise(r=>setTimeout(r,2000));await sampleGenerationMemory("cleaned");}}return;}
+   if(status.state==="completed"){if(generationMonitorJobId)await showGenerationMonitorStatus(generationMonitorJobId);executionStep(t("Completed"),t("Workflow execution finished"),100);renderGenerationMedia(results,d.id,status.outputs);await sampleGenerationMemory("after");if($("comfy-auto-release").checked){const accepted=await releaseComfyMemory(true);if(accepted){await new Promise(r=>setTimeout(r,2000));await sampleGenerationMemory("cleaned");}}return;}
    if(status.state==="error"||status.state==="cancelled"){
+    if(generationMonitorJobId)await showGenerationMonitorStatus(generationMonitorJobId);
     executionStep(label,t(status.state==="cancelled"?"Workflow cancellation confirmed":"Check details in ComfyUI"),null);await sampleGenerationMemory("after");return;
    }
    if(status.state==="cancelling")executionStep(label,t("ComfyUI is stopping this workflow."),null);
