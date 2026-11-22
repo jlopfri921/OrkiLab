@@ -60,7 +60,7 @@ jobs:
           for workflow in "OrkiLab RC validation" "OrkiLab foundation checks"; do
             if ! gh run list --repo "$GH_REPO" --workflow "$workflow" --commit "$RELEASE_SHA" --limit 20 \
               --json event,status,conclusion,headSha \
-              --jq '[.[] | select(.event == "push" and .status == "completed" and .conclusion == "success" and .headSha == env.RELEASE_SHA)] | length' \
+              --jq '[.[] | select(.event == "push" and .status == "completed" and .conclusion == "success")] | length' \
               | grep -qx '[1-9][0-9]*'; then
               echo "Missing successful main-push check for $workflow at $RELEASE_SHA"
               exit 1
