@@ -1,0 +1,74 @@
+# OrkiLab 0.6.0 — B10.5 acceptance and RC1 release gate
+
+**State: implemented for operator acceptance; NOT RC-published.**
+
+Target repo: [jlopfri921/OrkiLab](https://github.com/jlopfri921/OrkiLab)  
+Feature branch: `feat/0.6-benchmark-core`  
+Review: [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104) — keep **open/unmerged**.  
+Baseline: stable 0.5.0 in `main`; the feature branch may still contain older 0.5.0-rc.1 version metadata pending explicit release preparation.
+
+## 0.6 scope and completed engineering
+
+- B1–B9: local Benchmark SQLite observations, project/run lineage, strict local-only/report access, reproducibility declarations, conservative timing/cache diagnostics and historical ComfyUI graph fingerprint inspection.
+- B10.1: declaration-only candidate checks.
+- B10.2: user-invoked, bounded comparison of literal checkpoint/LoRA options advertised by ComfyUI for supported API graphs.
+- B10.3: deliberate run activation, one-variant preparation, explicit user confirmation, existing safe ComfyUI queue/binding handling; **no automatic batch**.
+- B10.4: read-only descriptive A/B median differences (B−A); missing values remain unknown; **never ranking or verified speedup**.
+- B10.5: conservative, code-generated release checklist plus a **manual** light/dark web theme with persistent local browser preference, visible header toggle and eight locale labels. Main Workspace, Benchmark, Dataset Studio, Queue and pages using the common shell share the preference. Browser/visual validation of every trainer interface remains pending.
+
+**Limitations that must remain visible:** verified full model weight bytes, input-file content and dynamic positive/negative prompt polarity, GPU equivalence, seeds and cold/warm cache are not attested by local histories. Real full inference, representative Desktop/Portable graph compatibility, VRAM-per-job and reliable experimental speed rankings require separate controlled testing. Never label the descriptive B10.4 differences as a benchmark winner. Original upstream MIT core and original OrkiLab Apache-2.0 contributions remain separately attributed; see `LICENSING.md`.
+
+## Test evidence classification
+
+- Up to B10.4: **267 tests operator-reported PASS** via the shorthand `tok`, without an attached independent CI transcript for every slice.
+- B10.5: **16 new automated checks** (7 pure release gates, 1 read-only Flask report, 2 bilingual UI checks and 6 shared light/dark tests). **283 benchmark tests expected**. Tests added in code, **not yet verified on Windows by operator**; no claim of CI or real GPU execution from synthetic fixtures.
+- Frontend inline JavaScript syntax check can be performed independently. An automated test cannot substitute for a real light/dark responsive browser assessment.
+
+## Required automated checks
+
+From your Windows checkout and virtualenv:
+
+```powershell
+git remote -v
+git branch --show-current
+git pull --ff-only
+
+.\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_b10_release_gate.py" -v
+.\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_b10_theme.py" -v
+.\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+**Expected last suite:** `Ran 283 tests ... OK`. If not, retain the exact failing traceback and do not authorize the RC.
+
+Also run the application's **full regression suite** and review actual Windows/Linux CI. These Benchmark-only tests are not enough to certify all existing trainers, datasets, Multiview or the installer. Keep source data and models backed up before accepting any release.
+
+## Manual acceptance — operator checklist
+
+| ID | Acceptance condition | Evidence required | Current status |
+| --- | --- | --- | --- |
+| B10.5-A | Benchmark 283 automated tests PASS | Windows terminal log | Pending |
+| B10.5-B | Whole-app regression (Workspace, Queue, trainers, projects, Dataset, Multiview) | terminal logs and functional notes | Pending |
+| B10.5-C | Linux/Windows CI at **exact candidate commit** | linked CI run and SHA | Pending |
+| B10.5-D | Benchmark standalone and ComfyUI embedded page remain readable and project-scoped | local browser screenshots/observations | Pending |
+| B10.5-E | **Light/dark** preference survives refresh/navigation/iframe, mobile responsive, keyboard accessible, both languages and remaining six locales | local browser checks | Pending |
+| B10.5-F | A recorded, compatible representative ComfyUI execution and binding on actual GPU **only with explicit operator consent** | local job history, cache and statuses | Pending |
+| B10.5-G | No unauthorized automatic generation, project cross-scope reads or mutated original media | review + acceptance | Pending |
+| B10.5-H | README, changelog, guides, version metadata, license notices and known limitations reviewed | document review | Pending |
+| B10.5-I | Backup/rollback plan accepted for user's persistent SQLite projects and LoRA files | backup and restoration drill | Pending |
+| B10.5-J | Maintainer explicitly authorizes `0.6.0-rc1` publication | recorded approval | Pending |
+
+**Light/dark test steps:** Open `http://127.0.0.1:4990/workspace`. Locate the **Claro / Oscuro** header toggle. Switch to light; open Projects, Queue, Dataset, ComfyUI Zone and Benchmark. Verify text/input/hover/focus contrast and table legibility at desktop and mobile widths; refresh and confirm the theme remains light. Check the Benchmark iframe inherits the same preference. Switch to dark and ensure the prior look returns. Check one representative trainer interface and a separate open tab. The theme must be **visual only** and must not reset any training or benchmark data.
+
+**Benchmark tests:** Open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Select an existing run and inspect **Validación final y publicación (B10.5)**. It must display **Publicación aún no autorizada** regardless of existing result medians. Do not click **Enviar una generación confirmada** unless you intend a genuine GPU job. Do not enable a tag or merge based on a local checklist.
+
+## Deferred or separately scoped
+
+- Workflow-specific repair/error catalogue; custom-node compatibility guarantees.
+- Proved cold-cache, model weight attestation, image/input-file equality or comparable speed leaderboard.
+- Model-family additions such as LLM QLoRA, fine-tuning, wider GPU scheduling or desktop package features planned for later versions.
+
+## Release decision
+
+**No release tag, GitHub Release, branch merge, installer or 0.6.0-rc1 publication is authorized by this document.** Upon full A–J acceptance and explicit confirmation, update `VERSION_ORKILAB` to the exact RC version, reconcile the 0.5 baseline in the feature branch, fix any failing regression, obtain fresh CI on the exact resulting SHA, review PR #104, then publish the candidate. Stable `0.6.0` requires a separate explicit signoff after RC observations.
