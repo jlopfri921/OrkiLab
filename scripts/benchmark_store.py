@@ -139,7 +139,8 @@ class BenchmarkStore:
     def record(self, run_id: str, variant_id: str, repetition: int, status: str,
                *, seed: int | None = None, duration_ms: int | None = None,
                peak_vram_bytes: int | None = None, output_sha256: str | None = None,
-               error_message: str | None = None,\n               source_snapshot: dict[str, Any] | None = None) -> str:
+               error_message: str | None = None,
+               source_snapshot: dict[str, Any] | None = None) -> str:
         if status not in {"completed", "cancelled", "failed"}:
             raise ValueError("Invalid observation status")
         if not isinstance(repetition, int) or isinstance(repetition, bool) or repetition < 0:
@@ -151,6 +152,20 @@ class BenchmarkStore:
                 raise ValueError("Measurements must be non-negative integers")
         if output_sha256 is not None and (len(output_sha256) != 64 or any(c not in "0123456789abcdef" for c in output_sha256)):
             raise ValueError("Output hash must be a lowercase SHA-256 hex digest")
+        lineage_json = None
+        generation_id = None
+        if source_snapshot is not None:
+            if not isinstance(source_snapshot, dict):
+                raise ValueError("Lineage snapshot must be an object")
+            generation_id = source_snapshot.get("generation_id")
+            graph_hash = source_snapshot.get("submitted_graph_sha256")
+            source_status = source_snapshot.get("status")
+            if (not isinstance(generation_id, str) or not 0 < len(generation_id) <= 200
+                    or not isinstance(graph_hash, str) or len(graph_hash) != 64
+                    or any(c not in "0123456789abcdef" for c in graph_hash)
+                    or source_status != status):
+                raise ValueError("Invalid lineage snapshot")
+            lineage_json = _canonical_json(source_snapshot)
         observation_id = _id()
         with self.db:
             run = self.db.execute("SELECT state FROM benchmark_runs WHERE id=?", (run_id,)).fetchone()
