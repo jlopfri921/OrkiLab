@@ -11,7 +11,7 @@ import sqlite3
 from contextlib import closing
 from pathlib import Path
 
-from benchmark_execution_timing import measured_execution_timing, cache_evidence
+from benchmark_execution_timing import measured_execution_timing, cache_evidence, sampler_cache_assessment
 from comfyui_connect import DEFAULT_SETTINGS, get_json, validate_settings
 
 
@@ -26,12 +26,12 @@ def inspect(base: Path, generation_id: str, *, fetch=get_json) -> dict:
     try:
         with closing(sqlite3.connect(history_file.resolve().as_uri() + "?mode=ro", uri=True)) as con:
             row = con.execute(
-                "SELECT prompt_id,state,url FROM generations WHERE id=?",
+                "SELECT prompt_id,state,url,graph FROM generations WHERE id=?",
                 (generation_id,),
             ).fetchone()
         if row is None:
             return {"ok": False, "reason": "Generation not found"}
-        prompt_id, state, recorded_url = row
+        prompt_id, state, recorded_url, graph_raw = row
         if state != "completed":
             return {"ok": False, "reason": "Generation is not completed", "state": state}
         cfg = validate_settings(json.loads(config_file.read_text(encoding="utf-8")), DEFAULT_SETTINGS)
@@ -42,6 +42,11 @@ def inspect(base: Path, generation_id: str, *, fetch=get_json) -> dict:
         entry = history.get(prompt_id) if isinstance(history, dict) else None
         timing = measured_execution_timing(entry, prompt_id)
         cache = cache_evidence(entry, prompt_id)
+        try:
+            graph = json.loads(graph_raw)
+        except (ValueError, TypeError):
+            graph = None
+        assessment = sampler_cache_assessment(graph, entry, prompt_id)
         result = {
             "ok": True,
             "generation_id": generation_id,
@@ -55,6 +60,10 @@ def inspect(base: Path, generation_id: str, *, fetch=get_json) -> dict:
             "benchmark_database_modified": False,
             "execution_cached_event_observed": cache["execution_cached_event_observed"],
             "cached_node_ids": cache["cached_node_ids"],
+            "sampler_node_ids": assessment["sampler_node_ids"],
+            "sampler_cached_node_ids": assessment["sampler_cached_node_ids"],
+            "sampler_cache_status": assessment["sampler_cache_status"],
+            "comparability": assessment["comparability"],
             "cache_status": cache["cache_status"],
             "full_inference_verified": False,
             "interpretation": (
