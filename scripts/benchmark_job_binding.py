@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from benchmark_store import BenchmarkStore, _utc_now
 from benchmark_generation_import import prepare_terminal_observation
+from benchmark_execution_timing import measured_execution_timing
 
 
 def bind_submitted_generation(
@@ -46,7 +47,8 @@ def bind_submitted_generation(
 
 
 def persist_bound_generation(store: BenchmarkStore, *, project_id: str,
-                             generation_record: dict) -> str:
+                             generation_record: dict, *,
+                             execution_entry: dict | None = None) -> str:
     """Persist a terminal history record only if previously bound.
 
     Rechecks project, workflow, terminal state and duplicate observations.
@@ -72,6 +74,14 @@ def persist_bound_generation(store: BenchmarkStore, *, project_id: str,
     if generation_record.get("workflow_id") != bound["workflow_id"]:
         raise ValueError("Generation workflow mismatch")
     proposal = prepare_terminal_observation(generation_record)
+    timing = measured_execution_timing(
+        execution_entry, generation_record["prompt_id"]
+    )
+    if timing is not None and proposal["status"] == "completed":
+        # Provenance lives in the immutable observation snapshot; this is
+        # not a poll interval, queue wait or inferred hardware measurement.
+        proposal["duration_ms"] = timing["duration_ms"]
+        proposal["source_snapshot"]["execution_timing"] = timing
     return store.record(
         bound["run_id"], bound["variant_id"], bound["repetition"], proposal["status"],
         seed=proposal["seed"], duration_ms=proposal["duration_ms"],
@@ -114,7 +124,8 @@ def preflight_submission_binding(
         raise ValueError("Benchmark repetition already bound")
 
 
-def finalize_bound_history_generation(store: BenchmarkStore, history, generation_id: str) -> str:
+def finalize_bound_history_generation(store: BenchmarkStore, history, generation_id: str,
+                                      *, execution_entry: dict | None = None) -> str:
     """Idempotently finalize a bound history entry after Generation Studio status.
 
     Returns 'unbound', 'pending', 'recorded' or 'already_recorded'. Does not
@@ -146,5 +157,6 @@ def finalize_bound_history_generation(store: BenchmarkStore, history, generation
         raise ValueError("Bound benchmark run no longer exists")
     persist_bound_generation(
         store, project_id=run["project_id"], generation_record=record,
+        execution_entry=execution_entry,
     )
     return "recorded"
