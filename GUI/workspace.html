@@ -1493,7 +1493,7 @@ window.addEventListener("message",event=>{
   $("benchmark-frame").style.height=Math.max(800,Math.min(12000,Math.ceil(height)+32))+"px";
 });
 document.addEventListener("orkilab:language-changed",()=>{
- if(location.pathname.replace(/\\/$/,"")==="/workspace/comfyui"&&location.hash==="#benchmark")showBenchmarkEmbedded();
+ if(location.pathname.replace(/\/$/,"")==="/workspace/comfyui"&&location.hash==="#benchmark")showBenchmarkEmbedded();
 });
 const comfyModules=["welcome","comfyui","models","nodes","workflows","generation","history","compare","benchmark"];
 function routeWorkspace(){
