@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OrkiLab · Benchmark Studio</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color-scheme:dark;background:#101722;color:#eaf1fb}
+*{box-sizing:border-box}body{margin:0;line-height:1.5}
+header{padding:16px clamp(16px,4vw,48px);border-bottom:1px solid #344154;background:#161f2d;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+header a{color:#aaccff;text-decoration:none;font-weight:600}main{max-width:1160px;margin:auto;padding:24px 18px 56px}
+h1{margin:0 0 4px;font-size:clamp(1.5rem,3vw,2rem)}h2{font-size:1.15rem}
+.muted{color:#b7c5da}article,.panel{border:1px solid #354457;border-radius:14px;background:#182333;padding:20px;margin:14px 0}
+.controls{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+label{display:flex;flex-direction:column;gap:7px;font-weight:600}
+select,button{font:inherit;min-height:42px;color:#eaf1fb;border:1px solid #51647f;background:#1c3047;border-radius:8px;padding:8px 12px;max-width:100%}
+select{min-width:240px}button{cursor:pointer}button:hover{background:#2a4463}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #8ac9ff;outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.badge{display:inline-block;border:1px solid #51647f;border-radius:40px;padding:3px 9px;font-size:.8rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.stat{background:#111d2c;border:1px solid #394c63;border-radius:10px;padding:13px}
+.stat b{display:block;font-size:1.4rem}table{border-collapse:collapse;width:100%;font-size:.94rem}th,td{padding:11px 10px;text-align:left;border-bottom:1px solid #39495e;vertical-align:top}th{color:#b5c8e0}td{overflow-wrap:anywhere}
+.scroll{overflow-x:auto}.alert{border-left:3px solid #84bcfa;padding:8px 12px;margin:14px 0;background:#14263d}
+[hidden]{display:none!important}@media(max-width:650px){main{padding:16px 10px}article,.panel{padding:14px}.controls>*{flex:1 1 100%}select{width:100%}}
+</style>
+</head>
+<body>
+<header><div><strong>ORKILAB</strong> <span class="muted">/ Benchmark Studio 0.6</span></div><div class="row"><label for="language" class="muted" data-i18n="language">Idioma</label><select id="language" style="min-width:auto"><option value="es">Español</option><option value="en">English</option></select><a href="/workspace#projects" data-i18n="back">← Proyectos</a></div></header>
+<main>
+<h1 data-i18n="title">Informes de Benchmark Studio</h1>
+<p class="muted" data-i18n="intro">Consulta por proyecto las pruebas y las variantes registradas. Solo lectura: no se envían trabajos a ComfyUI.</p>
+<article><div class="controls">
+<label><span data-i18n="project">Proyecto</span><select id="project" aria-label="Proyecto"><option value="">Cargando…</option></select></label>
+<label><span data-i18n="run">Ejecución</span><select id="run" aria-label="Ejecución" disabled><option value="">Selecciona un proyecto</option></select></label>
+<button type="button" id="refresh" data-i18n="refresh">Actualizar</button>
+</div><p id="status" role="status" class="muted"></p></article>
+<section id="report" hidden aria-labelledby="report-title"><article>
+<div class="row"><h2 id="report-title"></h2><span class="badge" id="state"></span></div>
+<div class="cards" id="metrics"></div>
+<div class="alert" data-i18n="warning">Estos tiempos son descriptivos: no acreditan igualdad de condiciones, ausencia de caché ni un modelo ganador. Las mediciones de VRAM desconocidas permanecen vacías.</div>
+<h2 data-i18n="variants">Variantes y mediciones</h2>
+<div class="scroll"><table><thead><tr>
+<th data-i18n="variant">Variante</th><th data-i18n="completed">Completadas</th><th data-i18n="failed">Fallidas</th><th data-i18n="cancelled">Canceladas</th><th data-i18n="measured">Tiempos medidos</th><th data-i18n="median">Mediana (ms)</th><th data-i18n="range">Mín.–máx. (ms)</th><th data-i18n="missing">Tiempos desconocidos</th><th data-i18n="vram">Picos VRAM por trabajo confirmados</th>
+</tr></thead><tbody id="rows"></tbody></table></div>
+<p class="muted" data-i18n="scope">No se muestra ranking automático. La VRAM global muestreada no se atribuye a un workflow.</p>
+</article></section>
+</main>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const labels={
+es:{language:"Idioma",back:"← Proyectos",title:"Informes de Benchmark Studio",intro:"Consulta por proyecto las pruebas y variantes registradas. Solo lectura: no se envían trabajos a ComfyUI.",project:"Proyecto",run:"Ejecución",refresh:"Actualizar",warning:"Estos tiempos son descriptivos: no acreditan igualdad de condiciones, ausencia de caché ni un modelo ganador. Las mediciones de VRAM desconocidas permanecen vacías.",variants:"Variantes y mediciones",variant:"Variante",completed:"Completadas",failed:"Fallidas",cancelled:"Canceladas",measured:"Tiempos medidos",median:"Mediana (ms)",range:"Mín.–máx. (ms)",missing:"Tiempos desconocidos",vram:"Picos VRAM por trabajo confirmados",scope:"No se muestra ranking automático. La VRAM global muestreada no se atribuye a un workflow.",choose:"Selecciona un proyecto",chooseRun:"Selecciona una ejecución",empty:"Este proyecto todavía no tiene ejecuciones de Benchmark.",noProjects:"No hay proyectos disponibles.",noData:"Sin medición",runs:"Ejecuciones",observations:"Observaciones",missingVram:"VRAM por trabajo desconocida",variantsCount:"Variantes",loadError:"No se pudieron consultar los informes.",draft:"Borrador",running:"En curso",completedState:"Completada",failedState:"Fallida",cancelledState:"Cancelada"},
+en:{language:"Language",back:"← Projects",title:"Benchmark Studio reports",intro:"Browse recorded runs and variants by project. Read-only: no ComfyUI jobs are submitted.",project:"Project",run:"Run",refresh:"Refresh",warning:"These times are descriptive: they do not prove identical conditions, absence of caching, or a winning model. Unknown VRAM measurements remain unknown.",variants:"Variants and measurements",variant:"Variant",completed:"Completed",failed:"Failed",cancelled:"Cancelled",measured:"Measured durations",median:"Median (ms)",range:"Min–max (ms)",missing:"Unknown durations",vram:"Verified per-job VRAM peaks",scope:"There is no automatic ranking. Sampled device-global VRAM is not attributed to an individual workflow.",choose:"Select a project",chooseRun:"Select a run",empty:"This project has no benchmark runs yet.",noProjects:"No projects available.",noData:"No measurement",runs:"Runs",observations:"Observations",missingVram:"Unknown per-job VRAM",variantsCount:"Variants",loadError:"Reports could not be loaded.",draft:"Draft",running:"Running",completedState:"Completed",failedState:"Failed",cancelledState:"Cancelled"}};
+let lang="es",projects=[],runs=[],requestSeq=0;
+function t(k){return labels[lang][k]||k}
+function option(text,value){const o=document.createElement("option");o.textContent=text;o.value=value;return o}
+function clearReport(){ $("report").hidden=true;$("metrics").replaceChildren();$("rows").replaceChildren()}
+async function get(path){const response=await fetch(path,{cache:"no-store",credentials:"same-origin"});const obj=await response.json();if(!response.ok)throw Error(obj.error||"HTTP "+response.status);return obj}
+function stateName(s){return t(({draft:"draft",running:"running",completed:"completedState",failed:"failedState",cancelled:"cancelledState"})[s]||s)}
+async function loadProjects(){
+ const seq=++requestSeq;clearReport();$("status").textContent="";
+ try{
+  const data=await get("/api/workspace/projects?archived=0");
+  if(seq!==requestSeq)return;
+  projects=Array.isArray(data.projects)?data.projects:[];
+  const select=$("project");const previous=select.value;select.replaceChildren(option(t("choose"),""));
+  for(const p of projects)select.append(option(p.name,p.id));
+  if(projects.some(p=>p.id===previous))select.value=previous;
+  if(!projects.length)$("status").textContent=t("noProjects");
+  await loadRuns();
+ }catch(e){if(seq===requestSeq)$("status").textContent=t("loadError")+" "+e.message}
+}
+async function loadRuns(){
+ const projectId=$("project").value,select=$("run"),seq=++requestSeq;
+ clearReport();select.replaceChildren(option(t("chooseRun"),""));select.disabled=true;
+ if(!projectId){$("status").textContent=projects.length?t("choose"):"";return}
+ $("status").textContent="";
+ try{
+  const data=await get("/api/workspace/benchmark/reports?project_id="+encodeURIComponent(projectId));
+  if(seq!==requestSeq)return;
+  runs=Array.isArray(data.runs)?data.runs:[];
+  for(const run of runs)select.append(option(run.name+" · "+stateName(run.state),run.id));
+  select.disabled=!runs.length;
+  if(!runs.length)$("status").textContent=t("empty");
+ }catch(e){if(seq===requestSeq)$("status").textContent=t("loadError")+" "+e.message}
+}
+function stat(label,value){
+ const el=document.createElement("div");el.className="stat";
+ const heading=document.createElement("span");heading.className="muted";heading.textContent=label;
+ const bold=document.createElement("b");bold.textContent=String(value);
+ el.append(heading,bold);return el
+}
+function td(value){const cell=document.createElement("td");cell.textContent=String(value);return cell}
+function number(v){return typeof v==="number"&&Number.isFinite(v)?new Intl.NumberFormat(lang).format(v):t("noData")}
+function draw(report){
+ clearReport();$("report").hidden=false;
+ $("report-title").textContent=report.name||report.run_id;
+ $("state").textContent=stateName(report.run_state);
+ const v=report.variants||[];
+ $("metrics").append(stat(t("variantsCount"),v.length),stat(t("observations"),report.observation_count),
+  stat(t("missingVram"),v.reduce((sum,x)=>sum+(x.missing_per_job_peak_vram_count||0),0)));
+ const body=$("rows");
+ for(const x of v){
+  const tr=document.createElement("tr");
+  const range=x.measured_duration_count?
+   number(x.duration_ms_min)+"–"+number(x.duration_ms_max):t("noData");
+  for(const value of [x.label||x.variant_id,x.completed,x.failed,x.cancelled,x.measured_duration_count,
+   number(x.duration_ms_median),range,x.missing_duration_count,
+   x.per_job_peak_vram_count+" / "+x.completed])tr.append(td(value));
+  body.append(tr);
+ }
+}
+async function loadReport(){
+ const projectId=$("project").value,runId=$("run").value,seq=++requestSeq;
+ clearReport();if(!projectId||!runId)return;
+ $("status").textContent="";
+ try{
+  const d=await get("/api/workspace/benchmark/reports/"+encodeURIComponent(runId)+"?project_id="+encodeURIComponent(projectId));
+  if(seq===requestSeq)draw(d);
+ }catch(e){if(seq===requestSeq)$("status").textContent=t("loadError")+" "+e.message}
+}
+$("project").addEventListener("change",loadRuns);
+$("run").addEventListener("change",loadReport);
+$("refresh").addEventListener("click",loadProjects);
+$("language").addEventListener("change",e=>{
+ lang=e.target.value==="en"?"en":"es";document.documentElement.lang=lang;
+ for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
+ loadProjects();
+});
+loadProjects();
+</script>
+</body></html>
