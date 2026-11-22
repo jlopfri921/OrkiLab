@@ -47,6 +47,19 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('"Vinculación automática"', self.benchmark)
         self.assertIn('const corrected=text.replace(', self.benchmark)
 
+    def test_b9_6_inventory_controls_select_real_references(self):
+        self.assertIn('id="draft-workflow-pick"', self.benchmark)
+        self.assertIn('id="draft-gpu-pick"', self.benchmark)
+        self.assertIn('/api/workspace/benchmark/draft-options?project_id=', self.benchmark)
+        self.assertIn('if(value)$("draft-workflow").value=value;', self.benchmark)
+        self.assertIn('if(value)$("draft-gpu").value=value;', self.benchmark)
+
+    def test_b9_6_missing_inventory_does_not_invent_device_or_workflow(self):
+        self.assertIn('No se ha detectado ninguna GPU NVIDIA.', self.benchmark)
+        self.assertIn('No hay workflows importados.', self.benchmark)
+        self.assertIn('No UUID will be invented.', self.benchmark)
+        self.assertIn('if(seq!==optionsSeq||projectId!==$("project").value)return;', self.benchmark)
+
     def test_run_picker_repairs_only_displayed_legacy_encoding(self):
         self.assertIn('function readableName(value)', self.benchmark)
         self.assertIn('new TextDecoder("utf-8",{fatal:true})', self.benchmark)
