@@ -1389,9 +1389,19 @@ const workspaceHelp={
 let contextKey="";
 function updateWorkspaceContext(key){
  const data=workspaceHelp[key]||workspaceHelp.overview,expanded=contextKey===key&&$("context-toggle").getAttribute("aria-expanded")==="true";
- $("context-title").textContent=t(data[0]);$("context-description").textContent=t(data[1]);$("context-description").hidden=!expanded;
+ let title=t(data[0]),description=t(data[1]);
+ // Context help is dynamic and marked no-i18n: ensure a Spanish fallback
+ // even when localized strings have not finished initializing.
+ if(typeof I18N!=="undefined"&&I18N.lang==="es"&&key==="generation"){
+  title="Laboratorio de generación";
+  description="Prepara y revisa un workflow, ajusta los parámetros editables y confirma expresamente antes de ejecutarlo. Prepararlo no inicia ninguna generación.";
+ }
+ $("context-title").textContent=title;$("context-description").textContent=description;$("context-description").hidden=!expanded;
  $("context-toggle").setAttribute("aria-expanded",String(expanded));contextKey=key;
 }
+document.addEventListener("orkilab:language-changed",()=>{
+ if(contextKey)updateWorkspaceContext(contextKey);
+});
 $("context-toggle").onclick=()=>{const open=$("context-description").hidden;$("context-description").hidden=!open;$("context-toggle").setAttribute("aria-expanded",String(open));};
 
 const comfyModules=["welcome","comfyui","models","nodes","workflows","generation","history","compare"];
