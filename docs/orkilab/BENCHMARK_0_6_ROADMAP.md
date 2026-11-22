@@ -759,3 +759,24 @@ git pull --ff-only
 ```
 
 After retest, accept B9.10 only if all 222 cases pass and the benchmark UI remains correct. PR #104 must remain open/unmerged until operator authorization.
+
+## B9.10 operator revalidation accepted / B10.1 comparison declaration preflight
+
+The operator replied **`tok`** after the Windows SQLite fixture handle fix and retest checklist; record **222/222 tests as operator-reported PASS**. The raw retest output was not supplied. This closes B9.10 *operator acceptance* but does **not** imply experimental comparability, independent CI, or readiness to merge PR #104.
+
+**B10.1** starts the next comparison phase with an intentionally **offline, read-only and fail-closed declaration preflight**, not automatic ComfyUI execution:
+- Pure `scripts/benchmark_b10_preflight.py` uses the existing `orkilab-repro-v1` protocol inspection to identify controlled variable `checkpoint` or `lora`, variant count, and complete/legacy/incomplete declaration. A syntactically complete draft is labeled `declared_only`, **never `ready` or `verified`**.
+- Eight explicit gates document: protocol fields; distinct declared variants; real candidate model availability; proof that **only one graph variable changes**; identical prompts and input bytes; seed/resolution control; ComfyUI runtime/queue readiness; and GPU/cache equivalence. Only protocol/variant *declarations* can be marked `declared_only`, all operational gates remain `pending` until future independent instrumentation. No user text, raw graph, source media, model path, GPU UUID or secret is returned by this diagnostic.
+- The existing launcher-local, project/run-scoped, read-only report endpoint exposes `b10_comparison_preflight` alongside B9 evidence and closure. Benchmark Studio shows the bilingual integrated **Preparación de comparación B10** checklist and a warning that no engine or models are being inspected or run.
+- No new ComfyUI call, GPU probe, job submission, DB migration or mutation, model ranking, claimed graph compatibility or runtime authorization. PR #104 stays **open/unmerged**, and the per-workflow error catalogue remains deferred.
+
+**Nine new tests**: six pure preflight tests, one Flask scoped report test and two UI checks. **231 benchmark tests expected** (prior operator-reported 222 + 9); Windows operator/browser verification pending. Script syntax was checked during development, not an end-to-end browser run.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_b10_preflight.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart OrkiLab and inspect a saved legacy or declared run in `http://127.0.0.1:4990/workspace/comfyui#benchmark`. **Preparación de comparación B10** must appear. A complete draft may show `Declarado, sin verificar`, but model availability, one-variable-only graph, inputs, GPU, cache and engine must all stay `Pendiente de comprobar`. A run lacking a v1 declaration must say `Declaración incompleta`. Do not create or execute a benchmark merely to see the preflight table.
