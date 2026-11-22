@@ -372,3 +372,20 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe scripts/benchmark_gpu_memory_probe.py
 ```
 Select the actual `devices[0].uuid` from the last command; only then optionally run `python scripts/benchmark_gpu_memory_series.py --gpu-uuid <ACTUAL_GPU_UUID> --samples 5 --interval 0.5` with the genuine UUID. Never paste a placeholder as a literal argument. The follow-on phase needs a generation-bounded recorder with explicit process identity and concurrency checks before assigning a VRAM metric to a benchmark observation.
+
+## B8.2a/b operator real RTX 3090 acceptance — 2026-11-22
+
+Operator ran the **83-test benchmark suite, all PASS** in 2.374 seconds. First real read-only `nvidia-smi` inventory found one NVIDIA GeForce RTX 3090, UUID `GPU-149248bf-feeb-0a40-a155-c7e4ca072dbd`, 25,769,803,776 total bytes (24 GiB), 12,526,288,896 used, 12,982,419,456 free. The five-sample explicit global VRAM series was successful, spanning 2.209647 seconds; initial usage 12,529,434,624 bytes; maximum observed 12,529,434,624 bytes, maximum increase over baseline 0 bytes. Used-memory readings declined over the capture. **No claim of zero ComfyUI memory use**, process attribution or exact GPU peak. No benchmark database writes, no GPU inference submitted. Operator's trailing PowerShell `else` error resulted from running the `else` statement separately after the successful `if` block; no application fault.
+
+## B8.2c — NVIDIA compute-process discovery (awaiting operator run)
+
+Added `scripts/benchmark_gpu_process_probe.py` as a one-shot read-only `nvidia-smi --query-compute-apps=pid,process_name,gpu_uuid,used_gpu_memory --format=csv,noheader,nounits` diagnostic. Output lists reported compute processes with PID, process name, device UUID and memory bytes if supported. Importantly, **Windows WDDM may return N/A for process memory**, which maps to `null`, not zero. Unsupported query fails cleanly, and an empty compute process list does **not** establish GPU isolation or prove no other GPU programs are using the device. There is no ComfyUI PID verification or per-job attribution yet; `peak_vram_bytes` stays null. No change to GPU, queue, database, or model execution.
+
+Four isolated mocked tests added; expected **87 benchmark tests** after the operator-confirmed 83. Operator validation:
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_process_probe.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+.\\venv\\Scripts\\python.exe scripts/benchmark_gpu_process_probe.py
+```
+Future work must identify the actual ComfyUI PID (with locally checked trusted process ownership) and handle WDDM's possible refusal of per-process VRAM. A generation-scoped series and externally attributed peak are **not yet implemented**.
