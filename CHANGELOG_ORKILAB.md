@@ -1,16 +1,27 @@
 # OrkiLab changelog
 
-## 0.5.0-rc.1 — release candidate in preparation (unpublished)
+## 0.5.0-rc.1 — candidate for GitHub prerelease (not stable)
 
-- Multiview Studio 0.5 alpha.1: SQLite project-scoped subject/view records, manually provided camera metadata, provenance and mobile bottom navigation.
-- Alpha.2: twelve-sector angular coverage, missing-angle diagnostics, image quality hints, review controls and photo comparator.
-- Beta.1: opt-in ComfyUI generation from installed validated workflows, explicit capture registration and synthetic lineage tracking.
-- Beta.2: reproducible, non-destructive ZIP exports with SHA-256 manifest and subject-level train/validation grouping; excludes synthetic images unless approved and opted in.
-- RC.1: existing Workspace Image project discovery, Dataset Studio photo recovery/linking, project persistence and safety regression tests.
-- RC.1 usability improvements (under current PR): local `/workspace/guide` with architecture, step-by-step workflows and FAQ; native/stand-alone mode that hides ComfyUI-only navigation and panels while preserving trainers/data; a persistent mode switch in Workspace Settings; guided reference-conditioned missing-view generation using safe copies uploaded to ComfyUI, explicit LoadImage mapping and the existing job queue; synthetic output import with requested-view metadata and source-reference lineage without fabricated numeric camera angles.
-- On-device operator reports 7/7 functional checks passed on Windows with RTX 3090; these reports do not establish a complete training pass, broad workflow compatibility, final release CI or rollback acceptance. See [RC.1 readiness](docs/orkilab/RC_0_5_0_READINESS.md).
-- **Not yet released:** stable v0.5.0 remains gated on final SHA CI, named tested configuration, release review and documented limitations. 0.4 stable scope gaps are not silently considered completed.
+**Status:** RC.1 source complete and being prepared as a GitHub **prerelease**. There is no stable 0.5.0 yet. Candidate publication and exact commit will be verified on GitHub; stable release depends on additional real-device acceptance.
 
+### Multiview from alpha to RC.1
+- **Alpha.1:** subject/capture records scoped to Image projects in local SQLite, metadata, real/synthetic source distinctions, original-file protection and mobile navigation.
+- **Alpha.2:** 12-sector angle/coverage chart, missing views, quality/duplicate hints, review, filtering and two-photo comparator.
+- **Beta.1:** optional explicit ComfyUI generation from compatible workflows, reviewed synthetic registration and source lineage.
+- **Beta.2:** SHA-256-checked, reproducible, non-destructive ZIP export with subject-grouped train/validation separation and opt-in approved synthetic images.
+- **RC.1:** active project discovery, recovery and linking of existing Dataset Studio photographs, confirmed saved orientation/metadata and persistence.
+- **Guided missing-view workflow:** 1–4 references; stage image copies by typed ComfyUI `input` folder or native desktop folder picker, or upload via ComfyUI API; show target filenames; inspect connected `LoadImage` nodes, automatically suggest or manually select mapping; select qualitative camera direction; prepare and explicitly confirm generation; review/cancel/register output as synthetic and unreviewed.
+- **Built-in official Multiview starter library:** three core-only single-photo SD-family Img2Img API graphs (Preserve, Core, Variation), downloadable as ZIP or directly importable inside view creation with an installed checkpoint. Filter likely-compatible workflows; offer a direct download/import path when none appear.
+- **Future model integrations:** Qwen-Image 2.1, FLUX.3 Klein, true multi-reference and validated camera control are **planned**, not supported built-in workflows for this candidate.
+
+### App-wide usability and documentation
+- Multilingual Multiview, embedded generator/AI and complete Guide in Spanish, English, Portuguese, French, German, Italian, Japanese and Korean.
+- Expanded guide describing OrkiLab philosophy, objectives, all major modules and roadmap. Detailed [Multiview workflow README](workflows/multiview/README.md) and this consolidated top-level README.
+- Standalone/ComfyUI-connected/hybrid modes, contextual help, clean mode-aware navigation, version below all sidebar actions and mobile layout refinements.
+- Consolidated OrkiLab product identity across active source, documentation and assets, with regression checks against obsolete naming.
+- Preserve backward-compatible source files, user projects and model weights; workflows are never executed merely by importing them.
+
+**Evidence and limitations:** a local Windows/RTX 3090 user-reported subset of workflows and data handling has been exercised, but the latest official workflow library, local folder copy, full cancellation flow and Desktop vs Portable compatibility matrix still require direct final-version acceptance. Automated Windows/Linux CI does not validate GPU models. See [0.5 candidate acceptance register](docs/orkilab/RC_0_5_0_READINESS.md).
 
 ## 0.4.0-rc.1 — published GitHub prerelease (2026-11-21)
 
