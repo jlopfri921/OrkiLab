@@ -2289,5 +2289,7 @@
   "Select an image first.": "Selecciona una imagen.",
   "Maximum size: 2 MB.": "Tamaño máximo: 2 MB.",
   "Use PNG, JPEG or WebP.": "Usa PNG, JPEG o WebP.",
-  "Image saved.": "Imagen guardada."
+  "Image saved.": "Imagen guardada.",
+  "Browse curated Best and Final LoRA models, ratings and reference pictures.": "Consulta tus modelos LoRA seleccionados como mejores o definitivos, sus valoraciones y fotografías de referencia.",
+  "Select a compatible workflow and compare LoRA strengths or saved project checkpoints while retaining the original prompt and seed.": "Selecciona un workflow compatible y compara intensidades LoRA o checkpoints del proyecto manteniendo el mismo prompt y la misma semilla."
 }
