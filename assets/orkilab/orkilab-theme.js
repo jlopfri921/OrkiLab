@@ -3,6 +3,20 @@
 (function(){
  "use strict";
  const KEY="orkilab.ui.theme.v1";
+ const names={
+  es:["☾ Oscuro","☀ Claro","Cambiar a modo oscuro","Cambiar a modo claro"],
+  en:["☾ Dark","☀ Light","Switch to dark mode","Switch to light mode"],
+  pt:["☾ Escuro","☀ Claro","Mudar para modo escuro","Mudar para modo claro"],
+  fr:["☾ Sombre","☀ Clair","Passer en mode sombre","Passer en mode clair"],
+  de:["☾ Dunkel","☀ Hell","Zum dunklen Modus wechseln","Zum hellen Modus wechseln"],
+  it:["☾ Scuro","☀ Chiaro","Passa al tema scuro","Passa al tema chiaro"],
+  ja:["☾ ダーク","☀ ライト","ダークモードに変更","ライトモードに変更"],
+  ko:["☾ 다크","☀ 라이트","다크 모드로 전환","라이트 모드로 전환"]
+ };
+ const language=()=>{
+  const code=(window.I18N?.lang||document.documentElement.lang||"en").toLowerCase().slice(0,2);
+  return names[code]||names.en;
+ };
  const root=document.documentElement;
  const read=()=>{try{const v=localStorage.getItem(KEY);return v==="light"||v==="dark"?v:"dark"}catch(e){return "dark"}};
  const apply=(theme,persist)=>{
@@ -11,8 +25,9 @@
   if(persist){try{localStorage.setItem(KEY,chosen)}catch(e){}}
   for(const button of document.querySelectorAll(".orki-theme-toggle")){
    const light=chosen==="light";
-   button.textContent=light?"☾ Oscuro":"☀ Claro";
-   button.setAttribute("aria-label",light?"Cambiar a modo oscuro / Switch to dark mode":"Cambiar a modo claro / Switch to light mode");
+   const labels=language();
+   button.textContent=light?labels[0]:labels[1];
+   button.setAttribute("aria-label",light?labels[2]:labels[3]);
    button.setAttribute("aria-pressed",String(light));
   }
  };
@@ -31,6 +46,7 @@
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount);
  else mount();
  window.addEventListener("storage",e=>{if(e.key===KEY)apply(read(),false)});
+ document.addEventListener("orkilab:language-changed",()=>apply(root.dataset.orkiTheme,false));
  window.addEventListener("message",e=>{
   if(e.origin!==window.location.origin||!e.data||e.data.type!=="orkilab-theme-request")return;
   apply(read(),false);
