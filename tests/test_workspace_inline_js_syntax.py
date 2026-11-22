@@ -86,6 +86,25 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         rc=(ROOT/"assets"/"orkilab"/"multiview-rc1.js").read_text(encoding="utf-8")
         self.assertIn('status.textContent=t("limit30")',rc)
 
+    def test_optional_multiview_ai_panels_support_all_eight_languages(self):
+        languages=("es","en","pt","fr","de","it","ja","ko")
+        for filename in ("multiview-viewpoint-ai.js","multiview-generate-view.js"):
+            with self.subTest(module=filename):
+                source=(ROOT/"assets"/"orkilab"/filename).read_text(encoding="utf-8")
+                for locale in languages:
+                    self.assertIn(" "+locale+":{",source)
+                self.assertIn("I18N.lang",source)
+                self.assertNotIn('I18N.lang==="es"?"es":"en"',source)
+        generator=(ROOT/"assets"/"orkilab"/"multiview-generate-view.js").read_text(encoding="utf-8")
+        self.assertIn("window.OrkiMultiviewGenerateViews={mount,translate:t}",generator)
+        self.assertIn('status(t("max4"))',generator)
+        recovery=(ROOT/"assets"/"orkilab"/"multiview-rc1.js").read_text(encoding="utf-8")
+        self.assertIn('status.textContent=t("limit30")',recovery)
+        for locale in languages:
+            self.assertIn(locale+":{",recovery)
+        page=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
+        self.assertIn('translate("requestedLabel")',page)
+
     def test_general_guide_page_exists(self):
         page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
         for section in ('id="flow"','id="sections"','id="multiview"',
