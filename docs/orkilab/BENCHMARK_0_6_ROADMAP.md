@@ -700,3 +700,23 @@ git pull --ff-only
 ```
 
 Restart the launcher and open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Choose a saved run and inspect the evidence table. Runs with no linked generation snapshots must remain clearly **Sin evidencias de ejecución**, not falsely green; matching historical graph/workflow metadata may be **Registro parcial; no acreditado**, and mismatches must be shown as such. B9.8 is an **audit of already recorded source evidence**, not a cryptographic attestation of actual input files. That stronger cross-check against current ComfyUI job and artifact contents remains future work and requires explicit opt-in to inspect those sources. PR #104 stays open and unmerged; workflow-specific error-correction catalogue remains deliberately deferred.
+
+## B9.8 accepted / B9.9 local history-to-lineage consistency and limited literal text verification
+
+The operator responded **`tok`** after B9.8 testing, recording **192 benchmark tests operator-reported PASS** (no attached console logs or independent CI). B9.9 is implemented for testing, not yet user validated.
+
+New pure `scripts/benchmark_history_consistency.py` checks **already stored local generation history** (`settings/orkilab/generations.sqlite3`) against the immutable Benchmark generation lineage for a specific project/run. It recomputes the submitted API graph SHA-256 using the original canonical `snapshot_generation()` algorithm, and checks exactly the stored generation ID, ComfyUI prompt ID, workflow ID, graph digest and recorded terminal status. The GET report endpoint reads the history database **with SQLite `mode=ro`**, queries by the exact generation IDs found in the project-scoped run, and never contacts ComfyUI or submits a generation. It caps the workload at 50 generation IDs and filters out oversized graph/output records (2 MB/500 kB), reporting incomplete/not-checked rather than false matches. No raw graph, source prompt, file path, GPU data or history record is returned in the report response. Existing observation and history data is unchanged.
+
+A narrow extra test checks user-declared v1 positive/negative SHA-256 digests **against literal UTF-8 text values found in supported built-in `CLIPTextEncode` nodes** of a matching saved API graph, only after the entire local history record matches the Benchmark snapshot. This can establish that a particular text's SHA-256 appears among literal graph texts; **it cannot identify positive versus negative polarity**, distinguish dynamic prompt workflows, verify model weights, prove exact image input bytes, or confirm what actually ran at the remote ComfyUI server. Missing matches mean **unknown/not found in supported literal nodes**, not proof that a user used different prompts. A separate UI table **Correspondencia con historial local** reports local-record consistency counts and narrowly labeled prompt hash findings with explicit uncertainty; Spanish/English supported.
+
+New tests: 12 pure cases in `tests/test_benchmark_history_consistency.py` (matching/mismatched graph and workflow/prompt, missing/invalid history, strict run scope, capped state, literal-text match, dynamic node refusal, inconsistent graph cannot supply prompt evidence); 2 Flask route tests; 3 UI regression checks = **209 benchmark tests expected** (192 operator-reported + 17 added). Actual Windows verification remains pending; no inference or GPU run is required.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_history_consistency.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart OrkiLab and open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Select a saved execution and check **Correspondencia con historial local**: missing history must not display a green confirmed state; a matching local snapshot may show **Registros locales coherentes; contenido sin verificar**, explicitly without implying remote verification. The optional literal prompt digest may show that SHA-256 appears in recorded CLIPTextEncode text, with polarity still unverified. Feature PR #104 stays open and unmerged. Operator-requested per-workflow error catalog remains deferred.
