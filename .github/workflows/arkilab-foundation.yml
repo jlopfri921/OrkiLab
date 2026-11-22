@@ -7,6 +7,30 @@ on:
 permissions:
   contents: read
 jobs:
+
+  migrate-product-brand-once:
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'fix/branding-remove-arkilab-references' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Rename all old-brand references across tracked files
+        run: python scripts/rename_branding.py --apply
+      - name: Verify and commit migration
+        run: |
+          git diff --check
+          git add -A
+          if ! git diff --cached --quiet; then
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "chore(branding): normalize all active source naming to OrkiLab"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
   tests:
     strategy:
       matrix:
