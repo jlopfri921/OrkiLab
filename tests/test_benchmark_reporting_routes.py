@@ -89,6 +89,18 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertIsNone(result["best_variant"])
         self.assertNotIn("generation_lineage", response.get_json()["variants"][0])
 
+    def test_legacy_run_protocol_remains_unverified(self):
+        self.fill()
+        response = self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        readiness = response.get_json()["reproducibility_protocol"]
+        self.assertEqual(readiness["status"], "legacy_unverified")
+        self.assertFalse(readiness["execution_verified"])
+        self.assertFalse(readiness["ranking_eligible"])
+        self.assertNotIn("prompt_sha256", readiness)
+
     def test_cross_project_detail_not_disclosed(self):
         self.fill()
         result = self.client.get(
