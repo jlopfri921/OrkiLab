@@ -6,9 +6,11 @@ history is not evidence of project ownership. No queue/API operations here.
 """
 from __future__ import annotations
 
+import json
+
 from benchmark_store import BenchmarkStore, _utc_now
 from benchmark_generation_import import prepare_terminal_observation
-from benchmark_execution_timing import measured_execution_timing
+from benchmark_execution_timing import measured_execution_timing, sampler_cache_assessment
 
 
 def bind_submitted_generation(
@@ -80,21 +82,29 @@ def persist_bound_generation(store: BenchmarkStore, *, project_id: str,
     if timing is not None and proposal["status"] == "completed":
         # Provenance lives in the immutable observation snapshot; this is
         # not a poll interval, queue wait or inferred hardware measurement.
-        cached = timing["execution_cached_event_observed"]
-        # The measured interval is preserved for auditing; a cache-observed
-        # interval is NOT a comparable full-inference duration.
-        proposal["source_snapshot"]["execution_timing"] = timing
-        proposal["source_snapshot"]["execution_timing"]["comparability"] = (
-            "cache_observed_not_comparable" if cached
-            else "full_inference_unverified"
+        try:
+            graph = json.loads(generation_record["graph"]) if isinstance(
+                generation_record.get("graph"), str
+            ) else generation_record.get("graph")
+        except (ValueError, TypeError):
+            graph = None
+        assessment = sampler_cache_assessment(
+            graph, execution_entry, generation_record["prompt_id"]
         )
-        if not cached:
+        # A cache event on model loaders is acceptable for a WARM-SAMPLER
+        # comparison, provided the exact submitted KSampler is not cached.
+        # This is NOT a proof of wholly uncached/full-model inference.
+        category = assessment["comparability"]
+        timing.update(assessment)
+        proposal["source_snapshot"]["execution_timing"] = timing
+        if category in ("sampler_cache_miss_partial_cache", "sampler_cache_unverified"):
             proposal["duration_ms"] = timing["duration_ms"]
             proposal["source_snapshot"]["duration_ms"] = timing["duration_ms"]
         proposal["source_snapshot"]["limitations"] = (
-            "ComfyUI server event duration; full inference not verified. "
-            "Cache-observed intervals are excluded from the comparison duration column. "
-            "No peak VRAM, seed or output hash measured."
+            "ComfyUI server event interval. Sampler cache classification is based "
+            "on the saved KSampler node IDs and history cache events; absence "
+            "from cached nodes does not alone verify execution. "
+            "No full inference, peak VRAM or output hash confirmed."
         )
     return store.record(
         bound["run_id"], bound["variant_id"], bound["repetition"], proposal["status"],
