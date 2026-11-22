@@ -70,6 +70,39 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn('data-lang="es"',page)
         self.assertIn('data-lang="en"',page)
 
+    def test_guide_uses_unified_shell_css_and_navigation(self):
+        page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
+        styles=["orkilab-queue-theme.css","orkilab-shell.css","orkilab-app-shell.css"]
+        locations=[page.index('href="/assets/orkilab/'+name+'"') for name in styles]
+        self.assertEqual(locations,sorted(locations))
+        self.assertIn('class="orki-queue-theme orki-app-frame orki-standalone-shell"',page)
+        self.assertIn('class="studio-layout"',page)
+        self.assertIn('class="studio-navigation"',page)
+        self.assertIn('class="studio-content orki-guide-content"',page)
+        self.assertIn('href="/workspace/guide" aria-current="page"',page)
+        self.assertNotIn('.studio-navigation{display:none}',page)
+        self.assertIn('src="/assets/orkilab/orkilab-shell.js"',page)
+        shell=(ROOT/"assets"/"orkilab"/"orkilab-shell.js").read_text(encoding="utf-8")
+        self.assertIn('page === "guide" ?',shell)
+        self.assertIn('a[href="/workspace/guide"]',shell)
+
+    def test_alpha_badges_removed_from_studio_menu(self):
+        workspace=(ROOT/"GUI"/"workspace.html").read_text(encoding="utf-8")
+        dataset=(ROOT/"GUI"/"dataset_studio.html").read_text(encoding="utf-8")
+        for text in ("Dataset Studio <small>0.4 alpha</small>",
+                     "Multiview Studio <small>0.5 alpha</small>"):
+            self.assertNotIn(text,workspace)
+        self.assertIn('href="/workspace/datasets" class="zone-entry">Dataset Studio</a>',workspace)
+        self.assertIn('href="/workspace/multiview" class="zone-entry">Multiview Studio</a>',workspace)
+        self.assertNotIn('Dataset Studio <small class="muted">0.4 alpha</small>',dataset)
+
+    def test_generation_context_help_is_localized_to_spanish(self):
+        workspace=(ROOT/"GUI"/"workspace.html").read_text(encoding="utf-8")
+        self.assertIn('I18N.lang==="es"&&key==="generation"',workspace)
+        self.assertIn('title="Laboratorio de generación"',workspace)
+        self.assertIn('Prepararlo no inicia ninguna generación.',workspace)
+        self.assertIn('document.addEventListener("orkilab:language-changed"',workspace)
+
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
     def test_multiview_rc1_recovery_script_compiles_and_is_wired(self):
         script=ROOT/"assets"/"orkilab"/"multiview-rc1.js"
