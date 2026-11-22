@@ -46,6 +46,14 @@ CREATE TABLE IF NOT EXISTS benchmark_observations (
     recorded_at TEXT NOT NULL,
     UNIQUE(variant_id, repetition)
 );
+CREATE TABLE IF NOT EXISTS benchmark_generation_lineage (
+    observation_id TEXT PRIMARY KEY REFERENCES benchmark_observations(id) ON DELETE RESTRICT,
+    run_id TEXT NOT NULL REFERENCES benchmark_runs(id) ON DELETE RESTRICT,
+    generation_id TEXT NOT NULL,
+    snapshot_json TEXT NOT NULL,
+    UNIQUE(run_id, generation_id)
+);
+CREATE INDEX IF NOT EXISTS idx_benchmark_lineage_run ON benchmark_generation_lineage(run_id);
 CREATE INDEX IF NOT EXISTS idx_benchmark_runs_project ON benchmark_runs(project_id);
 CREATE INDEX IF NOT EXISTS idx_benchmark_observations_run ON benchmark_observations(run_id);
 """
@@ -131,7 +139,7 @@ class BenchmarkStore:
     def record(self, run_id: str, variant_id: str, repetition: int, status: str,
                *, seed: int | None = None, duration_ms: int | None = None,
                peak_vram_bytes: int | None = None, output_sha256: str | None = None,
-               error_message: str | None = None) -> str:
+               error_message: str | None = None,\n               source_snapshot: dict[str, Any] | None = None) -> str:
         if status not in {"completed", "cancelled", "failed"}:
             raise ValueError("Invalid observation status")
         if not isinstance(repetition, int) or isinstance(repetition, bool) or repetition < 0:
@@ -157,6 +165,13 @@ class BenchmarkStore:
                 (observation_id, run_id, variant_id, repetition, status, seed,
                  duration_ms, peak_vram_bytes, output_sha256, error_message, _utc_now()),
             )
+            if lineage_json is not None:
+                self.db.execute(
+                    """INSERT INTO benchmark_generation_lineage
+                       (observation_id, run_id, generation_id, snapshot_json)
+                       VALUES (?, ?, ?, ?)""",
+                    (observation_id, run_id, generation_id, lineage_json),
+                )
         return observation_id
 
     def report(self, run_id: str) -> dict[str, Any]:
@@ -170,10 +185,20 @@ class BenchmarkStore:
             "SELECT * FROM benchmark_observations WHERE run_id=? ORDER BY variant_id, repetition",
             (run_id,),
         ).fetchall()
+        lineage = {
+            record["observation_id"]: json.loads(record["snapshot_json"])
+            for record in self.db.execute(
+                "SELECT observation_id, snapshot_json FROM benchmark_generation_lineage WHERE run_id=?",
+                (run_id,),
+            )
+        }
         return {
             "schema_version": 1,
             "run": {**dict(row), "protocol": json.loads(row["protocol_json"])},
             "variants": [{**dict(v), "config": json.loads(v["config_json"])} for v in variants],
-            "observations": [dict(o) for o in observations],
+            "observations": [
+                {**dict(o), "generation_lineage": lineage.get(o["id"])}
+                for o in observations
+            ],
             "limitations": "Raw measurements only; no automatic quality or hardware equivalence claims.",
         }
