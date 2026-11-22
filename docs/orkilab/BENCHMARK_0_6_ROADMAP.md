@@ -36,6 +36,15 @@ The operator reported `Ran 4 tests in 0.108s — OK` for `python -m unittest dis
 
 **Still required before merging or claiming alpha.1 complete:** review state and schema boundaries, CI on the PR head for Windows/Linux, database migration strategy, safe authorization for any exposed API, and representative ComfyUI adapter/GPU acceptance. The source still implements an isolated persistence store, not an integrated benchmark feature.
 
+## Next incremental slice — read-only ComfyUI history adapter (operator validation pending)
+
+- `scripts/benchmark_generation_adapter.py` provides `snapshot_generation(record)` for a **terminal** entry returned by the existing `GenerationHistory.get()` record schema.
+- It produces a stable SHA-256 fingerprint of the final submitted API graph and preserves the generation ID, ComfyUI prompt ID, workflow ID, terminal status and output descriptor count.
+- Deliberately leaves duration, VRAM, effective seed and output-file SHA-256 as `null` because the existing history does not certify those measurements. This fingerprint is **not** the hash of model weights.
+- Rejects running jobs, malformed graph/output JSON and unsupported record shapes.
+- This is a **pure read-only adapter**, not a live ComfyUI queue attachment, API route, automatic job tracker or permission boundary. An eventual API caller must validate project ownership and authorized local access.
+- Test with `python -m unittest discover -s tests -p "test_benchmark_generation_adapter.py" -v` on the alpha.1 feature branch. Results have **not yet been reported**.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
