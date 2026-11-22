@@ -184,6 +184,33 @@ class MultiviewMissingViewTests(unittest.TestCase):
         read.assert_not_called()
         self.assertEqual(self.image.read_bytes(),self.source)
 
+    def test_official_core_workflow_and_profile(self):
+        from workflow_library import inspect_graph, multiview_reference_profile
+        graph=json.loads((ROOT/"workflows"/"multiview"/
+            "orkilab-multiview-core-img2img-api.json").read_text(encoding="utf-8"))
+        self.assertEqual(inspect_graph(graph)["format"],"api")
+        allowed={"LoadImage","CheckpointLoaderSimple","VAEEncode",
+                 "CLIPTextEncode","KSampler","VAEDecode","SaveImage"}
+        self.assertEqual({n["class_type"] for n in graph.values()},allowed)
+        result=multiview_reference_profile(graph,"image")
+        self.assertTrue(result["likely_compatible"])
+        self.assertEqual(result["image_inputs"],1)
+        self.assertTrue(result["has_prompt"])
+        other=multiview_reference_profile({
+            "1":{"class_type":"LoadImage","inputs":{"image":"image.png"}},
+            "2":{"class_type":"CLIPTextEncode","inputs":{"text":"test"}}},"image")
+        self.assertFalse(other["likely_compatible"])
+        self.assertEqual(other["reason"],"no_connected_loadimage")
+
+    def test_multiview_profile_filters_nonimage_and_missing_text(self):
+        from workflow_library import multiview_reference_profile
+        graph={"1":{"class_type":"LoadImage","inputs":{"image":"example.png"}},
+               "2":{"class_type":"SaveImage","inputs":{"images":["1",0]}}}
+        self.assertFalse(multiview_reference_profile(graph,"video")["likely_compatible"])
+        p=multiview_reference_profile(graph,"image")
+        self.assertEqual(p["reason"],"no_prompt")
+        self.assertEqual(p["image_inputs"],1)
+
     def test_synthetic_metadata_schema_and_validation(self):
         # Migration is non-destructive and retains original capture records.
         with closing(sqlite3.connect(self.settings/"multiview.sqlite3")) as conn:
