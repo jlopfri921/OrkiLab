@@ -39,7 +39,7 @@ class MonitorContractTests(unittest.TestCase):
                 validate_gpu_monitor_option(item)
 
     def test_receipt_never_claims_peak_or_database_writes(self):
-        for state in ("scheduled", "running", "completed", "failed"):
+        for state in ("scheduled", "running", "completed", "partial", "failed"):
             receipt = monitoring_receipt(state)
             self.assertFalse(receipt["attributable_to_generation"])
             self.assertIsNone(receipt["peak_vram_bytes"])
