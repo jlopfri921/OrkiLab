@@ -18,6 +18,16 @@ Baseline: `main` carries stable 0.5.0 metadata; the feature branch now stages `0
 
 **Limitations that must remain visible:** verified full model weight bytes, input-file content and dynamic positive/negative prompt polarity, GPU equivalence, seeds and cold/warm cache are not attested by local histories. Real full inference, representative Desktop/Portable graph compatibility, VRAM-per-job and reliable experimental speed rankings require separate controlled testing. Never label the descriptive B10.4 differences as a benchmark winner. Original upstream MIT core and original OrkiLab Apache-2.0 contributions remain separately attributed; see `LICENSING.md`.
 
+## RC1 staging progress — 2026-11-22
+
+- B10.5 **283 benchmark tests operator-reported PASS** after the operator's `tok`; no independently attached full-suite transcript.
+- The source `VERSION_ORKILAB`, `GUI/launcher.json`, README and changelog now label **`0.6.0-rc1` as staged on the feature branch only**. No release tag, publication, installer or PR merge has been created.
+- Draft release notes: `.github/RELEASE_0_6_0_RC1_DRAFT.md`.
+- **Five new version/license/publication safety tests** in `tests/test_benchmark_rc_metadata.py` mean **288 benchmark tests expected**, pending fresh Windows execution.
+- `main` and the feature branch remain **diverged**; 0.5 stable acceptance and version changes must be reconciled before the PR can merge, without dropping B1–B10.5 implementation.
+- The status query on the intermediate staging SHA returned no combined commit statuses and no PR-triggered runs; **exact-final-SHA Windows/Linux CI is not yet verified**.
+- Staged source metadata is not approval to publish or a substitute for the remaining manual checklist.
+
 ## Test evidence classification
 
 - Up to B10.4: **267 tests operator-reported PASS** via the shorthand `tok`, without an attached independent CI transcript for every slice.
@@ -35,12 +45,13 @@ git pull --ff-only
 
 .\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_b10_release_gate.py" -v
 .\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_b10_theme.py" -v
+.\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_rc_metadata.py" -v
 .\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
 .\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
 .\venv\Scripts\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 
-**Expected last suite:** `Ran 283 tests ... OK`. If not, retain the exact failing traceback and do not authorize the RC.
+**Expected last suite after RC metadata checks:** `Ran 288 tests ... OK`. Prior 283 were operator-reported PASS; five new checks are pending. If not, retain the exact failing traceback and do not authorize the RC.
 
 Also run the application's **full regression suite** and review actual Windows/Linux CI. These Benchmark-only tests are not enough to certify all existing trainers, datasets, Multiview or the installer. Keep source data and models backed up before accepting any release.
 
