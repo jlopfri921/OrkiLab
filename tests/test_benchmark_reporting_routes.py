@@ -417,6 +417,22 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertFalse(preflight["ranking_eligible"])
         self.assertEqual(self.db.read_bytes(), before)
 
+    def test_b10_5_release_readiness_never_approves_tag_or_merge(self):
+        self.fill()
+        original=self.db.read_bytes()
+        response=self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code,200,response.get_json())
+        gate=response.get_json()["b10_release_readiness"]
+        self.assertEqual(gate["status"],"not_ready")
+        self.assertFalse(gate["release_authorized"])
+        self.assertFalse(gate["candidate_tag_authorized"])
+        self.assertFalse(gate["merge_authorized"])
+        self.assertFalse(gate["generation_submitted"])
+        self.assertEqual(len(gate["checks"]),10)
+        self.assertEqual(self.db.read_bytes(),original)
+
     def test_b10_4_pairwise_report_is_descriptive_and_read_only(self):
         self.fill()
         before=self.db.read_bytes()
