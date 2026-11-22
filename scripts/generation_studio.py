@@ -308,6 +308,35 @@ def register(app, base):
         token = body.get("token")
         if not isinstance(token, str):
             return jsonify(error="Prepare workflow before generating"), 409
+        # Optional benchmark linkage is validated *before* ComfyUI submission.
+        # Normal generation requests (without benchmark) retain their old path.
+        benchmark_target = body.get("benchmark")
+        if benchmark_target is not None:
+            if (not isinstance(benchmark_target, dict)
+                    or set(benchmark_target) != {"project_id", "run_id", "variant_id", "repetition", "confirm"}
+                    or benchmark_target.get("confirm") is not True):
+                return jsonify(error="Explicit, complete benchmark linkage required"), 400
+            try:
+                from workspace_store import ProjectStore
+                from benchmark_store import BenchmarkStore
+                from benchmark_job_binding import preflight_submission_binding
+                project_id = benchmark_target.get("project_id")
+                if not isinstance(project_id, str) or not any(
+                    p["id"] == project_id for p in ProjectStore(
+                        base / "settings" / "orkilab" / "projects.sqlite3"
+                    ).list()
+                ):
+                    return jsonify(error="Active project not found"), 404
+                with BenchmarkStore(base / "settings" / "orkilab" / "benchmarks.sqlite3") as bench:
+                    preflight_submission_binding(
+                        bench, project_id=project_id, run_id=benchmark_target["run_id"],
+                        variant_id=benchmark_target["variant_id"],
+                        repetition=benchmark_target["repetition"],
+                    )
+            except PermissionError:
+                return jsonify(error="Benchmark project authorization mismatch"), 403
+            except (ValueError, TypeError, sqlite3.Error, OSError) as exc:
+                return jsonify(error="Invalid benchmark target", detail=str(exc)[:200]), 409
         try:
             with lock:
                 item = prepared.get(token)
@@ -325,15 +354,41 @@ def register(app, base):
                 ident, client_id = submit(cfg["url"], graph)
                 token = uuid.uuid4().hex
                 jobs[token] = (cfg["url"], ident)
+                history_saved = False
                 try:
                     with closing(sqlite3.connect(base / "settings" / "orkilab" / "workflows.sqlite3")) as con:
                         row = con.execute("SELECT name FROM workflows WHERE id=?", (body["workflow_id"],)).fetchone()
                     records.add(token, cfg["url"], ident, body["workflow_id"], row[0] if row else body["workflow_id"], graph)
+                    history_saved = True
                 except (OSError, sqlite3.Error, ValueError) as exc:
                     app.logger.warning("Generation submitted but history unavailable: %s", exc)
+                benchmark_link = None
+                if benchmark_target is not None:
+                    benchmark_link = "history_unavailable"
+                    if history_saved:
+                        try:
+                            from benchmark_store import BenchmarkStore
+                            from benchmark_job_binding import bind_submitted_generation
+                            with BenchmarkStore(base / "settings" / "orkilab" / "benchmarks.sqlite3") as bench:
+                                bind_submitted_generation(
+                                    bench, project_id=benchmark_target["project_id"],
+                                    run_id=benchmark_target["run_id"],
+                                    variant_id=benchmark_target["variant_id"],
+                                    repetition=benchmark_target["repetition"],
+                                    generation_id=token, workflow_id=body["workflow_id"],
+                                )
+                            benchmark_link = "bound"
+                        except (OSError, ValueError, PermissionError, sqlite3.Error) as exc:
+                            benchmark_link = "binding_failed"
+                            app.logger.warning("Generation submitted but benchmark not bound: %s", exc)
                 while len(jobs) > 100:
                     jobs.pop(next(iter(jobs)))
-            return jsonify(id=token, prompt_id=ident, client_id=client_id), 201
+            result = dict(id=token, prompt_id=ident, client_id=client_id)
+            if benchmark_target is not None:
+                result["benchmark_binding"] = benchmark_link
+                if benchmark_link != "bound":
+                    result["warning"] = "Generation was submitted but benchmark binding was not saved; do not assume it will appear in Benchmark."
+            return jsonify(result), 201
         except HTTPError as exc:
             return jsonify(error="ComfyUI rejected the request", detail=f"HTTP {exc.code}"), 502
         except (OSError, ValueError, TypeError) as exc:
