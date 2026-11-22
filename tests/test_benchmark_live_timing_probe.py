@@ -70,6 +70,25 @@ class LiveTimingProbeTests(unittest.TestCase):
         self.assertTrue(result["execution_cached_event_observed"])
         self.assertFalse(result["full_inference_verified"])
 
+    def test_other_prompt_cache_event_is_not_attributed_to_this_generation(self):
+        self.messages.insert(
+            1, ["execution_cached", {"prompt_id": "unrelated-prompt", "nodes": ["99"]}]
+        )
+        result = inspect(self.root, "gen", fetch=self.fetch)
+        self.assertTrue(result["measured"])
+        self.assertFalse(result["execution_cached_event_observed"])
+        self.assertEqual(result["cached_node_ids"], [])
+        self.assertEqual(result["cache_status"], "undetermined")
+
+    def test_cache_nodes_are_reported_for_exact_prompt(self):
+        self.messages.insert(
+            1, ["execution_cached", {"prompt_id": "prompt", "nodes": ["11", "2", "11"]}]
+        )
+        result = inspect(self.root, "gen", fetch=self.fetch)
+        self.assertEqual(result["cache_status"], "cache_event_observed")
+        self.assertEqual(result["cached_node_ids"], ["11", "2"])
+        self.assertFalse(result["full_inference_verified"])
+
     def test_bad_generation_makes_zero_http_calls(self):
         self.assertFalse(inspect(self.root, "other", fetch=self.fetch)["ok"])
         self.assertFalse(inspect(self.root, "../bad", fetch=self.fetch)["ok"])
