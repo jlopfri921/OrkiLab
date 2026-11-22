@@ -7,7 +7,6 @@ history is not evidence of project ownership. No queue/API operations here.
 from __future__ import annotations
 
 from benchmark_store import BenchmarkStore, _utc_now
-from benchmark_generation_adapter import snapshot_generation
 from benchmark_generation_import import prepare_terminal_observation
 
 
@@ -15,7 +14,11 @@ def bind_submitted_generation(
     store: BenchmarkStore, *, project_id: str, run_id: str, variant_id: str,
     repetition: int, generation_id: str, workflow_id: str,
 ) -> None:
-    """Claim a submission ID once, inside the trusted submission transaction."""
+    """Claim a submission ID once, within the store transaction.
+
+    This does not make the separate ComfyUI submission/history transaction atomic.
+    The launcher must reconcile submitted-but-unbound jobs on connection errors.
+    """
     if not isinstance(project_id, str) or not project_id:
         raise PermissionError("Authorized project required")
     if any(not isinstance(x, str) or not 0 < len(x) <= 200
