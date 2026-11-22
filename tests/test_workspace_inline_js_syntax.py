@@ -173,7 +173,7 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn("overviewContent[lang].nav",js)
         for lang in ("pt","fr","de","it","ja","ko"):
             self.assertIn('"'+lang+'":{"title":',js)
-        self.assertIn('data.guideSection="about"',js)
+        self.assertIn('panel.dataset.guideSection="about"',js)
         self.assertIn('document.documentElement.lang=lang',js)
 
     def test_multiview_readme_and_future_model_ui_are_explicit(self):
