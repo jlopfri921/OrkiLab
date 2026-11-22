@@ -66,6 +66,21 @@ function mount(host,getProject,subjectId,api,onImport){
    if(!installed.length)status(t("noWorkflow"));else status(t("pending"));
   }catch(e){status(e.message)}
  }
+ function connectedImageInputs(p){
+  const connected=new Set();
+  for(const node of Object.values(p.graph||{})){
+   if(!node||!node.inputs)continue;
+   for(const value of Object.values(node.inputs)){
+    if(Array.isArray(value)&&value.length===2&&
+       (typeof value[0]==="string"||typeof value[0]==="number")&&Number.isInteger(value[1]))
+     connected.add(String(value[0]));
+   }
+  }
+  return (p.fields||[]).filter(f=>inputType(f)&&connected.has(String(f.node)));
+ }
+ function editablePromptFields(p){
+  return (p.fields||[]).filter(f=>f.kind==="text"&&/text|prompt/i.test(f.name));
+ }
  function inputType(f){return f.kind==="choice"&&/loadimage/i.test(f.class_type)&&f.name==="image"}
  function matches(f,name){return (f.choices||[]).includes(name)}
  let assigned=[];
@@ -75,23 +90,20 @@ function mount(host,getProject,subjectId,api,onImport){
   if(!window.confirm(t("confirmStage")))return;
   stage.disabled=true;resetPrepared();
   try{
+   // Fail before copying photos to ComfyUI when the workflow cannot consume
+   // the selected references or has no editable view instruction.
+   const inspected=await post(api,"/api/workspace/generation/prepare",{workflow_id:flow});
+   if(!ok())throw Error(t("mismatch"));
+   if(connectedImageInputs(inspected).length<ids.length)throw Error(t("badNodes"));
+   if(!editablePromptFields(inspected).length)throw Error(t("badPrompt"));
    const result=await post(api,u(originalProject,"/subjects/"+subjectId+"/reference-upload"),
                       {confirm:true,capture_ids:ids});
    if(!ok())throw Error(t("mismatch"));
    upload=result.references;chosen=ids;stagedRequest={direction:direction.value,height:height.value,distance:distance.value,extra:extra.value};
    const p=await post(api,"/api/workspace/generation/prepare",{workflow_id:flow});
    if(!ok())throw Error(t("mismatch"));
-   // LoadImage must have at least one real outgoing graph edge: an unused
-   // loader does not condition the generated image.
-   const connected=new Set();
-   for(const node of Object.values(p.graph||{})){
-    if(!node||!node.inputs)continue;
-    for(const value of Object.values(node.inputs)){
-     if(Array.isArray(value)&&value.length===2&&typeof value[0]==="string"&&Number.isInteger(value[1]))
-      connected.add(value[0]);
-    }
-   }
-   const inputs=(p.fields||[]).filter(f=>inputType(f)&&connected.has(String(f.node)));
+   // Re-check against ComfyUI's image choices refreshed after upload.
+   const inputs=connectedImageInputs(p);
    if(inputs.length<ids.length||!upload.every(x=>inputs.some(f=>matches(f,x.comfy_name))))throw Error(t("badNodes"));
    prepared={token:p.token,workflowId:flow,fields:p.fields||[]};
    fieldsWrap.replaceChildren();assigned=[];
@@ -106,7 +118,7 @@ function mount(host,getProject,subjectId,api,onImport){
     if(first)chooser.value=first.value;
     label.append(chooser);fieldsWrap.append(label);assigned.push(chooser);
    }
-   const texts=prepared.fields.filter(f=>f.kind==="text"&&/text|prompt/i.test(f.name));
+   const texts=editablePromptFields(prepared);
    promptField.replaceChildren(new Option(t("none"),""));
    for(const f of texts)promptField.add(new Option(f.class_type+" #"+f.node+" · "+f.name,f.node+"|"+f.name));
    const preferred=texts.find(f=>/CLIPTextEncode|TextEncode|Prompt/i.test(f.class_type))||texts[0];

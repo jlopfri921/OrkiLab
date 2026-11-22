@@ -35,6 +35,18 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn("OrkiViewpointAI.mount(",html)
         self.assertIn("capture.id,api,refresh,capture",html)
 
+    def test_missing_view_preflight_before_reference_upload(self):
+        source=(ROOT/"assets"/"orkilab"/"multiview-generate-view.js").read_text(encoding="utf-8")
+        self.assertIn("function connectedImageInputs(p)",source)
+        self.assertIn("function editablePromptFields(p)",source)
+        self.assertIn("connectedImageInputs(inspected).length<ids.length",source)
+        self.assertIn("editablePromptFields(inspected).length",source)
+        stage=source.split("stage.onclick=async()=>{",1)[1].split("function makePrompt",1)[0]
+        self.assertLess(stage.index('const inspected=await post(api,"/api/workspace/generation/prepare"'),
+                        stage.index('const result=await post(api,u(originalProject,"/subjects/"+subjectId+"/reference-upload")'))
+        self.assertLess(stage.index('const result=await post(api,u(originalProject,"/subjects/"+subjectId+"/reference-upload")'),
+                        stage.index('const p=await post(api,"/api/workspace/generation/prepare"'))
+
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
     def test_missing_view_and_mode_help_scripts_compile(self):
         for name in ("multiview-generate-view.js","orkilab-mode-help.js"):
