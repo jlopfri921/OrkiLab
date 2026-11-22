@@ -1,5 +1,18 @@
 # OrkiLab changelog
 
+## Release phase index (historical and planned)
+
+| Family | Phases documented in this changelog / delivery plan | GitHub release status |
+| --- | --- | --- |
+| **0.1.0** | dev → rc.1 → rc.2 | Historical release candidates; publication not verified here |
+| **0.2.0** | dev.1 → rc.1 | Historical release candidate; publication not verified here |
+| **0.3.0** | development → rc.1 | Published prerelease |
+| **0.4.0** | development / beta.1 increments → rc.1 | Published prerelease |
+| **0.5.0** | alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1 (+ subsequent follow-ups) | Published prerelease; stable pending |
+| **0.6.0** | alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable (planned) | Not released |
+
+See the [complete phase-by-phase release history](docs/orkilab/RELEASE_HISTORY.md) for what was delivered at each milestone, linked evidence and outstanding acceptance gates. **Phase names in historical development notes do not imply public tags or stable releases.**
+
 ## 0.5.0-rc.1 — published GitHub prerelease (2026-11-22; not stable)
 
 **Status:** [v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) is published as a **GitHub prerelease**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, after Windows/Linux CI. There is no stable `v0.5.0` yet; stable release depends on additional real-device acceptance.

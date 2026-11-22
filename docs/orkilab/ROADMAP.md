@@ -13,13 +13,26 @@
 | 0.9 Desktop | portable application/installer | clean Windows/Linux install and rollback |
 | 1.0 Stable | documented supported matrix | regression and hardware validation |
 
+## Version evolution and documented phase tables
+
+For the complete historical phase-by-phase account of **0.1.0, 0.2.0, 0.3.0, 0.4.0, 0.5.0 and planned 0.6.0**, including RC acceptance qualifications and published-vs-unpublished status, see [OrkiLab release history](RELEASE_HISTORY.md).
+
+| Version | Documented phases (not necessarily GitHub tags) | Evidence |
+| --- | --- | --- |
+| **0.1.0** | dev → rc.1 → rc.2 | Historical candidate entries; no public release verified in this ledger |
+| **0.2.0** | dev.1 → rc.1 | Historical candidate entries; no public release verified in this ledger |
+| **0.3.0** | development → rc.1 | Published GitHub prerelease |
+| **0.4.0** | development / beta.1 slices → rc.1 | Published GitHub prerelease |
+| **0.5.0** | alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1 (+ follow-ups) | Published GitHub prerelease; stable pending |
+| **0.6.0** | alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable | Proposed development sequence; not released |
+
 ## Current milestone: 0.5.0-rc.1 — Multiview prerelease published; stable acceptance pending
 
 [v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) was published as a **prerelease on 2026-11-22**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, with Windows/Linux CI passed. This release includes Multiview development through PR #99 and comprehensive 0.5.0 documentation through PR #100. Operator-reported Windows/RTX 3090 acceptance covers earlier configurations, not all later workflows. There is **no stable v0.5.0 yet**. See [the 0.5 acceptance register](RC_0_5_0_READINESS.md) for final hardware, safety, compatibility and rollback gates. Proceed to **0.6.0** only after stable 0.5.0 acceptance. Earlier 0.4.0 stable blockers remain explicit.
 
 ## Previous milestone: 0.4.0-rc.1 — integrated dataset and curated LoRA candidate
 
-**Status:** [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) is a published GitHub prerelease based on the candidate merged through PR #76. Subsequent Dataset Studio safety changes (PR #77) are in `main` and may be newer than the immutable release tag. This is not 0.4.0 stable. The Dataset Studio hardening checks (PR #77) were also merged after Windows/Linux CI. The last published prerelease remains `v0.3.0-rc.1` until GitHub Releases confirms otherwise.
+**Status:** [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) is a published GitHub prerelease based on the candidate merged through PR #76. Subsequent Dataset Studio safety changes (PR #77) are in `main` and may be newer than the immutable release tag. This is not 0.4.0 stable. The Dataset Studio hardening checks (PR #77) were also merged after Windows/Linux CI. The published `v0.4.0-rc.1` prerelease is documented above; the release candidate does not establish stable 0.4.0 acceptance.
 
 **In candidate:** project-linked Dataset Studio, captions, non-destructive derived export, optional local Ollama preview, project-specific trainer draft handoff, named ComfyUI checkpoint management and comparison, human LoRA ratings and a searchable curated library, collapsible and searchable generation history, common footer and sidebar version.
 
@@ -31,7 +44,7 @@
 
 See [the detailed 0.5.0 delivery and acceptance plan](MULTIVIEW_0_5_ROADMAP.md). It covers subjects/captures/view metadata, source provenance, visual coverage, optional controlled ComfyUI view generation, group-aware exports, multilingual UI, and Windows/Linux plus GPU acceptance. The 0.5 milestone does not waive unfinished 0.4 stable release gates.
 
-## Immediate milestone: 0.3.0-rc.1 — ComfyUI integration candidate
+## Historical milestone: 0.3.0-rc.1 — ComfyUI integration candidate
 
 **Status:** **published as a prerelease on 2026-11-21** (tag `v0.3.0-rc.1`, commit `3d7dde0ce19d1937320cd2517523a5b36860b098`). The release is not designated stable; further acceptance and follow-up fixes are tracked separately.
 
