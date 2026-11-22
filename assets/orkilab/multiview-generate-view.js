@@ -18,6 +18,17 @@ function elt(tag,text){const e=document.createElement(tag);if(text!==undefined)e
 function choose(label,options){const wrap=elt("label");wrap.append(elt("span",label));const select=elt("select");for(const key of options)select.add(new Option(t(key),key));wrap.append(select);return [wrap,select]}
 function u(project,suffix){return "/api/workspace/multiview/projects/"+encodeURIComponent(project)+suffix}
 function post(api,url,data){return api(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})}
+const officialLabels={
+ es:{title:"Biblioteca oficial de workflows OrkiLab",empty:"No se han encontrado workflows adecuados para las fotografías seleccionadas. Puedes descargar o importar plantillas oficiales aquí.",included:"Plantillas incluidas (nodos básicos)",official:"Workflow oficial de OrkiLab",checkpoint:"Checkpoint instalado en ComfyUI",import:"Importar a OrkiLab",zip:"Descargar paquete ZIP",github:"Ver workflows en GitHub",advanced:"Plantillas avanzadas de ComfyUI",externalHint:"Guías oficiales para Qwen y FLUX: requieren revisar nodos y modelos antes de utilizarlas.",copyFirst:"Selecciona una fotografía y cópiala primero a ComfyUI/input.",onePhoto:"Las plantillas básicas admiten una sola fotografía. Selecciona y copia solo una.",pickCheckpoint:"Selecciona un checkpoint instalado; puedes importar modelos en ComfyUI antes de continuar.",done:"Importación completada. El workflow está disponible en la lista.",already:"Workflow ya importado. Seleccionado para preparar.",unavailable:"No se pudo leer la biblioteca oficial.",noModels:"ComfyUI no ha devuelto checkpoints compatibles. El ZIP puede descargarse sin conexión.",confirm:"¿Importar la plantilla y vincularla a la fotografía copiada?",starter:"Nodos básicos · 1 foto · requiere checkpoint",upstream:"Plantilla externa · comprobar dependencias"},
+ en:{title:"Official OrkiLab workflow library",empty:"No suitable workflow for the selected photos. Download or import official starter templates here.",included:"Included templates (core nodes)",official:"OrkiLab official workflow",checkpoint:"Checkpoint installed in ComfyUI",import:"Import into OrkiLab",zip:"Download workflow ZIP",github:"View workflows on GitHub",advanced:"Advanced ComfyUI templates",externalHint:"Upstream Qwen and FLUX examples require model and node review before use.",copyFirst:"Select and copy one photo into ComfyUI/input first.",onePhoto:"Core templates support one photo. Select and copy just one.",pickCheckpoint:"Choose an installed checkpoint, or add a model to ComfyUI first.",done:"Import complete. The workflow is now in the selector.",already:"Workflow already imported. Selected for preparation.",unavailable:"Could not read official workflow library.",noModels:"ComfyUI returned no compatible checkpoints. ZIP download works offline.",confirm:"Import this template and bind it to the copied photo?",starter:"Core nodes · 1 photo · checkpoint required",upstream:"Upstream template · verify dependencies"},
+ pt:{title:"Biblioteca oficial de workflows OrkiLab",empty:"Não há workflows adequados. Descarregue ou importe aqui modelos oficiais.",included:"Modelos incluídos (nós básicos)",official:"Workflow oficial OrkiLab",checkpoint:"Checkpoint instalado no ComfyUI",import:"Importar para OrkiLab",zip:"Descarregar pacote ZIP",github:"Ver workflows no GitHub",advanced:"Modelos avançados ComfyUI",externalHint:"Exemplos Qwen e FLUX requerem verificação de modelos e nós.",copyFirst:"Selecione e copie primeiro uma foto para ComfyUI/input.",onePhoto:"Os modelos básicos aceitam uma foto. Copie apenas uma.",pickCheckpoint:"Escolha um checkpoint instalado no ComfyUI.",done:"Importação concluída. Workflow disponível.",already:"Workflow já importado e selecionado.",unavailable:"Não foi possível ler a biblioteca oficial.",noModels:"O ComfyUI não devolveu checkpoints. O ZIP pode ser descarregado.",confirm:"Importar este modelo e associá-lo à foto copiada?",starter:"Nós básicos · 1 foto · checkpoint necessário",upstream:"Modelo externo · verificar dependências"},
+ fr:{title:"Bibliothèque officielle de workflows OrkiLab",empty:"Aucun workflow adapté. Téléchargez ou importez les modèles officiels ici.",included:"Modèles inclus (nœuds de base)",official:"Workflow officiel OrkiLab",checkpoint:"Checkpoint installé dans ComfyUI",import:"Importer dans OrkiLab",zip:"Télécharger le ZIP",github:"Voir les workflows sur GitHub",advanced:"Modèles avancés ComfyUI",externalHint:"Les exemples Qwen et FLUX nécessitent une vérification des modèles et nœuds.",copyFirst:"Choisissez et copiez d'abord une photo dans ComfyUI/input.",onePhoto:"Les modèles de base acceptent une seule photo.",pickCheckpoint:"Choisissez un checkpoint installé dans ComfyUI.",done:"Importation terminée. Workflow disponible.",already:"Workflow déjà importé et sélectionné.",unavailable:"Bibliothèque officielle indisponible.",noModels:"ComfyUI n'a renvoyé aucun checkpoint. Le ZIP reste téléchargeable.",confirm:"Importer ce modèle avec la photo copiée ?",starter:"Nœuds de base · 1 photo · checkpoint requis",upstream:"Modèle externe · vérifier les dépendances"},
+ de:{title:"Offizielle OrkiLab-Workflow-Bibliothek",empty:"Kein geeigneter Workflow gefunden. Laden oder importieren Sie hier offizielle Vorlagen.",included:"Enthaltene Vorlagen (Kernknoten)",official:"Offizieller OrkiLab-Workflow",checkpoint:"Checkpoint in ComfyUI installiert",import:"In OrkiLab importieren",zip:"ZIP-Paket herunterladen",github:"Workflows auf GitHub ansehen",advanced:"Erweiterte ComfyUI-Vorlagen",externalHint:"Qwen- und FLUX-Beispiele erfordern Modell- und Knotenprüfung.",copyFirst:"Wählen und kopieren Sie zuerst ein Foto nach ComfyUI/input.",onePhoto:"Basisvorlagen unterstützen nur ein Foto.",pickCheckpoint:"Wählen Sie einen installierten ComfyUI-Checkpoint.",done:"Import abgeschlossen. Workflow ist auswählbar.",already:"Workflow bereits importiert und ausgewählt.",unavailable:"Offizielle Bibliothek nicht verfügbar.",noModels:"Keine ComfyUI-Checkpoints gefunden. ZIP-Download ist möglich.",confirm:"Vorlage mit dem kopierten Foto importieren?",starter:"Kernknoten · 1 Foto · Checkpoint erforderlich",upstream:"Externe Vorlage · Abhängigkeiten prüfen"},
+ it:{title:"Libreria ufficiale dei workflow OrkiLab",empty:"Nessun workflow adatto. Scarica o importa qui i modelli ufficiali.",included:"Modelli inclusi (nodi base)",official:"Workflow ufficiale OrkiLab",checkpoint:"Checkpoint installato in ComfyUI",import:"Importa in OrkiLab",zip:"Scarica pacchetto ZIP",github:"Vedi workflow su GitHub",advanced:"Modelli avanzati ComfyUI",externalHint:"Gli esempi Qwen e FLUX richiedono la verifica dei modelli e dei nodi.",copyFirst:"Prima seleziona e copia una foto in ComfyUI/input.",onePhoto:"I modelli base supportano una sola foto.",pickCheckpoint:"Seleziona un checkpoint installato in ComfyUI.",done:"Importazione completata. Workflow disponibile.",already:"Workflow già importato e selezionato.",unavailable:"Impossibile leggere la libreria ufficiale.",noModels:"ComfyUI non ha restituito checkpoint. Puoi scaricare il ZIP.",confirm:"Importare il modello e collegarlo alla foto copiata?",starter:"Nodi base · 1 foto · checkpoint richiesto",upstream:"Modello esterno · verificare dipendenze"},
+ ja:{title:"OrkiLab公式ワークフローライブラリ",empty:"対応するワークフローがありません。公式テンプレートをダウンロードまたは取り込めます。",included:"収録テンプレート（基本ノード）",official:"OrkiLab公式ワークフロー",checkpoint:"ComfyUIにインストール済みのチェックポイント",import:"OrkiLabに取り込む",zip:"ZIPをダウンロード",github:"GitHubで確認",advanced:"ComfyUIの高度なテンプレート",externalHint:"Qwen・FLUXの公式例はモデルとノードの確認が必要です。",copyFirst:"先に写真を1枚選んでComfyUI/inputにコピーしてください。",onePhoto:"基本テンプレートは写真1枚のみ対応します。",pickCheckpoint:"インストール済みチェックポイントを選択してください。",done:"取り込み完了。ワークフローを選択できます。",already:"すでに取り込み済みです。準備用に選択しました。",unavailable:"公式ライブラリを読み込めません。",noModels:"ComfyUIからチェックポイントを取得できません。ZIPはダウンロードできます。",confirm:"コピーした写真を使うテンプレートを取り込みますか？",starter:"基本ノード · 写真1枚 · チェックポイント必須",upstream:"外部テンプレート · 依存関係を確認"},
+ ko:{title:"OrkiLab 공식 워크플로 라이브러리",empty:"호환 워크플로가 없습니다. 여기서 공식 템플릿을 내려받거나 가져오세요.",included:"포함된 템플릿(기본 노드)",official:"OrkiLab 공식 워크플로",checkpoint:"ComfyUI에 설치된 체크포인트",import:"OrkiLab으로 가져오기",zip:"ZIP 다운로드",github:"GitHub에서 워크플로 보기",advanced:"ComfyUI 고급 템플릿",externalHint:"Qwen·FLUX 공식 예제는 모델 및 노드 확인이 필요합니다.",copyFirst:"먼저 사진 1장을 ComfyUI/input에 복사하세요.",onePhoto:"기본 템플릿은 사진 1장만 지원합니다.",pickCheckpoint:"설치된 체크포인트를 선택하세요.",done:"가져오기 완료. 워크플로를 사용할 수 있습니다.",already:"이미 가져온 워크플로를 선택했습니다.",unavailable:"공식 라이브러리를 읽을 수 없습니다.",noModels:"ComfyUI에 체크포인트가 없습니다. ZIP은 다운로드할 수 있습니다.",confirm:"복사한 사진에 템플릿을 연결해 가져올까요?",starter:"기본 노드 · 사진 1장 · 체크포인트 필요",upstream:"외부 템플릿 · 의존성을 확인"}
+};
+function officialText(key){const locale=typeof I18N!=="undefined"?I18N.lang:"en";return (officialLabels[locale]||officialLabels.en)[key]||officialLabels.en[key]||key;}
 function mount(host,getProject,subjectId,api,onImport){
  const originalProject=getProject(),panel=elt("section");panel.className="mv-requested-generation no-i18n";
  panel.append(elt("h2",t("title")),elt("p",t("intro")));
@@ -61,7 +72,29 @@ function mount(host,getProject,subjectId,api,onImport){
  const run=elt("button",t("run"));run.type="button";const cancel=elt("button",t("cancel"));cancel.type="button";cancel.disabled=true;
  mapping.append(run,cancel);
  const outputs=elt("div");
- panel.append(refresh,elt("h3",t("photos")),refs,folderSection,stage,transfer,flowLabel,filterLabel,flowInfo,controls,prepareCopy,message,mapping,outputs,elt("p",t("note")));host.append(panel);
+ const officialPanel=elt("details");officialPanel.className="mv-official-library";
+ const officialTitle=elt("summary",officialText("title"));
+ const officialHint=elt("p",officialText("empty"));
+ const officialLinks=elt("div");officialLinks.className="mv-official-links";
+ const zipLink=elt("a",officialText("zip"));zipLink.href="/api/workspace/multiview/official-workflows/download";
+ zipLink.setAttribute("download","OrkiLab-Multiview-Workflows-0.5.0-rc1.zip");
+ const githubLink=elt("a",officialText("github"));
+ githubLink.href="https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/tree/main/workflows/multiview";
+ githubLink.target="_blank";githubLink.rel="noopener noreferrer";
+ officialLinks.append(zipLink,githubLink);
+ const officialItems=elt("div");officialItems.className="mv-official-templates";
+ const officialSelect=elt("select");
+ const checkpoints=elt("select");const checkpointLabel=elt("label",officialText("checkpoint"));
+ checkpointLabel.append(checkpoints);
+ const installOfficial=elt("button",officialText("import"));installOfficial.type="button";
+ const officialStatus=elt("p");officialStatus.setAttribute("role","status");
+ const upstreamLinks=elt("div");
+ officialPanel.append(officialTitle,officialHint,officialLinks,
+    elt("h3",officialText("included")),officialSelect,checkpointLabel,
+    installOfficial,officialStatus,elt("h3",officialText("advanced")),
+    elt("p",officialText("externalHint")),upstreamLinks);
+ panel.append(refresh,elt("h3",t("photos")),refs,folderSection,stage,transfer,flowLabel,
+   filterLabel,flowInfo,officialPanel,controls,prepareCopy,message,mapping,outputs,elt("p",t("note")));host.append(panel);
  let candidates=[],installed=[],chosen=[],upload=[],prepared=null,active="",timer=null,disposed=false,stagedRequest=null;
  const ok=()=>!disposed&&host.isConnected&&getProject()===originalProject;
  const status=x=>message.textContent=x;
@@ -98,8 +131,57 @@ function mount(host,getProject,subjectId,api,onImport){
   if([...flowSelect.options].some(option=>option.value===current))flowSelect.value=current;
   flowInfo.textContent=filterToggle.checked&&matches.length===0?t("noneCompatible"):
    (filterToggle.checked?"":t("allWorkflows"));
+  if(filterToggle.checked&&matches.length===0)officialPanel.open=true;
  }
  filterToggle.onchange=()=>{prepared=null;mapping.hidden=true;filterWorkflows()};
+ let officialReady=false;
+ async function loadOfficial(){
+  try{
+   const [data,modelData]=await Promise.all([
+    api("/api/workspace/multiview/official-workflows"),
+    api("/api/workspace/multiview/official-workflows/checkpoints").catch(()=>({checkpoints:[]}))
+   ]);
+   if(!ok())return;
+   officialSelect.replaceChildren();
+   for(const entry of data.official||[]){
+    officialSelect.add(new Option(entry.name+" · "+officialText("starter"),entry.id));
+   }
+   checkpoints.replaceChildren(new Option(officialText("checkpoint"),""));
+   for(const filename of modelData.checkpoints||[])checkpoints.add(new Option(filename,filename));
+   upstreamLinks.replaceChildren();
+   for(const entry of data.upstream||[]){
+    const link=elt("a",entry.name+" · "+officialText("upstream"));
+    link.href=entry.url;link.target="_blank";link.rel="noopener noreferrer";
+    upstreamLinks.append(link);
+   }
+   officialReady=true;
+   if(!(modelData.checkpoints||[]).length)officialStatus.textContent=officialText("noModels");
+  }catch(e){officialStatus.textContent=officialText("unavailable")}
+ }
+ installOfficial.onclick=async()=>{
+  if(!officialReady){officialStatus.textContent=officialText("unavailable");return}
+  if(upload.length!==1){officialStatus.textContent=upload.length?officialText("onePhoto"):officialText("copyFirst");return}
+  if(!checkpoints.value){officialStatus.textContent=officialText("pickCheckpoint");return}
+  if(!window.confirm(officialText("confirm")))return;
+  installOfficial.disabled=true;
+  try{
+   const result=await post(api,"/api/workspace/multiview/official-workflows/install",{
+    confirm:true,template_id:officialSelect.value,checkpoint:checkpoints.value,
+    image_name:upload[0].comfy_name
+   });
+   if(!ok())return;
+   const workflows=await api("/api/workspace/workflows");
+   installed=(workflows.workflows||[]).filter(f=>f.category==="image");
+   filterWorkflows();
+   if(![...flowSelect.options].some(x=>x.value===result.id)){
+    filterToggle.checked=false;filterWorkflows();
+   }
+   flowSelect.value=result.id;
+   officialStatus.textContent=officialText(result.installed?"done":"already");
+   prepared=null;mapping.hidden=true;
+  }catch(e){officialStatus.textContent=e.message}finally{installOfficial.disabled=false}
+ };
+ loadOfficial();
  async function refreshAll(){
   if(!ok())return;
   resetPrepared();refs.replaceChildren();flowSelect.replaceChildren(new Option(t("workflow"),""));
