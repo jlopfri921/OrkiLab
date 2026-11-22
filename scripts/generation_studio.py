@@ -462,6 +462,19 @@ def register(app, base):
         except (OSError, ValueError, TypeError) as exc:
             return jsonify(error="Generation submission could not be confirmed. Check ComfyUI before retrying.", detail=str(exc)[:300]), 502
 
+    @app.get("/api/workspace/generation/gpu-monitor/devices")
+    def generation_gpu_monitor_devices():
+        """Read-only NVIDIA UUID inventory for explicitly optional UI control."""
+        if not local():
+            return jsonify(error="View GPU devices on the launcher PC"), 403
+        from benchmark_gpu_memory_probe import sample_devices
+        report = sample_devices()
+        if report.get("ok") is not True:
+            return jsonify(error="NVIDIA memory inventory unavailable"), 503
+        return jsonify(devices=[{
+            "uuid": d["uuid"], "name": d["name"], "index": d["index"],
+        } for d in report["devices"]], scope="device_global_only")
+
     @app.get("/api/workspace/generation/<generation_id>/gpu-monitor")
     def generation_gpu_monitor_status(generation_id):
         """Read ephemeral opt-in device-global diagnostics. No DB writes."""
