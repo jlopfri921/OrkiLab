@@ -6,6 +6,15 @@
 **Hardware declared for generation:** NVIDIA RTX 3090 24 GB, local ComfyUI.
 **Decision:** operator functional checklist complete (7/7); final stable-release gates **remain open**.
 
+## RC publication and stable-release policy (2026-11-22)
+
+- **Candidate version:** `0.5.0-rc.1`; publish its source snapshot as GitHub **prerelease** `v0.5.0-rc.1`, not as stable `v0.5.0`.
+- **Included since the original 7/7 acceptance:** PRs #86–#99 add optional Ollama qualitative viewpoint hints, full Multiview translations, selectable ComfyUI `input` path / native folder picker / API staging, reference-compatible workflow filtering, integrated official Multiview template ZIP/import, a comprehensive eight-language Guide and normalized OrkiLab branding.
+- **New test scope not covered by the earlier report:** in-UI copy of real photos into a selected Desktop/Portable ComfyUI input directory; importing and preparing a bundled one-reference SD-family graph with an actual installed checkpoint; real preview, cancellation and synthetic-result recording; recovery after restarting OrkiLab; source/metadata preservation and safe upgrade/rollback.
+- **Workflow caveat:** the three bundled core graphs are basic **single-reference img2img** starters. They are not supported Qwen/FLUX editing graphs, guaranteed new camera viewpoints, or true multi-reference conditioning. The latter are future improvements explicitly marked in the interface and workflow README.
+- **Candidate publication gate:** Windows/Linux tests must pass on the exact release SHA; notes and source version must match. This is distinct from real-device approval for stable.
+- **Stable publication gate:** verify the above tasks on the user's RTX 3090 and document supported models, actual ComfyUI Desktop/Portable versions, cancellation, reproducible export, preservation/rollback and any blocking defects. Do not tag `v0.5.0` until these are accepted. After stable publication, branch development toward 0.6.0.
+
 ## Operator-reported acceptance
 
 | Test | Reported result | Scope/limitations |
