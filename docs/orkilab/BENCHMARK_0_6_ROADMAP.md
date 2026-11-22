@@ -178,6 +178,18 @@ python -m unittest discover -s tests -p "test_benchmark*.py" -v
 
 **Expected if no regressions:** three new cases and **43** total benchmark unit/integration tests. These have **not yet been operator-validated**. The fake ComfyUI runs no model and provides no GPU utilization, output digest or performance data. B6 still requires safe cancellation/error HTTP coverage, multi-process reconciliation and a real-world ComfyUI test before release acceptance.
 
+## B6f Windows regression correction — retest required
+
+The first real B6f execution with the project's `venv\\Scripts\\python.exe` and Flask 3.1.3 **failed during test setup**: the test tried to patch `generation_studio.submit`, but the actual `submit` function is local to `generation_studio.register()`. Two test helper SQLite connection lifetimes also triggered `WinError 32` during temporary file cleanup. The 40 pre-existing benchmark tests passed, but the three new HTTP tests **did not run successfully**. A previous recorded statement of 43/43 passing was incorrect and has been corrected in the PR discussion.
+
+The test has now been changed to intercept the nested submission's `build_opener` with a strictly in-process fake `/prompt` response, and to close temporary SQLite connections explicitly. This source correction is **unverified** until retested on the Windows venv. Do not mark B6f PASS yet.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
