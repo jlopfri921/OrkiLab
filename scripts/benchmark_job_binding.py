@@ -97,7 +97,8 @@ def persist_bound_generation(store: BenchmarkStore, *, project_id: str,
         category = assessment["comparability"]
         timing.update(assessment)
         proposal["source_snapshot"]["execution_timing"] = timing
-        if category in ("sampler_cache_miss_partial_cache", "sampler_cache_unverified"):
+        if (category in ("sampler_cache_miss_partial_cache", "sampler_cache_unverified")
+                or (category == "unverified" and not assessment["execution_cached_event_observed"])):
             proposal["duration_ms"] = timing["duration_ms"]
             proposal["source_snapshot"]["duration_ms"] = timing["duration_ms"]
         proposal["source_snapshot"]["limitations"] = (
