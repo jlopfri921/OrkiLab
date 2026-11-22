@@ -9,19 +9,66 @@
   <a href="https://ko-fi.com/jorgelf"><img alt="Support OrkiLab on Ko-fi" src="https://img.shields.io/badge/Ko--fi-Support%20OrkiLab-FF5E5B?logo=kofi&logoColor=white"></a>
 </p>
 
-<p align="center"><a href="#whats-new-in-orkilab--modern-workspace-and-comfyui-integration">What’s new</a> · <a href="#quick-start">Quick start</a> · <a href="#training-engines">Training engines</a> · <a href="docs/orkilab/ROADMAP.md">Roadmap</a> · <a href="CHANGELOG_ORKILAB.md">Changelog</a> · <a href="#credits">Credits</a></p>
+<p align="center"><a href="#orkilab-050-rc1--current-release-candidate">What’s new (0.5.0)</a> · <a href="#quick-start">Quick start</a> · <a href="#training-engines">Training engines</a> · <a href="docs/orkilab/ROADMAP.md">Roadmap</a> · <a href="CHANGELOG_ORKILAB.md">Changelog</a> · <a href="#credits">Credits</a></p>
 
 # OrkiLab — LoRA Trainer Studio
 
-Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, local-first workspace for adapting generative models with LoRA. Workspace is the default interface. **The current development candidate is 0.5.0-rc.1 (not yet a published GitHub release or stable 0.5.0).** The previous 0.4.0-rc.1 was published as a GitHub prerelease on 2026-11-21; it was not a stable 0.4.0. See [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) for source and release notes. The previous prerelease is [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1). See the [0.4 candidate readiness register](docs/orkilab/RC_0_4_0_READINESS.md) for verified and pending acceptance.
+Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, open-source and local-first workspace for adapting generative models with LoRA and connecting training, datasets and optional ComfyUI image-generation workflows. Workspace is the default interface. **The code currently identifies as 0.5.0-rc.1; publication as a prerelease is being prepared, not a stable 0.5.0 release.** The preceding public prereleases are [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) and [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1).
 
-## OrkiLab 0.5.0-rc.1 — release preparation (not published)
+## OrkiLab 0.5.0-rc.1 — current release candidate
 
-The 0.5 candidate includes Multiview Studio: persistent subject/photo references, a 12-sector camera coverage diagram, manual angle metadata, per-image review and comparison, optional ComfyUI generation with explicitly recorded synthetic provenance, project-safe Dataset Studio photo linking and reproducible ZIP dataset export. The user reports seven real Windows/RTX 3090 acceptance checks passed; details and outstanding release gates are in [0.5 acceptance register](docs/orkilab/RC_0_5_0_READINESS.md). This is not evidence of universal training-engine support or a complete end-to-end training run.
+**Current source version: `0.5.0-rc.1`.** This is the development code on `main`, not a stable release. The next publication is intended as **GitHub prerelease `v0.5.0-rc.1`**, after candidate verification. The latest prerelease already published is [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1).
 
-**New RC.1 usability tools:** [OrkiLab user guide](/workspace/guide) (served by the local app), a persistent **Operating mode** selector in Workspace Settings, native-only navigation without ComfyUI tools, and a guided **Generate missing viewpoint** workflow for image-conditioned ComfyUI graphs. The latter explicitly stages source-photo copies, maps them to connected LoadImage nodes, reuses the safe generation queue, and imports reviewed outputs as synthetic/unreviewed with requested-view metadata kept separate from measured angles. Read the [Multiview roadmap](docs/orkilab/MULTIVIEW_0_5_ROADMAP.md) before testing: compatibility depends on a validated installed workflow; no calibrated camera pose or unseen geometry is guaranteed. Open the local help at `http://127.0.0.1:4990/workspace/guide` once OrkiLab is running.
+**Why OrkiLab exists.** OrkiLab aims to be an independent, open-source, local-first workbench that connects projects, data preparation, LoRA training, compatible ComfyUI generation, model/GPU inspection and export. It coordinates tools and models installed by the user rather than being a model itself. The [eight-language in-app guide](http://127.0.0.1:4990/workspace/guide) now explains the overall philosophy, practical use, individual modules, limitations and future direction.
 
-**Status:** RC.1 is being prepared in GitHub source code. No `v0.5.0` stable tag or published 0.5 prerelease is claimed. The final stable release requires successful Windows/Linux checks on the exact proposed release commit, documented supported workflow/trainer configuration, security and upgrade/rollback acceptance, and resolution of release blockers. Source images and original model weights must remain untouched.
+### What's included in 0.5.0-rc.1
+
+| Area | Implemented functionality | Important limitation |
+| --- | --- | --- |
+| **Multiview subjects and captures** | Persistent project-scoped subjects, photo/video/synthetic provenance, names, annotations, search/sort, optional manually entered camera angles and review metadata | Images remain at their original paths; unknown numerical camera angles stay unknown |
+| **Viewpoint coverage and comparison** | Twelve-sector 360° azimuth coverage display, missing-angle diagnostics, quality/duplicate hints, approval/rejection, two-image comparison with zoom | Estimated directions are not calibrated camera positions |
+| **Projects and Dataset Studio integration** | Discover active Image projects, recover already indexed photos, link selected images to subjects without moving or duplicating originals, persist relationships after restart | A dataset handoff is not a validated full trainer run |
+| **Optional Ollama vision** | Discover locally installed vision models, suggest qualitative orientation/height/apparent distance for individual photos, human confirmation and persisted metadata | No automatic Ollama/model installation or invented azimuth/elevation degrees |
+| **Generate missing viewpoint** | Select 1–4 real references; stage copies by choosing a ComfyUI `input` folder (manual path or native Browse) **or** via the API; inspect/reference-map connected `LoadImage` nodes manually or automatically, choose a prompt and explicitly submit a job | Requires an actually compatible image-conditioned workflow; does not reconstruct unseen geometry |
+| **Review and record synthetic results** | Generation history/lineage, source reference IDs, requested-view labels, targeted cancellation and explicit import as `synthetic` and `unreviewed` | Generated perspectives and labels are never treated as measured angles |
+| **Multiview ZIP export** | Preview and explicitly export approved, grouped subject datasets, SHA-256 source checks, deterministic manifest/archive, train/validation grouping, optional inclusion of approved synthetic photos | The generic ZIP is not a universally supported trainer input |
+| **Workflow compatibility and official library** | Prefer likely compatible reference workflows, allow reviewing all; download offline ZIP and import **three** OrkiLab core-only single-photo img2img templates with a selected installed checkpoint in the same Multiview screen | Starter graphs need compatible SD-family checkpoints; they do not guarantee camera rotation or support FLUX/Qwen models directly |
+| **Multilingual UI and navigation** | Eight UI languages in Multiview/AI helpers, guide translated in eight languages, responsive mobile bottom menu, clearer ComfyUI-only navigation, context help and version at the bottom of the left menu | Legacy trainer/custom-node wording may still require checking |
+| **Operating modes and identity** | Standalone (without ComfyUI tools), connected/hybrid, optional independent Ollama, consistent OrkiLab source/asset/documentation naming and branding regression checks | The UI hiding a module is not permission to use its API remotely |
+
+**Official workflows today:** [Core Preserve](workflows/multiview/orkilab-multiview-core-preserve-api.json), [Core Img2Img](workflows/multiview/orkilab-multiview-core-img2img-api.json), [Core Variation](workflows/multiview/orkilab-multiview-core-variation-api.json). Their defaults are denoise 0.30, 0.55 and 0.72 respectively, with one reference photograph per template. Full [Multiview workflow README](workflows/multiview/README.md), including dependencies and Desktop/Portable caveats.
+
+**Future improvements (not included, not prevalidated):** dedicated **Qwen-Image 2.1 Edit**, **FLUX.3 Klein Image Edit**, true **2–4-image multi-reference conditioning**, and validated **camera control**. The app may link to upstream ComfyUI examples; these are external references, not official ready-to-run OrkiLab templates.
+
+### Multiview workflow: from real photographs to a reviewed result
+
+1. Create or open a **Project** with category `Image`. Open **Multiview Studio**, create a subject and link real photographs from Dataset Studio.
+2. Optionally use **Ollama** to suggest qualitative orientation. Check, correct and explicitly save the suggestions; leave unknown numeric angles empty.
+3. In **Generate missing viewpoint**, select photos. For the three bundled core templates, use **one** image. Specify the actual ComfyUI **input** folder or **Browse**, or choose API upload.
+4. **Copy selected photographs**, preserving originals. Choose a suitable workflow; if none is detected, the embedded **Official OrkiLab workflow library** offers a ZIP download, GitHub links and guided import.
+5. Select a checkpoint actually installed in the running ComfyUI, import the starter template, **Prepare workflow**, inspect connected `LoadImage` inputs and map each reference manually or automatically.
+6. Review the requested direction/prompt and explicitly confirm generation. Inspect the output, then choose whether to import it as **synthetic/unreviewed**.
+7. Approve only reviewed captures and export the grouped ZIP with its manifest and hashes. No automatic photo-to-3D or geometric truth is claimed.
+
+### Evolution of the 0.5.0 candidate
+
+| Delivery | Key milestone |
+| --- | --- |
+| **Alpha.1 · PR #80** | Subject/capture library, source provenance, desktop/mobile navigation |
+| **Alpha.2 · PR #81** | Coverage sectors, quality hints, review and comparator |
+| **Beta.1 · PR #82** | Opt-in ComfyUI generation and synthetic provenance |
+| **Beta.2 · PR #83** | Safe reproducible dataset ZIP |
+| **RC.1 · PRs #84–#85** | Recover existing projects/photos, persist linkage |
+| **RC.1 follow-ups · PRs #86–#97** | Guidance, optional Ollama orientation, translated Multiview, input-folder copies, workflow compatibility filtering and bundled official workflow library |
+| **RC.1 documentation/brand · PRs #98–#99** | Uniform OrkiLab branding and multilingual product vision/help with Qwen/FLUX explicitly deferred |
+
+Further details: [Multiview implementation roadmap](docs/orkilab/MULTIVIEW_0_5_ROADMAP.md), [0.5 acceptance register](docs/orkilab/RC_0_5_0_READINESS.md), [changelog](CHANGELOG_ORKILAB.md) and [open-source roadmap](docs/orkilab/ROADMAP.md).
+
+### Publication status and remaining checks
+
+Reported Windows/RTX 3090 acceptance includes saved projects/photos, persistence, representative ComfyUI generation, dataset ZIP and browser layout. The **newer** copy-to-input, guided official workflow import and full Multiview flow still need appropriately scoped evidence against the final installed code. A user-reported success does not automatically validate all Desktop/Portable versions, model families, complete training runs, custom nodes, remote-access safety or upgrade/rollback.
+
+Before publishing `v0.5.0-rc.1`, verify the exact candidate commit in Windows/Linux CI and record any remaining on-device caveats. Keep the version marked **prerelease**; stable `v0.5.0` is separately gated on documented compatibility, safety and regression acceptance.
 
 ## OrkiLab 0.4.0-rc.1 — published GitHub prerelease
 
@@ -52,14 +99,6 @@ When a generated caption is in progress, the **Cancel generation** button sends 
 In **Dataset Studio → Edit caption → Local AI suggestion**, you may choose a **previously installed image-capable Ollama model** and explicitly click **Generate preview locally**. Ollama must already be running on this computer at `127.0.0.1:11434`; OrkiLab does **not** install Ollama, download or select a model for you, or enable cloud inference. The model name is entered manually (for example, `qwen3-vl:8b` if you have actually installed it). The selected source image is sent only to the local loopback Ollama endpoint. The request is capped at 12 MB and 120 seconds, performs no redirects and asks Ollama to unload the model afterward with `keep_alive: 0` (subject to Ollama's behavior).
 
 The suggestion appears in a separate **read-only preview**. Only **Use suggestion in editor** copies it into the editable text box; only the existing **Save caption** action writes the reviewed text to OrkiLab's local SQLite metadata. No original images, sidecars or caption history are changed just by generating a preview. Generating uses GPU memory and can contend with ComfyUI or training; run it only when resources are available. One preview is processed at a time. This is an **experimental development integration**, not a verified 0.4 release or a substitute for the training captioner already used by individual trainers. The official image-captioning acceptance still requires a real Windows/GPU test.
-
-## OrkiLab 0.5.0 — Multiview Studio (development; no stable release)
-
-OrkiLab now contains development implementations of **alpha.1** (subject capture library), **alpha.2** (360° angular coverage, quality hints and photo comparison) and **beta.1** (explicit, optional ComfyUI generation with synthetic provenance), merged via PRs #80, #81 and #82. **Beta.2** adds a project-wide, non-destructive multiview dataset export with a reproducible ZIP. **RC.1**, merged through PR #85, adds recovery of existing Dataset Studio photos and persistent project linking; seven on-device checks are operator-reported as passed, while stable-release gates remain open. See the [0.5 roadmap and acceptance gates](docs/orkilab/MULTIVIEW_0_5_ROADMAP.md). These modules require real Windows/GPU and browser checks before stable 0.5 acceptance; no 0.5.0 tag or release is claimed.
-
-**Try it:** In Workspace → Projects create an **Image** project (for example *Multiview test · Sculpture*) with any available image engine, open **Multiview Studio**, select the project, create a subject and add existing image references with manually provided camera angles. Approve the images that you want included. In the project-level **Prepare multiview dataset** panel choose the validation percentage, seed and optional inclusion of approved synthetic views; select **Preflight and preview**, then explicitly **Download ZIP**.
-
-The archive includes `manifest.json`, `checksums.sha256`, and images grouped under `images/train/<subject-id>/...` or `images/validation/<subject-id>/...`. A given subject's views stay entirely within one split: the percentage can be approximate with few subjects. All image files are checked against their indexed SHA-256 and the ZIP is deterministic when the input metadata and image contents are unchanged. The export does not modify source images. For safety, export and generation APIs still require use on the **launcher computer** (remote mobile browsing does not authorize them). This is a **generic portable archive**, not a guaranteed training adapter for every engine. The 0.4 stable release remains gated separately.
 
 ## Ecosystem spotlight — owner-managed announcement
 
