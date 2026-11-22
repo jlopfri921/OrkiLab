@@ -15,8 +15,15 @@ function reconcile(){
    if(!nav.querySelector('a[href="/workspace/guide"]')){
     const a=document.createElement("a");a.href="/workspace/guide";a.textContent=label();a.className="orki-guide-link";
     if(location.pathname.replace(/[/]$/,"")==="/workspace/guide")a.setAttribute("aria-current","page");
-    nav.append(a);
-   }else nav.querySelectorAll('a[href="/workspace/guide"]').forEach(a=>{if(a.textContent!==label())a.textContent=label()});
+    const version=nav.querySelector(".orki-nav-version, #version, #orki-shell-version");
+    if(version)nav.insertBefore(a,version);else nav.append(a);
+   }else nav.querySelectorAll('a[href="/workspace/guide"]').forEach(a=>{
+    if(a.textContent!==label())a.textContent=label();
+   });
+   // In every navigation the version is always the final element. Reconcile
+   // after the canonical menu is cloned and after mobile/locale updates.
+   const indicator=nav.querySelector(".orki-nav-version, #version, #orki-shell-version");
+   if(indicator&&indicator.nextElementSibling)nav.append(indicator);
   });
   document.querySelectorAll('a[href^="/workspace/comfyui"]').forEach(a=>hide(a,native));
   // Avoid hiding other controls in these cards; they are ComfyUI-only overview tiles.
