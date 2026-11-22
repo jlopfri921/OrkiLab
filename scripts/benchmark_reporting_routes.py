@@ -17,6 +17,7 @@ from benchmark_report_summary import summarize_benchmark_report
 from benchmark_comparability import assess_duration_comparability
 from benchmark_repro_protocol import declared_protocol_readiness
 from benchmark_execution_evidence import verify_recorded_execution_evidence
+from benchmark_history_consistency import summarize_saved_history_matches
 from benchmark_draft_creation import create_confirmed_draft, validate_draft_payload
 
 ID = re.compile(r"^[A-Za-z0-9_-]{1,200}$")
@@ -185,15 +186,47 @@ def report_routes(app, base):
                 "observations": [
                     {**dict(o), "generation_lineage": {
                         key: value for key, value in snap.get(o["id"], {}).items()
-                        if key in ("workflow_id", "submitted_graph_sha256", "execution_timing", "comfyui_prompt_id")
+                        if key in ("generation_id", "workflow_id", "status", "submitted_graph_sha256", "execution_timing", "comfyui_prompt_id")
                     } if o["id"] in snap else None}
                     for o in obs
                 ],
             }
+            # B9.9: inspect only existing *local* persisted generation records.
+            # Never contact ComfyUI or read arbitrary filesystem paths.
+            history_ids = sorted({
+                o["generation_lineage"]["generation_id"]
+                for o in report["observations"]
+                if isinstance(o.get("generation_lineage"), dict)
+                and isinstance(o["generation_lineage"].get("generation_id"), str)
+                and 0 < len(o["generation_lineage"]["generation_id"]) <= 200
+            })
+            history_truncated = len(history_ids) > 50
+            local_history = {}
+            history_db = Path(base) / "settings" / "orkilab" / "generations.sqlite3"
+            if history_ids and not history_truncated and history_db.is_file():
+                with closing(sqlite3.connect(
+                    history_db.resolve().as_uri() + "?mode=ro", uri=True, timeout=5
+                )) as hist:
+                    for generation_id in history_ids:
+                        row_history = hist.execute(
+                            "SELECT id,prompt_id,workflow_id,state,graph,outputs "
+                            "FROM generations WHERE id=? AND length(graph)<=2000000 "
+                            "AND length(outputs)<=500000",
+                            (generation_id,),
+                        ).fetchone()
+                        if row_history is not None:
+                            local_history[generation_id] = {
+                                "id": row_history[0], "prompt_id": row_history[1],
+                                "workflow_id": row_history[2], "state": row_history[3],
+                                "graph": row_history[4], "outputs": row_history[5],
+                            }
             result = summarize_benchmark_report(report)
             result["comparability"] = assess_duration_comparability(report)
             result["reproducibility_protocol"] = declared_protocol_readiness(report)
             result["recorded_execution_evidence"] = verify_recorded_execution_evidence(report)
+            result["saved_history_consistency"] = summarize_saved_history_matches(
+                report, local_history, truncated=history_truncated
+            )
             result["project_id"] = project_id
             result["name"] = row["name"]
             result["run_created_at"] = row["created_at"]
