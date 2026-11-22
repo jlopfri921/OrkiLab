@@ -39,7 +39,7 @@ Detailed acceptance: [0.3 readiness register](RC_0_3_0_READINESS.md) and [GPU/Ge
 
 - [ ] Complete the remaining mandatory security and integrity checks, and record honest limitations.
 - [ ] Verify Windows and Ubuntu Actions checks on the **current PR head SHA** and **merged main SHA**.
-- [ ] Verify `VERSION_ARKILAB`, `GUI/launcher.json`, README badge and changelog consistently show `0.3.0-rc.1`.
+- [ ] Verify `VERSION_ORKILAB`, `GUI/launcher.json`, README badge and changelog consistently show `0.3.0-rc.1`.
 - [ ] Merge release candidate PR after acceptance.
 - [ ] Create annotated tag `v0.3.0-rc.1` **on the verified merge SHA**, push the tag without rewriting history.
 - [ ] Publish GitHub **Pre-release** (not Latest/stable), link these notes and acceptance docs; verify displayed tag and SHA.

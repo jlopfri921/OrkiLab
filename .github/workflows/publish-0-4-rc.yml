@@ -32,10 +32,10 @@ jobs:
         run: |
           import json
           from pathlib import Path
-          version = Path('VERSION_ARKILAB').read_text(encoding='utf-8').strip()
+          version = Path('VERSION_ORKILAB').read_text(encoding='utf-8').strip()
           launcher = json.loads(Path('GUI/launcher.json').read_text(encoding='utf-8'))
           assert version == '0.4.0-rc.1', version
-          assert launcher['arkilab_version'] == version
+          assert launcher['orkilab_version'] == version
           assert Path('.github/RELEASE_0_4_0_RC_1.md').is_file()
           print('Prerelease version verified:', version)
       - name: Publish source prerelease (idempotent)

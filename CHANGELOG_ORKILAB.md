@@ -8,7 +8,7 @@
 - Beta.2: reproducible, non-destructive ZIP exports with SHA-256 manifest and subject-level train/validation grouping; excludes synthetic images unless approved and opted in.
 - RC.1: existing Workspace Image project discovery, Dataset Studio photo recovery/linking, project persistence and safety regression tests.
 - RC.1 usability improvements (under current PR): local `/workspace/guide` with architecture, step-by-step workflows and FAQ; native/stand-alone mode that hides ComfyUI-only navigation and panels while preserving trainers/data; a persistent mode switch in Workspace Settings; guided reference-conditioned missing-view generation using safe copies uploaded to ComfyUI, explicit LoadImage mapping and the existing job queue; synthetic output import with requested-view metadata and source-reference lineage without fabricated numeric camera angles.
-- On-device operator reports 7/7 functional checks passed on Windows with RTX 3090; these reports do not establish a complete training pass, broad workflow compatibility, final release CI or rollback acceptance. See [RC.1 readiness](docs/arkilab/RC_0_5_0_READINESS.md).
+- On-device operator reports 7/7 functional checks passed on Windows with RTX 3090; these reports do not establish a complete training pass, broad workflow compatibility, final release CI or rollback acceptance. See [RC.1 readiness](docs/orkilab/RC_0_5_0_READINESS.md).
 - **Not yet released:** stable v0.5.0 remains gated on final SHA CI, named tested configuration, release review and documented limitations. 0.4 stable scope gaps are not silently considered completed.
 
 
@@ -26,7 +26,7 @@
 - **Release gate:** full Windows/Linux CI and genuine on-device testing before tagging. CPU-only CI cannot certify GPU model compatibility, every trainer, Windows GUI integration, Ollama cancellation/memory behavior or a reproducible end-to-end trainer-ready dataset with validation split.
 - **Not yet completed for 0.4 stable:** documented per-engine export profiles, guaranteed reproducible train/validation split, hardware compatibility matrix, complete integration tests on supported local GPU machines, and final stability acceptance.
 
-The release metadata is updated on the release-preparation branch; the GitHub tag/release must be created only after its exact merged SHA is verified. See [readiness register](docs/arkilab/RC_0_4_0_READINESS.md).
+The release metadata is updated on the release-preparation branch; the GitHub tag/release must be created only after its exact merged SHA is verified. See [readiness register](docs/orkilab/RC_0_4_0_READINESS.md).
 
 
 ## 0.3.0-rc.1 — published GitHub prerelease (2026-11-21)
@@ -35,7 +35,7 @@ The release metadata is updated on the release-preparation branch; the GitHub ta
 - Explain Projects and Training Engines with guided introductions, contextual actions and localized empty states.
 - Extend GPU Manager with bounded, session-only system RAM and GPU telemetry graphs.
 - Add per-generation RAM/VRAM snapshots (before, sampled peak, after completion and optionally after model/cache release). These are system-wide readings, not proof of memory leaks or per-process attribution.
-- Define the planned **0.3.0-rc.1** feature freeze and acceptance tests in [the roadmap](docs/arkilab/ROADMAP.md). Real-device verification has been reported by the user; specific pass/fail evidence remains to be filed.
+- Define the planned **0.3.0-rc.1** feature freeze and acceptance tests in [the roadmap](docs/orkilab/ROADMAP.md). Real-device verification has been reported by the user; specific pass/fail evidence remains to be filed.
 - Released at [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1), commit `3d7dde0ce19d1937320cd2517523a5b36860b098`, with successful Windows/Linux foundation and RC CI. Model compatibility, unsupported ComfyUI custom nodes, complete trainer modern-view migration and final installer testing remain outside this candidate's guaranteed scope.
 
 ## Unreleased — Workspace and ComfyUI development (2026-11-20)
@@ -56,7 +56,7 @@ The release metadata is updated on the release-preparation branch; the GitHub ta
 - Add sequential LoRA strength comparison for standard loader nodes and an integrated workflow picker with compatibility hints.
 - Add read-only GPU Manager using NVIDIA telemetry, automatic visible-page refresh, VRAM warnings and training-activity hints.
 - Extend interface translations to the new modules. Full translations of custom-node inputs are not guaranteed.
-- Document feature workflows, code map and validation limitations in [Workspace feature guide](docs/arkilab/WORKSPACE_FEATURES.md).
+- Document feature workflows, code map and validation limitations in [Workspace feature guide](docs/orkilab/WORKSPACE_FEATURES.md).
 
 **Historical development note:** the previous candidate was `0.2.0-rc.1`. The 0.3.0-rc.1 prerelease is published but is not a production-stable or universally compatible release.
 

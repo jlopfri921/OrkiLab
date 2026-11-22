@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions
-title ArkiLab - LoRA Trainer Studio Launcher
+title OrkiLab - LoRA Trainer Studio Launcher
 cd /d "%~dp0"
 set "PYTHON_EXE=%~dp0venv\Scripts\python.exe"
 :: LORALAB_PYTHON: el python de tu propio entorno (conda, uv...) en lugar del venv / your own environment's python instead of the venv

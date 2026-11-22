@@ -8,7 +8,7 @@ Launcher Flask server serves HTML/JS and assets, GPU/network settings, queue and
 Data flow: image + caption -> pre-cache text embeddings/latents -> trainer -> checkpoint/preview -> export safetensors. Launcher queues jobs; trainer ports start at 5000 and can increase.
 
 ## Target
-Add arkilab/core, integrations, datasets, library and benchmark as independent Python modules behind adapters. First introduce a read-only project/model catalog and registry. Define typed versioned contracts before any unified UI. SQLite for index only; paths and model files remain source of truth. Separate API, services, storage, GPU coordination and frontend. No new framework in Foundation.
+Add orkilab/core, integrations, datasets, library and benchmark as independent Python modules behind adapters. First introduce a read-only project/model catalog and registry. Define typed versioned contracts before any unified UI. SQLite for index only; paths and model files remain source of truth. Separate API, services, storage, GPU coordination and frontend. No new framework in Foundation.
 
 ## Boundaries
 Never invoke GPU jobs through import side effects; use existing queue contract. Avoid shared Python environment with ComfyUI. Preserve existing filenames, settings and LoRA exports. Multi-GPU scheduling is future work. See roadmap for acceptance gates.

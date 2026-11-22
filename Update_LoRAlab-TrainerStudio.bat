@@ -1,13 +1,13 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
-title ArkiLab - LoRA Trainer Studio Updater
+title OrkiLab - LoRA Trainer Studio Updater
 color 0B
 
 cd /d "%~dp0"
 
 echo ================================================================
-echo   ARKILAB - LORA TRAINER STUDIO UPDATER
+echo   ORKILAB - LORA TRAINER STUDIO UPDATER
 echo   [EN] Repository Update Utility
 echo   [ES] Utilidad de Actualizacion del Repositorio
 echo ================================================================

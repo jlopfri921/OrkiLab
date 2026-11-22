@@ -31,7 +31,7 @@
 1. Verify current `main` SHA and rerun appropriate GitHub Actions Windows/Linux foundation and release checks on the exact candidate SHA; collect statuses and skipped cases.
 2. Record at least one supported ComfyUI workflow/model and the exact trainer/engine and actual depth of dataset handoff/training acceptance. Until named, describe both as *one operator-tested local configuration*, not broadly supported.
 3. Review the risk-sensitive cases not explicitly included in 7/7: source preservation/upgrade and rollback, synthetic provenance, permissions/local-only boundaries, cancellation and non-destructive repeat export, and blocking regressions. Use existing CI evidence where applicable; perform on-device tests if the risk remains unverified.
-4. Update `VERSION_ARKILAB`, launcher metadata, README, changelog, compatibility/limitations matrix and release notes in a subsequent **release-preparation PR** after candidate agreement; verify cross-file version consistency.
+4. Update `VERSION_ORKILAB`, launcher metadata, README, changelog, compatibility/limitations matrix and release notes in a subsequent **release-preparation PR** after candidate agreement; verify cross-file version consistency.
 5. Publish a `v0.5.0` tag and stable GitHub Release **only** after the candidate SHA passes release checks and blocking findings are resolved.
 
 ## Source changes

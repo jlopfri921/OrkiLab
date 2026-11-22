@@ -78,4 +78,4 @@ Current support: `LoraLoader` and `LoraLoaderModelOnly` with editable `strength_
 | Bridge frontend | `integrations/orkilab_bridge/js/bridge.js` |
 | Localization | `GUI/locales/` |
 
-See also [roadmap](ROADMAP.md), [changelog](../../CHANGELOG_ARKILAB.md) and [repository README](../../README.md).
+See also [roadmap](ROADMAP.md), [changelog](../../CHANGELOG_ORKILAB.md) and [repository README](../../README.md).

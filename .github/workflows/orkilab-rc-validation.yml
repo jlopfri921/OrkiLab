@@ -40,8 +40,8 @@ jobs:
         run: |
           import json
           from pathlib import Path
-          version = Path('VERSION_ARKILAB').read_text(encoding='utf-8').strip()
+          version = Path('VERSION_ORKILAB').read_text(encoding='utf-8').strip()
           launcher = json.loads(Path('GUI/launcher.json').read_text(encoding='utf-8'))
-          assert launcher['arkilab_version'] == version, (launcher['arkilab_version'], version)
+          assert launcher['orkilab_version'] == version, (launcher['orkilab_version'], version)
           assert all(t['id'] and t['run'] for t in launcher['trainers'])
           print(f'Version metadata consistent: {version}')
