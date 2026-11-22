@@ -87,6 +87,18 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('Los textos y el archivo se procesan exclusivamente en este navegador', self.benchmark)
         self.assertIn('Este navegador no admite SHA-256 local mediante Web Crypto', self.benchmark)
 
+    def test_b9_10_closure_table_is_in_integrated_bilingual_ui(self):
+        self.assertIn('id="b9-closure-rows"', self.benchmark)
+        self.assertIn('report.b9_closure||{}', self.benchmark)
+        self.assertIn('Estado de validación B9', self.benchmark)
+        self.assertIn('B9 verification status', self.benchmark)
+        self.assertIn('b9Check_hardware_and_cache_attestation', self.benchmark)
+
+    def test_b9_10_does_not_claim_ranking_or_equal_conditions(self):
+        self.assertIn('no demuestran igualdad de condiciones', self.benchmark)
+        self.assertIn('Validación completa pendiente', self.benchmark)
+        self.assertIn('Solo constancia documental', self.benchmark)
+
     def test_b9_9_local_history_table_is_bilingual_and_read_only(self):
         self.assertIn('id="saved-history-rows"', self.benchmark)
         self.assertIn('report.saved_history_consistency?.variants', self.benchmark)
