@@ -40,6 +40,13 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertNotIn('location.pathname.replace(/\\\\/$/', self.workspace)
         self.assertIn('location.pathname.replace(/\\/$/', self.workspace)
 
+    def test_confirmed_lost_accent_run_name_is_repaired_only_on_display(self):
+        # The original ? cannot be reconstructed generically: only a known
+        # exact legacy phrase is corrected; database values stay untouched.
+        self.assertIn('vinculaci\\?n autom\\?tica/gi', self.benchmark)
+        self.assertIn('"Vinculación automática"', self.benchmark)
+        self.assertIn('const corrected=text.replace(', self.benchmark)
+
     def test_run_picker_repairs_only_displayed_legacy_encoding(self):
         self.assertIn('function readableName(value)', self.benchmark)
         self.assertIn('new TextDecoder("utf-8",{fatal:true})', self.benchmark)
