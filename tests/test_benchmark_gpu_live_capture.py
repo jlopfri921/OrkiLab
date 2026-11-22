@@ -4,6 +4,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -21,7 +22,7 @@ class LiveCaptureTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.db = folder / "generations.sqlite3"
-        with sqlite3.connect(self.db) as con:
+        with closing(sqlite3.connect(self.db)) as con, con:
             con.execute("CREATE TABLE generations (id TEXT, prompt_id TEXT, state TEXT, url TEXT)")
             con.execute("INSERT INTO generations VALUES (?,?,?,?)",
                         ("gen", "prompt-1", "running", "http://127.0.0.1:8188"))
@@ -84,7 +85,7 @@ class LiveCaptureTests(unittest.TestCase):
         self.assertFalse(result["window_supported_by_server_events"])
 
     def test_terminal_job_refused_before_polling(self):
-        with sqlite3.connect(self.db) as con:
+        with closing(sqlite3.connect(self.db)) as con, con:
             con.execute("UPDATE generations SET state='completed'")
         with self.assertRaises(ValueError):
             observe(self.base, "gen", gpu_uuid="GPU-test",
