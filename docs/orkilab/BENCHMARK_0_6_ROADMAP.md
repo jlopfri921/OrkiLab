@@ -813,7 +813,7 @@ The operator confirmed **`tok`** for B10.2: record the prior **246 benchmark tes
 
 The bilingual integrated section **«Ejecución controlada de variantes (B10.3)»** includes activation, variant select, repetition select, explicit prepare, separate send confirmation, and a visible generation/binding receipt. It has a fixed single-action shape, never hidden queue activity.
 
-**Seven new regressions:** 3 Flask end-to-end tests using a mocked ComfyUI (single-variant exact graph and binding, wrong-token target rejection, remote/project/repetition denial); 2 explicit activation route tests; 2 UI integration tests. **253 benchmark tests expected** (246 operator-accepted B10.2 + 7 added), pending Windows/browser acceptance. B10.3 changes the runtime with an *explicit* consented generation path; do not run a real GPU test involuntarily. PR #104 remains open/unmerged. Per-workflow error catalogue remains deferred.
+**Eight new regressions:** 4 Flask end-to-end tests using a mocked ComfyUI (single-variant exact graph and binding, wrong-token target rejection, remote/project/repetition denial); 2 explicit activation route tests; 2 UI integration tests. **253 benchmark tests expected** (246 operator-accepted B10.2 + 7 added), pending Windows/browser acceptance. B10.3 changes the runtime with an *explicit* consented generation path; do not run a real GPU test involuntarily. PR #104 remains open/unmerged. Per-workflow error catalogue remains deferred.
 
 ```powershell
 git pull --ff-only
