@@ -87,6 +87,18 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('Los textos y el archivo se procesan exclusivamente en este navegador', self.benchmark)
         self.assertIn('Este navegador no admite SHA-256 local mediante Web Crypto', self.benchmark)
 
+    def test_b10_4_pairwise_report_displays_actual_measures_without_rank(self):
+        self.assertIn('id="b104-rows"', self.benchmark)
+        self.assertIn('report.b10_results?.pairs', self.benchmark)
+        self.assertIn('Diferencias observadas entre variantes (B10.4)', self.benchmark)
+        self.assertIn('Observed variant differences (B10.4)', self.benchmark)
+
+    def test_b10_4_uncertainty_and_missing_measures_are_visible(self):
+        self.assertIn('no pruebas de velocidad', self.benchmark)
+        self.assertIn('Un valor negativo no acredita que B sea más rápido', self.benchmark)
+        self.assertIn('b104Missing:"Sin mediciones suficientes"', self.benchmark)
+        self.assertIn('b104Blocked:"Hay incompatibilidades', self.benchmark)
+
     def test_b10_3_two_stage_explicit_confirmed_generation_ui(self):
         self.assertIn('id="b10-start"', self.benchmark)
         self.assertIn('id="b10-prepare"', self.benchmark)
