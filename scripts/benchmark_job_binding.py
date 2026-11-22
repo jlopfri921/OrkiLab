@@ -81,7 +81,12 @@ def persist_bound_generation(store: BenchmarkStore, *, project_id: str,
         # Provenance lives in the immutable observation snapshot; this is
         # not a poll interval, queue wait or inferred hardware measurement.
         proposal["duration_ms"] = timing["duration_ms"]
+        proposal["source_snapshot"]["duration_ms"] = timing["duration_ms"]
         proposal["source_snapshot"]["execution_timing"] = timing
+        proposal["source_snapshot"]["limitations"] = (
+            "Execution duration uses exact ComfyUI start/success server events. "
+            "No peak VRAM, seed or output hash has been measured."
+        )
     return store.record(
         bound["run_id"], bound["variant_id"], bound["repetition"], proposal["status"],
         seed=proposal["seed"], duration_ms=proposal["duration_ms"],
