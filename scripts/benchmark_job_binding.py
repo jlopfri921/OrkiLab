@@ -79,3 +79,36 @@ def persist_bound_generation(store: BenchmarkStore, *, project_id: str,
         output_sha256=proposal["output_sha256"], error_message=proposal["error_message"],
         source_snapshot=proposal["source_snapshot"],
     )
+
+
+def preflight_submission_binding(
+    store: BenchmarkStore, *, project_id: str, run_id: str,
+    variant_id: str, repetition: int,
+) -> None:
+    """Validate an optional benchmark target BEFORE sending ComfyUI a job.
+
+    This function has no side effects and cannot reserve a unique generation
+    token, which is only known after a successful ComfyUI response.
+    """
+    if not isinstance(project_id, str) or not project_id:
+        raise PermissionError("Authorized project required")
+    if any(not isinstance(x, str) or not 0 < len(x) <= 200
+           for x in (run_id, variant_id)):
+        raise ValueError("Invalid benchmark reference")
+    if type(repetition) is not int or repetition < 0:
+        raise ValueError("Invalid repetition")
+    row = store.db.execute(
+        """SELECT r.project_id, r.state, v.run_id AS variant_run
+           FROM benchmark_runs r JOIN benchmark_variants v ON v.id=?
+           WHERE r.id=?""", (variant_id, run_id)
+    ).fetchone()
+    if row is None or row["project_id"] != project_id:
+        raise PermissionError("Benchmark does not belong to authorized project")
+    if row["state"] != "running" or row["variant_run"] != run_id:
+        raise ValueError("Benchmark is not active or variant mismatch")
+    existing = store.db.execute(
+        """SELECT 1 FROM benchmark_generation_bindings
+           WHERE variant_id=? AND repetition=?""", (variant_id, repetition)
+    ).fetchone()
+    if existing:
+        raise ValueError("Benchmark repetition already bound")
