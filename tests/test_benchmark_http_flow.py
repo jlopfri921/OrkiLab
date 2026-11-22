@@ -455,5 +455,65 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(len(self.submitted_requests), 0)
 
+
+    def test_opt_in_monitor_reports_real_completion_from_mocked_observer(self):
+        import benchmark_gpu_live_capture
+        class InlineThread:
+            def __init__(self, *, target, args, **kwargs):
+                self.target, self.args = target, args
+            def start(self):
+                self.target(*self.args)
+        payload = {
+            "workflow_id": "workflow-1", "confirm": True,
+            "token": self.prepare(),
+            "gpu_monitor": {"confirm": True, "gpu_uuid": "GPU-test",
+                            "samples": 5, "interval": 0.3},
+        }
+        fake_report = {
+            "ok": True, "termination": "completed_history",
+            "max_observed_global_used_bytes": 9000,
+            "sample_count_in_window": 2,
+        }
+        with patch.object(generation_studio.threading, "Thread", InlineThread), \
+             patch.object(benchmark_gpu_live_capture, "observe",
+                          return_value=fake_report) as monitor:
+            response = self.client.post("/api/workspace/generation", json=payload)
+        self.assertEqual(response.status_code, 201, response.get_json())
+        generation_id = response.get_json()["id"]
+        report = self.client.get("/api/workspace/generation/" +
+                                 generation_id + "/gpu-monitor").get_json()
+        self.assertEqual(report["state"], "completed")
+        self.assertEqual(report["max_observed_global_used_bytes"], 9000)
+        self.assertIsNone(report["peak_vram_bytes"])
+        self.assertFalse(report["attributable_to_generation"])
+        self.assertEqual(monitor.call_args.kwargs["gpu_uuid"], "GPU-test")
+        self.assertEqual(self.observations(), [])
+
+    def test_truncated_monitor_does_not_claim_completion(self):
+        import benchmark_gpu_live_capture
+        class InlineThread:
+            def __init__(self, *, target, args, **kwargs):
+                self.target, self.args = target, args
+            def start(self):
+                self.target(*self.args)
+        payload = {
+            "workflow_id": "workflow-1", "confirm": True,
+            "token": self.prepare(),
+            "gpu_monitor": {"confirm": True, "gpu_uuid": "GPU-test",
+                            "samples": 5, "interval": 0.3},
+        }
+        with patch.object(generation_studio.threading, "Thread", InlineThread), \
+             patch.object(benchmark_gpu_live_capture, "observe", return_value={
+                 "ok": True, "termination": "sample_limit",
+                 "sampling_ended_before_confirmed_terminal": True,
+             }):
+            response = self.client.post("/api/workspace/generation", json=payload)
+        self.assertEqual(response.status_code, 201, response.get_json())
+        report = self.client.get("/api/workspace/generation/" +
+                                 response.get_json()["id"] + "/gpu-monitor").get_json()
+        self.assertEqual(report["state"], "partial")
+        self.assertIsNone(report["peak_vram_bytes"])
+
+
 if __name__ == "__main__":
     unittest.main()
