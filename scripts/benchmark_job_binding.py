@@ -47,7 +47,7 @@ def bind_submitted_generation(
 
 
 def persist_bound_generation(store: BenchmarkStore, *, project_id: str,
-                             generation_record: dict, *,
+                             generation_record: dict,
                              execution_entry: dict | None = None) -> str:
     """Persist a terminal history record only if previously bound.
 
