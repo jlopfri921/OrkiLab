@@ -249,7 +249,11 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         import json
         from unittest.mock import patch
         self.fill()
-        protocol = {"schema":"orkilab-repro-v1","vary":"lora","workflow_id":"wf1"}
+        protocol = {"schema":"orkilab-repro-v1","vary":"lora","workflow_id":"wf1",
+                    "prompt_sha256":"a"*64,"negative_prompt_sha256":"b"*64,
+                    "input_sha256":"c"*64,"gpu_uuid":"GPU-123",
+                    "cache":"cold","seed_policy":"fixed",
+                    "repetitions":2,"resolution":[1024,1024]}
         with closing(sqlite3.connect(self.db)) as con, con:
             con.execute("UPDATE benchmark_runs SET protocol_json=? WHERE id='run-a'",
                         (json.dumps(protocol),))
@@ -285,6 +289,24 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertEqual(self.db.read_bytes(),before)
         fetch.assert_called_once_with("http://127.0.0.1:8188",
             "/object_info/LoraLoader",max_bytes=500_000,timeout=5)
+
+    def test_b10_2_incomplete_declaration_denied_without_comfyui_query(self):
+        import json
+        from unittest.mock import patch
+        self.fill()
+        with closing(sqlite3.connect(self.db)) as con, con:
+            con.execute(
+                "UPDATE benchmark_runs SET protocol_json=? WHERE id='run-a'",
+                (json.dumps({"schema":"orkilab-repro-v1","vary":"lora",
+                             "workflow_id":"wf1"}),),
+            )
+        with patch("comfyui_connect.get_json") as fetch:
+            response = self.client.get(
+                "/api/workspace/benchmark/model-check?project_id=project-a&run_id=run-a"
+            )
+            self.assertEqual(response.status_code, 409, response.get_json())
+            self.assertFalse(response.get_json()["comparison_execution_authorized"])
+            fetch.assert_not_called()
 
     def test_b10_2_denies_remote_and_cross_project_without_network(self):
         from unittest.mock import patch
