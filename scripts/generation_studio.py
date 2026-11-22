@@ -162,6 +162,8 @@ def register(app, base):
             return jsonify(error="ComfyUI is disabled in native mode"), 409
         try:
             with lock:
+                if body["token"] in guided_targets:
+                    return jsonify(error="Guided benchmark tokens cannot be modified"), 409
                 item = prepared.get(body["token"])
                 if not item or time.monotonic() - item[0] > 1800 or item[2] != cfg["url"]:
                     return jsonify(error="Prepare workflow before generating"), 409
@@ -193,6 +195,8 @@ def register(app, base):
             return jsonify(error="ComfyUI is disabled in native mode"),409
         try:
             with lock:
+                if body["token"] in guided_targets:
+                    return jsonify(error="Guided benchmark tokens cannot be modified"), 409
                 item = prepared.get(body["token"])
                 if not item or time.monotonic()-item[0]>1800 or item[2]!=cfg["url"]:
                     return jsonify(error="Prepare workflow before generating"),409
@@ -249,6 +253,8 @@ def register(app, base):
             if not all(name in {x["name"] for x in discovered["checkpoints"]} for name in names):
                 return jsonify(error="One or more checkpoints are missing from the project outputs"), 409
             with lock:
+                if token in guided_targets:
+                    return jsonify(error="Guided benchmark tokens cannot be modified"), 409
                 item = prepared.get(token)
                 if not item or time.monotonic()-item[0]>1800 or item[2]!=cfg["url"]:
                     return jsonify(error="Prepare workflow before generating"),409
