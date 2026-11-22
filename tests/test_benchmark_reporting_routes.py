@@ -245,6 +245,49 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertNotIn("graph", str(check))
         self.assertNotIn("prompt-1", str(check))
 
+    def test_b10_3_activation_requires_explicit_complete_protocol(self):
+        import json
+        self.fill()
+        self.create_active_project_fixture()
+        protocol={
+            "schema":"orkilab-repro-v1","vary":"lora","workflow_id":"wf1",
+            "prompt_sha256":"a"*64,"negative_prompt_sha256":"b"*64,
+            "input_sha256":"c"*64,"gpu_uuid":"GPU-test","cache":"cold",
+            "seed_policy":"fixed","repetitions":2,"resolution":[1024,1024],
+        }
+        with closing(sqlite3.connect(self.db)) as con,con:
+            con.execute("UPDATE benchmark_runs SET state='draft', protocol_json=? "
+                        "WHERE id='run-a'",(json.dumps(protocol),))
+            con.execute("UPDATE benchmark_variants SET config_json=? WHERE id='variant-a'",
+                        (json.dumps({"controlled_value":"a.safetensors"}),))
+            con.execute("INSERT INTO benchmark_variants VALUES (?,?,?,?)",
+                        ("variant-b","run-a","Variant B",
+                         json.dumps({"controlled_value":"b.safetensors"})))
+        payload={"project_id":"project-a","run_id":"run-a","confirm":True}
+        self.assertEqual(self.client.post(
+            "/api/workspace/benchmark/start",json={**payload,"confirm":False}
+        ).status_code,400)
+        ok=self.client.post("/api/workspace/benchmark/start",json=payload)
+        self.assertEqual(ok.status_code,200,ok.get_json())
+        self.assertEqual(ok.get_json()["state"],"running")
+        self.assertFalse(ok.get_json()["generation_submitted"])
+        self.assertEqual(self.client.post(
+            "/api/workspace/benchmark/start",json=payload
+        ).status_code,409)
+
+    def test_b10_3_activation_denies_remote_and_cross_project(self):
+        self.fill()
+        self.create_active_project_fixture()
+        payload={"project_id":"project-a","run_id":"run-a","confirm":True}
+        self.assertEqual(self.client.post(
+            "/api/workspace/benchmark/start",json=payload,
+            environ_overrides={"REMOTE_ADDR":"198.51.100.55"}
+        ).status_code,403)
+        self.assertEqual(self.client.post(
+            "/api/workspace/benchmark/start",
+            json={**payload,"project_id":"project-archived"}
+        ).status_code,404)
+
     def test_b10_2_node_choices_are_explicit_read_only_and_project_bound(self):
         import json
         from unittest.mock import patch
