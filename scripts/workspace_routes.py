@@ -91,7 +91,7 @@ def register(app, base, load_config):
         disk = shutil.disk_usage(base)
         return jsonify({"engines": load_config()["trainers"],
                         "memory": memory, "disk": {"total": disk.total, "free": disk.free},
-                        "version": load_config().get("arkilab_version", "development")})
+                        "version": load_config().get("orkilab_version", "development")})
 
     @app.route("/api/workspace/projects", methods=["GET", "POST"])
     def workspace_projects():

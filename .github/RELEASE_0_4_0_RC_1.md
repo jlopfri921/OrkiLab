@@ -22,6 +22,6 @@
 - General per-engine dataset profiles and reproducible train/validation split are not yet certified. The 0.4.0 stable release remains gated.
 - Original images, `.safetensors` and workflows are intended to remain untouched; prepare backups of `settings/orkilab/` and your datasets before upgrading.
 
-See [0.4 release acceptance](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/blob/main/docs/arkilab/RC_0_4_0_READINESS.md) and [0.5 Multiview Studio roadmap](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/blob/main/docs/arkilab/MULTIVIEW_0_5_ROADMAP.md).
+See [0.4 release acceptance](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/blob/main/docs/orkilab/RC_0_4_0_READINESS.md) and [0.5 Multiview Studio roadmap](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/blob/main/docs/orkilab/MULTIVIEW_0_5_ROADMAP.md).
 
 **Install/update:** `git switch main && git pull origin main` or use the prerelease tag. This is a source-code prerelease, not a packaged installer.

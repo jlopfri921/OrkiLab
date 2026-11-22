@@ -17,12 +17,12 @@ class BrandingTests(unittest.TestCase):
     def test_branding(self):
         html = (ROOT / "GUI/launcher.html").read_text(encoding="utf-8")
         cfg = json.loads((ROOT / "GUI/launcher.json").read_text(encoding="utf-8"))
-        version = (ROOT / "VERSION_ARKILAB").read_text().strip()
-        self.assertEqual(cfg["arkilab_version"], version)
+        version = (ROOT / "VERSION_ORKILAB").read_text().strip()
+        self.assertEqual(cfg["orkilab_version"], version)
         self.assertIn(version, (ROOT / "README.md").read_text(encoding="utf-8"))
         self.assertIn("orkilab-version", html)
-        for name in ("arkilab-icon.svg", "arkilab-logo-dark.svg", "arkilab-logo-light.svg"):
-            path = ROOT / "assets/arkilab" / name
+        for name in ("orkilab-icon.svg", "orkilab-logo-dark.svg", "orkilab-logo-light.svg"):
+            path = ROOT / "assets/orkilab" / name
             self.assertTrue(ET.parse(path).getroot().tag.endswith("svg"))
         self.assertIn("/assets/orkilab/orkilab-icon.svg", html)
         self.assertIn("/assets/orkilab/orkilab-logo-dark.svg", html)

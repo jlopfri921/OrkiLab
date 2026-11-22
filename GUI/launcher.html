@@ -679,7 +679,7 @@
             fillGpus();
             cfg = await (await fetch('/launcher.json')).json();
             document.title = cfg.title || document.title;
-            document.getElementById('orkilab-version').textContent = cfg.arkilab_version || 'development';
+            document.getElementById('orkilab-version').textContent = cfg.orkilab_version || 'development';
             document.getElementById('title').alt = cfg.title || '';
             const scale = parseFloat(cfg.image_scale) || 0.2;
 

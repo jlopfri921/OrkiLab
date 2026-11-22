@@ -35,7 +35,7 @@ class BrandAudit(unittest.TestCase):
             for number, line in enumerate(data.splitlines(), 1):
                 if OLD in line.lower():
                     report.append(f"{rel}:{number}: {line.strip()[:220]}")
-        self.assertEqual(report, [], "Obsolete Arkilab references (including filenames):\n" +
+        self.assertEqual(report, [], "Obsolete OrkiLab references (including filenames):\n" +
                          "\n".join(report[:500]) +
                          ("\n[truncated]" if len(report) > 500 else ""))
 

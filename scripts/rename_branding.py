@@ -1,4 +1,4 @@
-"""One-time, tracked-file-only ArkiLab -> OrkiLab rename for the source tree.
+"""One-time, tracked-file-only OrkiLab -> OrkiLab rename for the source tree.
 
 Usage: python scripts/rename_branding.py --apply
 This intentionally does not rewrite Git history, local user data or binary blobs.

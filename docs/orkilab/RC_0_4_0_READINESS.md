@@ -14,7 +14,7 @@ This register distinguishes automated evidence, user-reported tests, and hardwar
 
 | Area | Gate | Status at preparation | Evidence/next action |
 |---|---|---|---|
-| Version consistency | `VERSION_ARKILAB`, `GUI/launcher.json`, README badge | PASS CI | Version consistency passed on candidate commit; repeat on final evidence commit |
+| Version consistency | `VERSION_ORKILAB`, `GUI/launcher.json`, README badge | PASS CI | Version consistency passed on candidate commit; repeat on final evidence commit |
 | Import safety | Original image/caption/LoRA and unrelated model files untouched | PASS CI | Run fixture tests, then Windows test with backup |
 | Core regression | Full Python test suite, JS syntax, release metadata | PASS CI | GitHub Actions (Windows + Ubuntu, Python 3.13) |
 | Project & curated LoRA | Checkpoint ratings, Best/Final, persistence and image reference | REPORTED | Operator reported OrkiLab functioning; repeat the relevant cases on candidate |

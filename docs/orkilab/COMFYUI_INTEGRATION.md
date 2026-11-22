@@ -1,6 +1,6 @@
 # ComfyUI integration — proposed contract
 
-Existing export: Send to Models copies LoRA to selected models/loras folder; export path shared across trainers, metadata embedded. Preserve it. New adapter must run in ArkiLab environment, not install into ComfyUI.
+Existing export: Send to Models copies LoRA to selected models/loras folder; export path shared across trainers, metadata embedded. Preserve it. New adapter must run in OrkiLab environment, not install into ComfyUI.
 
 Config: default http://127.0.0.1:8188; explicit opt-in for LAN URL. Read-only health/inventory candidates: GET /system_stats, /object_info, /queue, /history/{prompt_id}. Validate exact node class and model names before generating API-format workflow. Submit only on explicit user action via POST /prompt; track prompt_id, use /ws or polling; retrieve output only through supported endpoints. Confirm against actual ComfyUI version before implementation. No arbitrary URL fetching from untrusted workflows.
 

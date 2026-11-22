@@ -2,7 +2,7 @@
 
 **Date:** 2026-11-21  
 **Status:** NOT READY TO TAG. This is a release-candidate readiness record, not release notes or a declaration of acceptance.  
-**Version in published main at initial review:** `VERSION_ARKILAB = 0.2.0-rc.1`. **This release candidate branch proposes `0.3.0-rc.1`; it is not yet tagged or released.**  
+**Version in published main at initial review:** `VERSION_ORKILAB = 0.2.0-rc.1`. **This release candidate branch proposes `0.3.0-rc.1`; it is not yet tagged or released.**  
 **Baseline:** refreshed from `main` after CI PR #39 and acceptance documentation PR #41. Record the exact candidate SHA before tagging.
 
 ## Rules for recording evidence
@@ -146,8 +146,8 @@ Then follow the step-by-step [GPU/Generation acceptance matrix](GPU_GENERATION_A
 ## Release procedure — only after PASS evidence
 
 1. Ensure no unresolved critical blocker; review `git status` on the candidate and confirm passing Windows/Linux CI, browser and on-device tests.
-2. Update `VERSION_ARKILAB`, `GUI/launcher.json`, the README version badge and any other canonical version references **in one release PR**, avoiding inconsistent version strings.
-3. Update `CHANGELOG_ARKILAB.md`, README's development/test caveats and `GPU_GENERATION_ACCEPTANCE.md` to reflect actual evidence; document limitations explicitly.
+2. Update `VERSION_ORKILAB`, `GUI/launcher.json`, the README version badge and any other canonical version references **in one release PR**, avoiding inconsistent version strings.
+3. Update `CHANGELOG_ORKILAB.md`, README's development/test caveats and `GPU_GENERATION_ACCEPTANCE.md` to reflect actual evidence; document limitations explicitly.
 4. Merge reviewed release PR into `main`, confirm checks on exact release commit, and create Git tag `v0.3.0-rc.1` **pointing to that commit**.
 5. Publish a GitHub prerelease with installation/update and rollback instructions, supported workflow examples, known issues and links to the evidence.
 6. Retain prior candidate as rollback option; do not force-reset or overwrite datasets, workflows, settings or outputs.
