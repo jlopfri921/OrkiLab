@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from benchmark_execution_timing import measured_execution_timing
+from benchmark_execution_timing import measured_execution_timing, sampler_cache_assessment
 
 
 class ExecutionTimingTests(unittest.TestCase):
@@ -23,6 +23,43 @@ class ExecutionTimingTests(unittest.TestCase):
         self.assertEqual(result["duration_ms"], 2345)
         self.assertFalse(result["includes_queue_wait"])
         self.assertEqual(result["source"], "comfyui_history_status_messages")
+
+    def test_sampler_cache_assessment_distinguishes_warm_sampler(self):
+        graph = {
+            "1": {"class_type": "UNETLoader", "inputs": {}},
+            "7": {"class_type": "KSampler", "inputs": {"seed": 43}},
+            "9": {"class_type": "SaveImage", "inputs": {}},
+        }
+        cached_loaders = self.entry([
+            self.event("execution_start", 1_800_000_000_000),
+            ["execution_cached", {"prompt_id": "prompt-a", "nodes": ["1"]}],
+            self.event("execution_success", 1_800_000_013_622),
+        ])
+        evidence = sampler_cache_assessment(graph, cached_loaders, "prompt-a")
+        self.assertEqual(evidence["sampler_node_ids"], ["7"])
+        self.assertEqual(evidence["sampler_cached_node_ids"], [])
+        self.assertEqual(evidence["comparability"], "sampler_cache_miss_partial_cache")
+        self.assertFalse(evidence["full_inference_verified"])
+        cached_sampler = self.entry([
+            ["execution_cached", {"prompt_id": "prompt-a", "nodes": ["1", "7"]}],
+        ])
+        self.assertEqual(
+            sampler_cache_assessment(graph, cached_sampler, "prompt-a")["comparability"],
+            "sampler_cached_not_comparable",
+        )
+
+    def test_unknown_sampler_and_other_prompt_are_not_misclassified(self):
+        graph = {"7": {"class_type": "CustomSampler", "inputs": {}}}
+        entry = self.entry([
+            ["execution_cached", {"prompt_id": "prompt-a", "nodes": ["7"]}],
+        ])
+        self.assertEqual(sampler_cache_assessment(graph, entry, "prompt-a")["comparability"], "unverified")
+        graph["7"]["class_type"] = "KSampler"
+        self.assertEqual(
+            sampler_cache_assessment(graph, entry, "other-prompt")["comparability"],
+            "sampler_cache_unverified",
+        )
+        self.assertEqual(sampler_cache_assessment([], entry, "prompt-a")["comparability"], "unverified")
 
     def test_absent_events_return_none(self):
         self.assertIsNone(measured_execution_timing(self.entry([]), "prompt-a"))
