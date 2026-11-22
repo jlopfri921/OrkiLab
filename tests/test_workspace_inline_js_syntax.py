@@ -35,17 +35,16 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn("OrkiViewpointAI.mount(",html)
         self.assertIn("capture.id,api,refresh,capture",html)
 
-    def test_missing_view_preflight_before_reference_upload(self):
+    def test_missing_view_copy_before_workflow_validation(self):
         source=(ROOT/"assets"/"orkilab"/"multiview-generate-view.js").read_text(encoding="utf-8")
-        self.assertIn("function connectedImageInputs(p)",source)
-        self.assertIn("function editablePromptFields(p)",source)
-        self.assertIn("connectedImageInputs(inspected).length<ids.length",source)
-        self.assertIn("editablePromptFields(inspected).length",source)
-        stage=source.split("stage.onclick=async()=>{",1)[1].split("function makePrompt",1)[0]
-        self.assertLess(stage.index('const inspected=await post(api,"/api/workspace/generation/prepare"'),
-                        stage.index('const result=await post(api,u(originalProject,"/subjects/"+subjectId+"/reference-upload")'))
-        self.assertLess(stage.index('const result=await post(api,u(originalProject,"/subjects/"+subjectId+"/reference-upload")'),
-                        stage.index('const p=await post(api,"/api/workspace/generation/prepare"'))
+        self.assertIn('stage.onclick=async()=>{',source)
+        self.assertIn('prepareCopy.onclick=async()=>{',source)
+        self.assertIn('transfer_mode:mode',source)
+        copy=source.index('const result=await post(api,u(originalProject,"/subjects/"+subjectId+"/reference-upload")')
+        prep=source.index('const p=await post(api,"/api/workspace/generation/prepare"')
+        self.assertLess(copy,prep)
+        self.assertIn('"/api/workspace/multiview/comfyui-input/browse"',source)
+        self.assertIn('f.multiview_reference?.likely_compatible',source)
 
     @unittest.skipUnless(shutil.which("node"),"Node.js not installed")
     def test_missing_view_and_mode_help_scripts_compile(self):
@@ -129,17 +128,19 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
 
     def test_multiview_semi_automatic_input_upload_controls(self):
         source=(ROOT/"assets"/"orkilab"/"multiview-generate-view.js").read_text(encoding="utf-8")
-        self.assertIn('t("send")',source)
+        self.assertIn('t("copyPhotos")',source)
+        self.assertIn('t("prepareCopied")',source)
+        self.assertIn('inputPath.type="text"',source)
+        self.assertIn('t("browse")',source)
+        self.assertIn('transferMode.add(new Option(t("direct"),"folder"))',source)
         self.assertIn('mapMode.add(new Option(t("auto"),"auto"))',source)
         self.assertIn('mapMode.add(new Option(t("semi"),"semi"))',source)
         self.assertIn('mapMode.value==="auto"',source)
         self.assertIn('ComfyUI/input/',source)
         self.assertIn('transferTitle.hidden=false',source)
         self.assertIn('status(t("chooseNode"))',source)
-        self.assertIn('if(!window.confirm(t("confirmStage")))',source)
-        preflight=source.index('const inspected=await post(api,"/api/workspace/generation/prepare"')
-        upload=source.index('const result=await post(api,u(originalProject,"/subjects/"+subjectId+"/reference-upload")')
-        self.assertLess(preflight,upload)
+        self.assertIn('if(!window.confirm(t("confirmCopy")',source)
+        self.assertLess(source.index('stage.onclick=async()=>{'),source.index('prepareCopy.onclick=async()=>{'))
         for lang in ("es","en","pt","fr","de","it","ja","ko"):
             self.assertIn(' '+lang+':{',source)
 
