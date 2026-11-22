@@ -13,6 +13,8 @@
 
 # OrkiLab — LoRA Trainer Studio
 
+> **0.6.0 development — Benchmark Studio.** The B1–B10.5 engineering work is in [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104), **not yet merged or released**. B10.4 reports observed durations without ranking or verified GPU/cache equivalence. B10.5 adds an explicit release-readiness checklist and optional persistent **light/dark web theme** (Workspace, Benchmark, Queue, Dataset and shared-shell modules; individual trainer/browser acceptance pending). Read the [0.6.0 RC readiness plan](docs/orkilab/RC_0_6_0_READINESS.md) and [complete Benchmark roadmap](docs/orkilab/BENCHMARK_0_6_ROADMAP.md) before any candidate tag. The 0.5.0 version badge above is historical branch metadata until a fully approved release reconciliation; it does **not** denote a 0.6.0 release.
+
 Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, open-source and local-first workspace for adapting generative models with LoRA and connecting training, datasets and optional ComfyUI image-generation workflows. Workspace is the default interface. **Version v0.5.0-rc.1 is published as a GitHub prerelease; stable v0.5.0 remains pending final acceptance.** The preceding public prereleases are [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1) and [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1).
 
 ## OrkiLab 0.5.0-rc.1 — current release candidate
