@@ -46,6 +46,16 @@ CREATE TABLE IF NOT EXISTS benchmark_observations (
     recorded_at TEXT NOT NULL,
     UNIQUE(variant_id, repetition)
 );
+CREATE TABLE IF NOT EXISTS benchmark_generation_bindings (
+    generation_id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL REFERENCES benchmark_runs(id) ON DELETE RESTRICT,
+    variant_id TEXT NOT NULL REFERENCES benchmark_variants(id) ON DELETE RESTRICT,
+    repetition INTEGER NOT NULL CHECK(repetition >= 0),
+    workflow_id TEXT NOT NULL,
+    bound_at TEXT NOT NULL,
+    UNIQUE(variant_id, repetition)
+);
+CREATE INDEX IF NOT EXISTS idx_benchmark_bindings_run ON benchmark_generation_bindings(run_id);
 CREATE TABLE IF NOT EXISTS benchmark_generation_lineage (
     observation_id TEXT PRIMARY KEY REFERENCES benchmark_observations(id) ON DELETE RESTRICT,
     run_id TEXT NOT NULL REFERENCES benchmark_runs(id) ON DELETE RESTRICT,
