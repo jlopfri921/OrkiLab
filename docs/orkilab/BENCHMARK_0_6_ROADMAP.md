@@ -45,6 +45,25 @@ The operator reported `Ran 4 tests in 0.108s — OK` for `python -m unittest dis
 - This is a **pure read-only adapter**, not a live ComfyUI queue attachment, API route, automatic job tracker or permission boundary. An eventual API caller must validate project ownership and authorized local access.
 - Test with `python -m unittest discover -s tests -p "test_benchmark_generation_adapter.py" -v` on the alpha.1 feature branch. Results have **not yet been reported**.
 
+## 2026-11-22 — B4 reported PASS; B5 implementation pending operator tests
+
+**B4 — operator-reported Windows / Python 3.13:** `python -m unittest discover -s tests -p "test_benchmark_generation_import.py" -v` returned **3 tests, OK** (read-only lineage proposal, running job rejection, terminal failure mapping). This brings the operator-reported local checks to **12 total** (B1 + B2×4 + B3×4 + B4×3). No GPU benchmark has yet been run.
+
+**B5 — atomic lineage implementation on this feature branch (not yet validated):**
+
+- Existing SQLite store now creates `benchmark_generation_lineage` with each linked observation, storing the generation ID, graph fingerprint and factual source snapshot JSON.
+- Observation and lineage are inserted in **one SQLite transaction**. Unique generation ID within each run prevents duplicate import; transaction rollback must leave no orphan observation.
+- `persist_terminal_observation` requires an explicit `confirmed=True` and a matching `authorized_project_id`. The HTTP boundary must still independently enforce launcher-local and same-origin restrictions.
+- Read-only `prepare_terminal_observation` remains available, and unknown seed/VRAM/duration/output hashes remain `null`.
+- New `tests/test_benchmark_atomic_lineage.py` exercises restart/persistence, explicit approval/project scope, rollback, foreign-run prevention and terminal failure mapping. **Run locally before claiming B5 PASS.**
+- A future queue adapter must use an explicitly associated, verified Generation History entry. This helper must not search or import other projects' history automatically.
+
+**B5 test command:**
+```powershell
+git pull --ff-only
+python -m unittest discover -s tests -p "test_benchmark_atomic_lineage.py" -v
+```
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
