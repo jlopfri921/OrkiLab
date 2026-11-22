@@ -1,0 +1,73 @@
+/* OrkiLab 0.6: shared optional light theme, loaded AFTER existing page and app CSS.
+   Dark remains default and uses the original styles unchanged.
+   Scope light overrides to a root flag, including embedded Benchmark Studio. */
+:root[data-orki-theme="light"] {
+  color-scheme:light;
+  --bg:#f3f7fc;--panel:#ffffff;--text:#15233c;--muted:#4b5b72;
+  --accent:#086d75;--line:#ced9e8;--border:#ccd8e6;
+  --orki-bg:#f3f7fc;--orki-panel:#ffffff;--orki-border:#ccd8e6;
+  --orki-text:#15233c;--orki-muted:#4b5b72;--orki-accent:#086d75;
+  --bg-dark:#edf2f8;--panel-bg:#ffffff;--panel-border:#ccd8e6;
+  --text-main:#15233c;--text-muted:#4b5b72;
+  --orki-queue-bg:#f3f7fc;--orki-queue-panel:#ffffff;
+  --orki-queue-border:#ccd8e6;--orki-queue-text:#15233c;
+  --orki-queue-muted:#4b5b72;--orki-queue-glow:#087c8b;
+  --orki-app-bg:#f3f7fc;--orki-app-bg-deep:#eaf0f8;
+  --orki-app-panel:#ffffff;--orki-app-border:#ccd8e6;
+  --orki-app-text:#15233c;--orki-app-muted:#4b5b72;
+  --orki-app-accent:#086d75;
+  background:#f3f7fc;color:#15233c;
+}
+:root[data-orki-theme="light"] body,
+:root[data-orki-theme="light"] body.orki-queue-theme,
+:root[data-orki-theme="light"] body.orki-app-frame{
+  background:#f3f7fc!important;color:#15233c!important;
+}
+:root[data-orki-theme="light"] body header:not(.studio-local-heading),
+:root[data-orki-theme="light"] body.orki-app-frame .orki-app-header,
+:root[data-orki-theme="light"] body.orki-queue-theme header:not(.studio-local-heading){
+  background:#ffffff!important;color:#15233c!important;
+  border-color:#ccd8e6!important;
+}
+:root[data-orki-theme="light"] body :is(
+  .panel,.card,.metric,.project,.gpu-card,.hw-card,.studio-content>section,
+  article,.queue-panel,.orki-app-context,.orki-app-card
+){
+  background:#ffffff!important;color:#15233c!important;
+  border-color:#ccd8e6!important;box-shadow:0 4px 16px #223e5e12!important;
+}
+:root[data-orki-theme="light"] body :is(
+  button,input,select,textarea,nav a,nav button,summary
+){
+  color:#15233c;background:#f5f8fc;border-color:#bdccdd;
+}
+:root[data-orki-theme="light"] body :is(input,textarea)::placeholder{color:#61728a}
+:root[data-orki-theme="light"] body :is(.muted,.secondary,.hint,small,caption){
+  color:#4b5b72!important;
+}
+:root[data-orki-theme="light"] body :is(a,.link){color:#086d75}
+:root[data-orki-theme="light"] body :is(button.primary,button[type="submit"].primary){
+  background:#086d75;color:#ffffff;
+}
+:root[data-orki-theme="light"] body :is(table,th,td,tr){
+  color:#15233c;border-color:#ccd8e6;
+}
+:root[data-orki-theme="light"] body :is(th,thead tr){
+  background:#eaf1fa!important;
+}
+:root[data-orki-theme="light"] body :is(.alert,.notice,.status-message){
+  color:#273f5e;background:#eaf3fa;border-color:#c2d8e8;
+}
+:root[data-orki-theme="light"] #benchmark-frame{
+  background:#f3f7fc!important;
+}
+.orki-theme-toggle{
+  min-height:36px!important;padding:6px 10px!important;
+  border-radius:8px!important;border:1px solid #57758a!important;
+  font:inherit;cursor:pointer;white-space:nowrap;
+}
+:root[data-orki-theme="light"] .orki-theme-toggle{
+  background:#eaf1fa!important;color:#173a53!important;border-color:#aebfce!important;
+}
+.orki-theme-toggle:focus-visible{outline:2px solid #087f86;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.orki-theme-toggle{transition:none!important}}
