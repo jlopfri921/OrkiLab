@@ -547,3 +547,20 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 Restart OrkiLab launcher to load the new route, then navigate via **Workspace → Projects → Benchmark Studio** or directly to `http://127.0.0.1:4990/workspace/benchmark`. If no saved benchmark runs exist, an empty-state message is correct; never fabricate runs. The feature branch and draft PR #104 remain open. Next gates: clearer comparison protocol and comparability markers, controlled real execution evidence, tests/CI and RC review. The requested per-workflow error catalogue remains deferred.
+
+## B9.2 operator acceptance / B9.3 conservative comparability evidence (operator tests pending)
+
+The operator confirmed `todo ok` following B9.2 testing and UI walkthrough, recorded as **134/134 benchmark tests and first reports UI operator-reported PASS** (raw console output not attached in this turn). The next slice establishes a cautious, *explainable non-ranking* diagnostic, not a benchmark speed winner.
+
+B9.3 adds `scripts/benchmark_comparability.py` and integrates `assess_duration_comparability` into the existing local-only GET report. The endpoint now reads **only lineage for observations of the exact requested run** through SQLite `mode=ro`, filtering to a minimal internal set of workflow ID, submitted graph SHA-256 and ComfyUI execution-timing provenance. The public report exposes only per-variant status, measured/completed sample counts and coded reasons (no full prompts, graph, source images or raw lineage). The UI displays a new bilingual comparability table. A sampler **explicitly recorded as cached** or multiple differing workflow IDs *inside the same variant* trigger `blocked`; absent proof of hardware, seed, cache warmth and full inference remains `not_established` even when all observed times exist. A changed graph SHA within a variant is flagged as requiring review (may be a legitimate deliberate variable), never automatically called an error. **No variant is marked verified comparable, ranked or winner.** This is intentionally conservative until a future measurement protocol captures independently verified equivalence. Raw observation durations remain unchanged; global NVIDIA VRAM samples do not become job-level VRAM peaks.
+
+Eight new pure synthetic evidence tests and one Flask report integration test added; **143 total benchmark tests expected** after the operator-reported 134 baseline. No ComfyUI run is necessary for these tests.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_comparability.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart the OrkiLab launcher and open `http://127.0.0.1:4990/workspace/benchmark`. A new **Comparabilidad de resultados** section should appear for a selected stored run, with `No acreditada` or `Bloqueada` and specific reason codes. If no run is saved, there is correctly nothing to compare. Do not merge PR #104 or release 0.6.0 from B9.3 alone; pending: richer benchmarking protocol, explicit evidence approval, complete UI flow, CI/regression reviews and user acceptance. The workflow error catalog remains deferred by operator request.
