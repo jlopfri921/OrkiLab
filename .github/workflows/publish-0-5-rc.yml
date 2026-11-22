@@ -1,0 +1,89 @@
+name: Publish OrkiLab 0.5.0-rc.1 prerelease
+
+on:
+  workflow_run:
+    workflows: ["OrkiLab RC validation"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    # Only an explicitly dispatched main run or a successful *main push*
+    # validation from this repository may create the RC tag.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exactly the validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+      - name: Validate release candidate metadata and documentation
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          version = Path("VERSION_ORKILAB").read_text(encoding="utf-8").strip()
+          launcher = json.loads(Path("GUI/launcher.json").read_text(encoding="utf-8"))
+          assert version == "0.5.0-rc.1", version
+          assert launcher["orkilab_version"] == version
+          for required in (
+              "README.md", "CHANGELOG_ORKILAB.md",
+              "docs/orkilab/RC_0_5_0_READINESS.md",
+              "workflows/multiview/README.md",
+              ".github/RELEASE_0_5_0_RC_1.md",
+          ):
+              assert Path(required).is_file(), required
+          readme = Path("README.md").read_text(encoding="utf-8")
+          assert readme.count("## OrkiLab 0.5.0-rc.1") == 1
+          assert readme.index("## OrkiLab 0.5.0-rc.1") < readme.index("## OrkiLab 0.4.0-rc.1")
+          assert Path(".github/RELEASE_0_5_0_RC_1.md").read_text(encoding="utf-8").strip()
+          print("Release metadata and documentation verified:", version)
+      - name: Verify both CI workflows succeeded on candidate SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for workflow in "OrkiLab RC validation" "OrkiLab foundation checks"; do
+            if ! gh run list --repo "$GH_REPO" --workflow "$workflow" --commit "$RELEASE_SHA" --limit 20 \
+              --json event,status,conclusion,headSha \
+              --jq '[.[] | select(.event == "push" and .status == "completed" and .conclusion == "success")] | length' \
+              | grep -qx '[1-9][0-9]*'; then
+              echo "Missing successful main-push check for $workflow at $RELEASE_SHA"
+              exit 1
+            fi
+          done
+      - name: Publish source prerelease (no rewrite on rerun)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v0.5.0-rc.1"
+          if gh release view "$tag" --repo "$GH_REPO" >/dev/null 2>&1; then
+            existing="$(gh release view "$tag" --repo "$GH_REPO" --json targetCommitish --jq .targetCommitish)"
+            echo "Existing prerelease found (target: $existing); leaving untouched."
+            exit 0
+          fi
+          gh release create "$tag" \
+            --repo "$GH_REPO" \
+            --target "$RELEASE_SHA" \
+            --title "OrkiLab v0.5.0-rc.1" \
+            --notes-file .github/RELEASE_0_5_0_RC_1.md \
+            --prerelease
+          gh release view "$tag" --repo "$GH_REPO" --json isPrerelease,url,tagName
