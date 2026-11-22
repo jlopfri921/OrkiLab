@@ -18,6 +18,28 @@ Baseline: `main` carries stable 0.5.0 metadata; the feature branch now stages `0
 
 **Limitations that must remain visible:** verified full model weight bytes, input-file content and dynamic positive/negative prompt polarity, GPU equivalence, seeds and cold/warm cache are not attested by local histories. Real full inference, representative Desktop/Portable graph compatibility, VRAM-per-job and reliable experimental speed rankings require separate controlled testing. Never label the descriptive B10.4 differences as a benchmark winner. Original upstream MIT core and original OrkiLab Apache-2.0 contributions remain separately attributed; see `LICENSING.md`.
 
+## Main-to-feature reconciliation completed — 2026-11-22
+
+**Merged `main` into `feat/0.6-benchmark-core`** through true two-parent merge commit [`11134e78f9c4`](https://github.com/jlopfri921/OrkiLab/commit/11134e78f9c42b3f3d829d48ef2247afefdefc2c). Verified GitHub comparison now reports **0 behind `main`**. This did **not** merge the feature into `main` and did not create an RC tag or GitHub Release.
+
+Resolved mixed documentation/metadata deliberately: preserved `0.6.0-rc1` on the feature branch while retaining 0.5.0 stable operator H1–H7 signoff, guarded publisher workflow, updated stable-regression guards, historical phase ledger, original upstream MIT license and OrkiLab Apache-2.0 licensing notices. README, changelog and roadmap combine the complete stable-history content from `main` with the B1–B10.5 candidate description.
+
+**Regression evidence:** 288 benchmark tests were accepted by the operator **before** the merge. These must be rerun on the **new exact merge commit**, including `test_release_0_5_stable_guards.py` and the entire application suite. Never transfer a pre-merge test result automatically to the merged commit.
+
+At first CI inspection on exact merge SHA `11134e78f9c42b3f3d829d48ef2247afefdefc2c`, GitHub reported two workflows **in progress**: `OrkiLab foundation checks` (run 45071223625) and `OrkiLab RC validation` (run 45071223618). No passing result can be claimed until both are completed and verified.
+
+```powershell
+git remote set-url origin https://github.com/jlopfri921/OrkiLab.git
+git switch feat/0.6-benchmark-core
+git pull --ff-only
+git log -1 --oneline
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_release_0_5_stable_guards.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_*.py" -v
+```
+
+The full suite may contain tests requiring dependencies or infrastructure unavailable in the local environment; record any errors rather than assuming a PASS. Only independent acceptance and explicit maintainer authorization can allow the prerelease.
+
 ## RC1 staging progress — 2026-11-22
 
 - B10.5 **283 benchmark tests operator-reported PASS** after the operator's `tok`; no independently attached full-suite transcript.
