@@ -112,3 +112,39 @@ def preflight_submission_binding(
     ).fetchone()
     if existing:
         raise ValueError("Benchmark repetition already bound")
+
+
+def finalize_bound_history_generation(store: BenchmarkStore, history, generation_id: str) -> str:
+    """Idempotently finalize a bound history entry after Generation Studio status.
+
+    Returns 'unbound', 'pending', 'recorded' or 'already_recorded'. Does not
+    mutate ComfyUI, its queue, or GenerationHistory. Caller handles errors
+    separately so an optional benchmark cannot break normal generation status.
+    """
+    if not isinstance(generation_id, str) or not 0 < len(generation_id) <= 200:
+        raise ValueError("Invalid generation ID")
+    binding = store.db.execute(
+        "SELECT run_id FROM benchmark_generation_bindings WHERE generation_id=?",
+        (generation_id,),
+    ).fetchone()
+    if binding is None:
+        return "unbound"
+    saved = store.db.execute(
+        """SELECT observation_id FROM benchmark_generation_lineage
+           WHERE run_id=? AND generation_id=?""",
+        (binding["run_id"], generation_id),
+    ).fetchone()
+    if saved:
+        return "already_recorded"
+    record = history.get(generation_id)
+    if record is None or record["state"] not in ("completed", "error", "cancelled"):
+        return "pending"
+    run = store.db.execute(
+        "SELECT project_id FROM benchmark_runs WHERE id=?", (binding["run_id"],)
+    ).fetchone()
+    if run is None:
+        raise ValueError("Bound benchmark run no longer exists")
+    persist_bound_generation(
+        store, project_id=run["project_id"], generation_record=record,
+    )
+    return "recorded"
