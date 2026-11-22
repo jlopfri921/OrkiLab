@@ -6,6 +6,7 @@ comparability, a speedup, a winner or a cold-inference attribution.
 from __future__ import annotations
 
 from itertools import combinations
+from math import isfinite
 from typing import Any
 
 _MAX_VARIANTS = 20
@@ -43,8 +44,8 @@ def describe_cross_variant_measurements(summary: Any, comparability: Any) -> dic
         ma, mb = a.get("duration_ms_median"), b.get("duration_ms_median")
         valid = (
             type(na) is int and na > 0 and type(nb) is int and nb > 0
-            and type(ma) in (int, float) and ma >= 0
-            and type(mb) in (int, float) and mb >= 0
+            and type(ma) in (int, float) and ma >= 0 and isfinite(ma)
+            and type(mb) in (int, float) and mb >= 0 and isfinite(mb)
         )
         blocked = any(assessments[v["variant_id"]].get("status") == "blocked"
                       for v in (a, b))
