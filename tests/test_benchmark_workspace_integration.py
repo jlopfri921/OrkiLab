@@ -87,6 +87,18 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('Los textos y el archivo se procesan exclusivamente en este navegador', self.benchmark)
         self.assertIn('Este navegador no admite SHA-256 local mediante Web Crypto', self.benchmark)
 
+    def test_b9_8_recorded_execution_evidence_is_visible_in_zone(self):
+        self.assertIn('data-i18n="executionEvidenceTitle"', self.benchmark)
+        self.assertIn('id="execution-evidence-rows"', self.benchmark)
+        self.assertIn('report.recorded_execution_evidence?.variants', self.benchmark)
+        self.assertIn('Evidencias de ejecución registradas', self.benchmark)
+
+    def test_b9_8_evidence_does_not_claim_models_or_prompts_verified(self):
+        self.assertIn('Las huellas del grafo y los identificadores no acreditan', self.benchmark)
+        self.assertIn('no_recorded_generation_lineage', self.benchmark)
+        self.assertIn('workflow_mismatch', self.benchmark)
+        self.assertIn('prompt_timing_identity_not_established', self.benchmark)
+
     def test_run_picker_repairs_only_displayed_legacy_encoding(self):
         self.assertIn('function readableName(value)', self.benchmark)
         self.assertIn('new TextDecoder("utf-8",{fatal:true})', self.benchmark)
