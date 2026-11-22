@@ -25,7 +25,8 @@
         ["queue", "/queue", 6],
         ["comfy", "/workspace/comfyui", 7],
         ["datasets", "/workspace/datasets", 4],
-        ["multiview", "/workspace/multiview", null]
+        ["multiview", "/workspace/multiview", null],
+        ["guide", "/workspace/guide", null]
     ];
     const names = {
         en: ["Workspace", "Dashboard", "Projects", "Training engines", "Dataset Studio", "GPU Manager", "Job queue", "ComfyUI Zone", "Local AI workspace", "Open-source · Local-first", "Support OrkiLab"],
@@ -438,9 +439,9 @@
         };
         const words = help[locale] || help.en;
         context.classList.add("orki-app-context");
-        context.querySelector("#orki-shell-context-title").textContent = page === "queue" ? words[1] : page === "multiview" ? multiviewLabel[locale] : page === "guide" ? (locale === "es" ? "Guía y ayuda" : "Guide & help") : words[3];
+        context.querySelector("#orki-shell-context-title").textContent = page === "queue" ? words[1] : page === "multiview" ? multiviewLabel[locale] : page === "guide" ? ({"es":"Guía y ayuda","en":"Guide & help","pt":"Guia e ajuda","fr":"Guide et aide","de":"Hilfe & Anleitung","it":"Guida e aiuto","ja":"ガイドとヘルプ","ko":"가이드 및 도움말"}[locale]||"Guide & help") : words[3];
         context.querySelector("#orki-shell-context-toggle-label").textContent = words[0];
-        context.querySelector("#orki-shell-context-description").textContent = page === "queue" ? words[2] : page === "multiview" ? multiviewIntro[locale] : page === "guide" ? (locale === "es" ? "Aprende la estructura, los módulos y los pasos habituales de OrkiLab." : "Learn the OrkiLab layout, modules and everyday workflows.") : words[4];
+        context.querySelector("#orki-shell-context-description").textContent = page === "queue" ? words[2] : page === "multiview" ? multiviewIntro[locale] : page === "guide" ? ({"es":"Aprende la estructura, los módulos y los pasos habituales de OrkiLab.","en":"Learn the OrkiLab layout, modules and everyday workflows.","pt":"Conheça a estrutura, os módulos e os fluxos do OrkiLab.","fr":"Découvrez la structure, les modules et les usages d'OrkiLab.","de":"Lernen Sie Aufbau, Module und Arbeitsabläufe von OrkiLab kennen.","it":"Scopri la struttura, i moduli e i flussi di lavoro di OrkiLab.","ja":"OrkiLabの構成、モジュール、基本操作を確認できます。","ko":"OrkiLab의 구성, 모듈 및 작업 흐름을 알아보세요."}[locale]||"Learn the OrkiLab layout, modules and everyday workflows.") : words[4];
         // Canonical source of truth: read the real Workspace chrome instead of
         // reconstructing a similar-looking but divergent header and menu.
         syncCanonicalWorkspaceChrome(page, nav, content);
@@ -448,7 +449,7 @@
         // Complete fallback menu appears immediately, before /workspace is fetched.
         nav.replaceChildren();
         routes.forEach(([id, to, nameIndex]) => {
-            const label = id === "multiview" ? multiviewLabel[locale] : id === "settings" ? (locale === "es" ? "Ajustes" : "Settings") :
+            const label = id === "guide" ? (typeof I18N!=="undefined" ? ({"es":"Guía y ayuda","en":"Guide & help","pt":"Guia e ajuda","fr":"Guide et aide","de":"Hilfe & Anleitung","it":"Guida e aiuto","ja":"ガイドとヘルプ","ko":"가이드 및 도움말"}[locale]||"Guide & help") : "Guide & help") : id === "multiview" ? multiviewLabel[locale] : id === "settings" ? (locale === "es" ? "Ajustes" : "Settings") :
                 id === "shutdown" ? (locale === "es" ? "Pausar todo y salir" : "Pause all and exit") :
                 t[nameIndex];
             const node = id === "settings" || id === "shutdown" ?
