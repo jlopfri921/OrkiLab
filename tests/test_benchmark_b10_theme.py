@@ -41,12 +41,16 @@ class OrkiLabThemeIntegrationTests(unittest.TestCase):
         self.assertIn('aria-pressed',self.js)
         self.assertIn('className="orki-theme-toggle no-i18n"',self.js)
         self.assertIn('return "dark"',self.js)
+        self.assertIn("orkilab-logo-light.svg",self.js)
+        self.assertIn("orkilab-logo-dark.svg",self.js)
 
     def test_theme_toggle_supports_all_eight_languages(self):
         for lang in ("es","en","pt","fr","de","it","ja","ko"):
             with self.subTest(lang=lang):
                 self.assertIn(lang+":[",self.js)
         self.assertIn('orkilab:language-changed',self.js)
+        self.assertIn('select#language',self.js)
+        self.assertIn('select#workspace-language',self.js)
 
     def test_light_mode_changes_shell_form_tables_and_benchmark_iframe(self):
         for piece in ('[data-orki-theme="light"]',
