@@ -4,7 +4,7 @@
 **Original on-device scope:** Multiview Studio PRs #80–#85; follow-up development through PR #99 documented separately below.
 **Evidence type:** seven affirmative checks reported by the operator in ChatGPT on the real Windows workstation; **not** independently captured logs, screenshots, or CI output.
 **Hardware declared for generation:** NVIDIA RTX 3090 24 GB, local ComfyUI.
-**Decision:** operator functional checklist complete (7/7); final stable-release gates **remain open**.
+**Decision:** operator functional checklist complete (7/7); [v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) **published as a prerelease** on 2026-11-22 from `b4bc236bd61db2888aa035986b6dca84126dd83b` after Windows/Linux CI; final stable-release gates **remain open**.
 
 ## Operator-reported acceptance
 
@@ -55,4 +55,4 @@ The first operator-reported acceptance covered PRs #80–#85. Subsequent changes
 - [PR #84](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/pull/84): existing project discovery
 - [PR #85](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/pull/85): RC.1 photo recovery and persistence
 
-No stable 0.5.0 release is claimed by this document.
+The 0.5.0 RC.1 prerelease is published; no stable 0.5.0 release is claimed by this document.

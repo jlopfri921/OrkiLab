@@ -1,8 +1,8 @@
 # OrkiLab changelog
 
-## 0.5.0-rc.1 — candidate for GitHub prerelease (not stable)
+## 0.5.0-rc.1 — published GitHub prerelease (2026-11-22; not stable)
 
-**Status:** RC.1 source complete and being prepared as a GitHub **prerelease**. There is no stable 0.5.0 yet. Candidate publication and exact commit will be verified on GitHub; stable release depends on additional real-device acceptance.
+**Status:** [v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) is published as a **GitHub prerelease**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, after Windows/Linux CI. There is no stable `v0.5.0` yet; stable release depends on additional real-device acceptance.
 
 ### Multiview from alpha to RC.1
 - **Alpha.1:** subject/capture records scoped to Image projects in local SQLite, metadata, real/synthetic source distinctions, original-file protection and mobile navigation.

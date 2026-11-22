@@ -13,9 +13,9 @@
 | 0.9 Desktop | portable application/installer | clean Windows/Linux install and rollback |
 | 1.0 Stable | documented supported matrix | regression and hardware validation |
 
-## Current milestone: 0.5.0-rc.1 — Multiview candidate (release preparation)
+## Current milestone: 0.5.0-rc.1 — Multiview prerelease published; stable acceptance pending
 
-The 0.5 RC.1 code and recovery fixes are integrated through PR #85. The operator reported 7/7 Windows/RTX 3090 acceptance checks passed. Release metadata is being prepared; no stable `v0.5.0` has been tagged or published. See [the 0.5 acceptance register](RC_0_5_0_READINESS.md) for boundaries, exact checks and remaining final SHA CI, engine/workflow compatibility, security and rollback gates. Earlier 0.4.0 stable blockers remain explicit.
+[v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) was published as a **prerelease on 2026-11-22**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, with Windows/Linux CI passed. This release includes Multiview development through PR #99 and comprehensive 0.5.0 documentation through PR #100. Operator-reported Windows/RTX 3090 acceptance covers earlier configurations, not all later workflows. There is **no stable v0.5.0 yet**. See [the 0.5 acceptance register](RC_0_5_0_READINESS.md) for final hardware, safety, compatibility and rollback gates. Proceed to **0.6.0** only after stable 0.5.0 acceptance. Earlier 0.4.0 stable blockers remain explicit.
 
 ## Previous milestone: 0.4.0-rc.1 — integrated dataset and curated LoRA candidate
 
