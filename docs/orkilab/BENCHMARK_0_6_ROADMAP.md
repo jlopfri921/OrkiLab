@@ -447,3 +447,13 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 No live GPU job is required for this acceptance gate. Future work: safe opt-in integration into the Generation Studio submission lifecycle, queue concurrency assessment, and more reliable per-process attribution where NVIDIA drivers provide that data. Only then consider adding dedicated memory columns or storing diagnostic series with explicit source and limitations.
+
+## B8.2g Windows regression: SQLite fixture handle fix (2026-11-22)
+
+Operator ran the **101-test B8.2f baseline PASS** and then updated to B8.2g. The 5 new tests raised `PermissionError [WinError 32]` in `LiveCaptureTests.tearDown` while deleting the temporary `generations.sqlite3` file; 106-test suite reported 5 errors. Both B8.2g fixture connections were created using `with sqlite3.connect(...) as con:` which manages transactions but does **not** close the SQLite connection on context exit. Windows file locking exposes this. Fixed both fixture contexts with `contextlib.closing(sqlite3.connect(...))` and an inner transaction manager (`with closing(...) as con, con:`) so transactions commit and handles close deterministically. The production capture's `_target` already uses `closing`, so **no production SQLite, GPU, ComfyUI, queue, or database changes were required**. Retest expected 5/5 B8.2g and 106/106 benchmark suite; **operator verification pending**.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_live_capture.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
