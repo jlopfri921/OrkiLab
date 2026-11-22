@@ -18,6 +18,7 @@ from benchmark_comparability import assess_duration_comparability
 from benchmark_repro_protocol import declared_protocol_readiness
 from benchmark_execution_evidence import verify_recorded_execution_evidence
 from benchmark_history_consistency import summarize_saved_history_matches
+from benchmark_b9_closure import summarize_b9_closure
 from benchmark_draft_creation import create_confirmed_draft, validate_draft_payload
 
 ID = re.compile(r"^[A-Za-z0-9_-]{1,200}$")
@@ -227,6 +228,7 @@ def report_routes(app, base):
             result["saved_history_consistency"] = summarize_saved_history_matches(
                 report, local_history, truncated=history_truncated
             )
+            result["b9_closure"] = summarize_b9_closure(result)
             result["project_id"] = project_id
             result["name"] = row["name"]
             result["run_created_at"] = row["created_at"]
