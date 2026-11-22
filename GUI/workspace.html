@@ -1473,6 +1473,7 @@ $("context-toggle").onclick=()=>{const open=$("context-description").hidden;$("c
 function showBenchmarkEmbedded(){
  const frame=$("benchmark-frame");
  if(!frame.getAttribute("src")){
+  frame.addEventListener("load",()=>showBenchmarkEmbedded(),{once:true});
   frame.setAttribute("src",frame.dataset.src);
  }
  const es=typeof I18N!=="undefined"&&I18N.lang==="es";
