@@ -80,12 +80,21 @@ def persist_bound_generation(store: BenchmarkStore, *, project_id: str,
     if timing is not None and proposal["status"] == "completed":
         # Provenance lives in the immutable observation snapshot; this is
         # not a poll interval, queue wait or inferred hardware measurement.
-        proposal["duration_ms"] = timing["duration_ms"]
-        proposal["source_snapshot"]["duration_ms"] = timing["duration_ms"]
+        cached = timing["execution_cached_event_observed"]
+        # The measured interval is preserved for auditing; a cache-observed
+        # interval is NOT a comparable full-inference duration.
         proposal["source_snapshot"]["execution_timing"] = timing
+        proposal["source_snapshot"]["execution_timing"]["comparability"] = (
+            "cache_observed_not_comparable" if cached
+            else "full_inference_unverified"
+        )
+        if not cached:
+            proposal["duration_ms"] = timing["duration_ms"]
+            proposal["source_snapshot"]["duration_ms"] = timing["duration_ms"]
         proposal["source_snapshot"]["limitations"] = (
-            "Execution duration uses exact ComfyUI start/success server events. "
-            "No peak VRAM, seed or output hash has been measured."
+            "ComfyUI server event duration; full inference not verified. "
+            "Cache-observed intervals are excluded from the comparison duration column. "
+            "No peak VRAM, seed or output hash measured."
         )
     return store.record(
         bound["run_id"], bound["variant_id"], bound["repetition"], proposal["status"],
