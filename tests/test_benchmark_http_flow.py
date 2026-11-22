@@ -374,5 +374,59 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
 
 
 
+
+    def test_opt_in_gpu_monitor_is_scheduled_without_real_gpu_or_network(self):
+        class FakeThread:
+            started = False
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+            def start(self):
+                FakeThread.started = True
+        payload = {"workflow_id": "workflow-1", "confirm": True,
+                   "token": self.prepare(),
+                   "gpu_monitor": {
+                       "confirm": True, "gpu_uuid": "GPU-test",
+                       "samples": 5, "interval": 0.3,
+                   }}
+        with patch.object(generation_studio.threading, "Thread", FakeThread):
+            response = self.client.post("/api/workspace/generation", json=payload)
+        self.assertEqual(response.status_code, 201, response.get_json())
+        self.assertEqual(response.get_json()["gpu_monitor"], "scheduled")
+        self.assertTrue(FakeThread.started)
+        generation_id = response.get_json()["id"]
+        status = self.client.get("/api/workspace/generation/" +
+                                 generation_id + "/gpu-monitor")
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["state"], "scheduled")
+        self.assertIsNone(status.get_json()["peak_vram_bytes"])
+        self.assertEqual(len(self.submitted_requests), 1)
+        self.assertEqual(self.observations(), [])
+
+    def test_gpu_monitor_invalid_consent_rejected_before_submission(self):
+        token = self.prepare()
+        response = self.client.post("/api/workspace/generation", json={
+            "workflow_id": "workflow-1", "confirm": True, "token": token,
+            "gpu_monitor": {"confirm": False, "gpu_uuid": "GPU-test",
+                            "samples": 5, "interval": 0.3},
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(self.submitted_requests), 0)
+
+    def test_no_opt_in_monitor_does_not_run_or_have_status(self):
+        created = self.submit(with_benchmark=False)
+        self.assertEqual(created.status_code, 201, created.get_json())
+        self.assertNotIn("gpu_monitor", created.get_json())
+        status = self.client.get("/api/workspace/generation/" +
+                                 created.get_json()["id"] + "/gpu-monitor")
+        self.assertEqual(status.status_code, 404)
+
+    def test_gpu_monitor_status_requires_local_launcher(self):
+        status = self.client.get(
+            "/api/workspace/generation/not-a-job/gpu-monitor",
+            environ_overrides={"REMOTE_ADDR": "192.0.2.10"},
+        )
+        self.assertEqual(status.status_code, 403)
+
+
 if __name__ == "__main__":
     unittest.main()
