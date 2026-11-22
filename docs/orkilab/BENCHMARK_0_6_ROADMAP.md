@@ -599,3 +599,24 @@ git pull --ff-only
 ```
 
 After restarting the OrkiLab launcher, `http://127.0.0.1:4990/workspace/benchmark` displays a new **Crear protocolo de Benchmark (borrador)** section. It should not submit any inference on its own. A real draft should only be created when the operator has their own actual hashes, model/variant identifiers and deliberately opts in; no fake hashes should be used for a real report. The feature PR #104 stays open. Defer the requested per-workflow error catalogue.
+
+## UX correction following operator feedback — Benchmark shell integration and Spanish accents
+
+The operator reported that the B9.5 Benchmark Studio interface was **visually inconsistent with OrkiLab, isolated from the app's sections, and displayed unsatisfactory Spanish accents/copy**. This is **not** acceptance of B9.5's tests: previous **154 benchmark tests** remain the last operator-reported validated baseline; 163 B9.5 tests had been requested but not yet confirmed.
+
+Corrections on feature branch:
+- Benchmark Studio now has an **explicit navigation entry inside Workspace → Zona ComfyUI**, with its own `#benchmark` module panel, normal OrkiLab header, sidebar navigation, contextual help, and scroll-to-top behavior. The module remains accessible **without a live ComfyUI connection**, since reading reports and preparing draft protocols are offline activities; it does not unlock model-dependent tools when ComfyUI is disconnected.
+- The existing `/workspace/benchmark` URL redirects to `/workspace/comfyui#benchmark` to eliminate a confusing second top-level destination. The embedded report surface uses `/workspace/benchmark?embed=1` within the normal shell; origin-validated messaging synchronizes Spanish/English and adjusts iframe height without including a second navbar/header. No extra iframe origins are allowed; all API restrictions remain launcher-local.
+- The report surface now adopts the OrkiLab core palette (**#0b1221 background, #152238 panels, #3cdbd0 accent**), matching font scale, form controls and responsive layout; favicon updated. Large forms use a responsive grid.
+- Spanish labels and accents were reviewed, including readable Spanish translations of evidence codes instead of raw English snake_case descriptions, and controls for cache/seed policy. The source declares UTF-8 and writes text with `textContent`.
+- Navigation from main Workspace Projects now targets the embedded module. No benchmark database or run observation migrations or execution behavior changed.
+
+**Four new regression tests** in `tests/test_benchmark_workspace_integration.py` check nav, module, theme, redirects, UTF-8 Spanish and translated reasons. **167 benchmark tests expected** when B9.5 and integration tests are included (last user-confirmed baseline 154; neither 163 nor 167 are yet operator-verified). These are static checks, not a pixel-level browser screenshot; manual Windows visual inspection and Spanish/English text review remain required.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart OrkiLab's Python launcher, open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Verify active left-hand **Benchmark Studio** navigation, only one OrkiLab header, cohesive page colors and mobile width, expected Spanish tildes (e.g. **Ejecución, Política, Resolución, generación, caché**), in-page bilingual switch behavior, no generation submission on viewing/switching sections. Route `/workspace/benchmark` should redirect to the same module. Preserve the operator-requested deferred per-workflow error catalogue.
