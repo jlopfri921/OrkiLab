@@ -30,6 +30,21 @@ The following chronology separates **documented development phases**, **release 
 
 **Complete phase-by-phase details for every version:** [OrkiLab release history (0.1 → 1.0)](docs/orkilab/RELEASE_HISTORY.md), including the previously under-documented **0.1.0-rc.1 / rc.2** and **0.2.0-rc.1**; also see [Changelog](CHANGELOG_ORKILAB.md) and [Roadmap](docs/orkilab/ROADMAP.md). Versions 0.1–0.4 are not assigned invented alpha/beta releases.
 
+## Version history — all phases (0.1.0 to 0.6.0)
+
+The following chronology separates **documented development phases**, **release candidates** and **verified GitHub prereleases**. An RC does **not** mean a stable release; for 0.1 and 0.2, historical changelog entries do not by themselves establish a published GitHub Release.
+
+| Version | Recorded development phases | Focus | Release status |
+| --- | --- | --- | --- |
+| **0.1.0 · Foundation** | **dev → rc.1 → rc.2** | Independent OrkiLab brand, safe updater, CI/regression baseline, consistent launcher/trainer identity | Historical RC candidates documented; public tag/release not verified here |
+| **0.2.0 · Workspace** | **dev.1 → rc.1** | Local project SQLite, modern dashboard, trainer navigation, new default Workspace | Historical RC candidate documented; public tag/release not verified here |
+| **0.3.0 · Connect** | Development increments → **rc.1** | ComfyUI Zone, Bridge, workflow generation, GPU monitoring | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1); stable not verified |
+| **0.4.0 · Dataset** | Incremental development/beta.1 work → **rc.1** | Dataset Studio, captions, trainer handoff, checkpoint/LoRA library | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1); stable pending |
+| **0.5.0 · Multiview** | **alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1** (+ follow-ups) | Photo subjects, camera coverage, view generation, reproducible export | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1); stable pending |
+| **0.6.0 · Benchmark** | **alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable** *(planned)* | Reproducible evaluation, model and LoRA comparison, reports | Development plan; not published |
+
+**Complete phase-by-phase details for every version:** [OrkiLab release history (0.1 → 1.0)](docs/orkilab/RELEASE_HISTORY.md), including the previously under-documented **0.1.0-rc.1 / rc.2** and **0.2.0-rc.1**; also see [Changelog](CHANGELOG_ORKILAB.md) and [Roadmap](docs/orkilab/ROADMAP.md). Versions 0.1–0.4 are not assigned invented alpha/beta releases.
+
 ## OrkiLab 0.5.0-rc.1 — current release candidate
 
 **Current source version: `0.5.0-rc.1`.** [**GitHub prerelease `v0.5.0-rc.1` is published**](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1), from validated commit `b4bc236bd61db2888aa035986b6dca84126dd83b` (2026-11-22). This is **not** stable `v0.5.0`. The preceding prerelease is [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1).
@@ -215,6 +230,20 @@ The monitor executes a fixed, read-only `nvidia-smi` query; it does **not** clos
 
 For deeper architecture, endpoint/security notes, a feature-by-feature checklist and tests, see **[the Workspace feature guide](docs/orkilab/WORKSPACE_FEATURES.md)**, **[development roadmap](docs/orkilab/ROADMAP.md)** and **[full changelog](CHANGELOG_ORKILAB.md)**.
 
+
+## Legacy candidate details: 0.2.0 and 0.1.0
+
+The initial releases were foundational; they should be visible alongside later candidate milestones rather than hidden at the bottom of the changelog.
+
+| Phase | Summary | Qualification |
+| --- | --- | --- |
+| **0.1.0-dev** | Distinct brand, launcher, About panel, non-destructive Git updates, source docs | Development snapshot |
+| **0.1.0-rc.1** | Branding/version/updater regression tests; Windows/Linux CI; guarded Python dependencies and acceptance checklist | Candidate, not demonstrated public stable |
+| **0.1.0-rc.2** | Unified engine covers, official README hero, maintainer identity and removal of inherited promotional links | Candidate, not demonstrated public stable |
+| **0.2.0-dev.1** | Projects in local SQLite; dashboard, filters, archived/restored projects, compatibility with old launcher | Development preview |
+| **0.2.0-rc.1** | Workspace becomes default; /legacy redirects into the modern entry; trainers preserved | Candidate; user-reported navigation check, further GPU checks pending |
+
+See the [full release history](docs/orkilab/RELEASE_HISTORY.md) for detailed per-version phase tables and precise acceptance boundaries.
 
 ## Legacy candidate details: 0.2.0 and 0.1.0
 
