@@ -87,6 +87,48 @@ class MultiviewMissingViewTests(unittest.TestCase):
             self.assertNotEqual(self.client.post(self.target,json=self.request_body()).status_code,200)
         upload.assert_not_called()
 
+    def test_manual_input_folder_copies_original_bytes_and_remembers_path(self):
+        folder=self.root/"ComfyUI"/"input"
+        folder.mkdir(parents=True)
+        body={**self.request_body(),"transfer_mode":"folder","input_folder":str(folder)}
+        with patch.object(self.generator,"upload_reference") as remote:
+            response=self.client.post(self.target,json=body)
+        self.assertEqual(response.status_code,200,response.get_json())
+        remote.assert_not_called()
+        self.assertEqual(response.get_json()["transfer_mode"],"folder")
+        name=response.get_json()["references"][0]["comfy_name"]
+        self.assertEqual((folder/name).read_bytes(),self.source)
+        self.assertEqual(self.image.read_bytes(),self.source)
+        saved=self.client.get("/api/workspace/multiview/comfyui-input").get_json()
+        self.assertEqual(saved["path"],str(folder.resolve()))
+        # Idempotent, never overwrite source or another file.
+        again=self.client.post(self.target,json=body)
+        self.assertEqual(again.status_code,200,again.get_json())
+        self.assertEqual((folder/name).read_bytes(),self.source)
+        (folder/name).write_bytes(b"not the same")
+        refused=self.client.post(self.target,json=body)
+        self.assertNotEqual(refused.status_code,200)
+        self.assertEqual((folder/name).read_bytes(),b"not the same")
+
+    def test_invalid_input_folders_and_browse_require_consent(self):
+        folder=self.root/"ComfyUI"/"input"
+        folder.mkdir(parents=True)
+        body={**self.request_body(),"transfer_mode":"folder"}
+        with patch.object(self.generator,"copy_to_input") as copy:
+            for invalid in ("",str(self.root),str(self.root/"missing"/"input")):
+                response=self.client.post(self.target,json={**body,"input_folder":invalid})
+                self.assertNotEqual(response.status_code,200)
+        copy.assert_not_called()
+        browse="/api/workspace/multiview/comfyui-input/browse"
+        self.assertEqual(self.client.post(browse,json={}).status_code,400)
+        with patch.object(self.generator,"browse_local_input_folder",return_value=str(folder)):
+            chosen=self.client.post(browse,json={"confirm":True})
+        self.assertEqual(chosen.status_code,200,chosen.get_json())
+        self.assertEqual(chosen.get_json()["path"],str(folder.resolve()))
+        with patch.object(self.generator,"browse_local_input_folder",return_value=""):
+            cancelled=self.client.post(browse,json={"confirm":True})
+        self.assertTrue(cancelled.get_json()["cancelled"])
+
     def test_native_mode_has_no_upload_side_effects(self):
         (self.settings/"comfyui.json").write_text(json.dumps({
             "mode":"native","url":"http://127.0.0.1:8188"}),encoding="utf-8")
