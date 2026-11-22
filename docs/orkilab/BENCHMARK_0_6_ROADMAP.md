@@ -111,6 +111,41 @@ python -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 Five new tests are included, with **30** total benchmark unit tests expected if all prior tests still pass. These results have **not yet been reported**.
 
+## B6c operator PASS and B6d opt-in submission linkage (new, untested)
+
+The operator confirms **B6c 5/5** and the cumulative benchmark suite **30/30** on local Windows/Python 3.13. This is operator-reported acceptance, not an independently verified CI result.
+
+**B6d — behind explicit opt-in, source now updated:** the existing `POST /api/workspace/generation` retains its original request and behavior when no `benchmark` object is supplied. For an explicitly confirmed benchmark, it optionally accepts:
+
+```json
+{
+  "confirm": true,
+  "workflow_id": "existing-workflow-id",
+  "token": "prepared-generation-token",
+  "benchmark": {
+    "project_id": "existing-active-project-id",
+    "run_id": "existing-running-benchmark-id",
+    "variant_id": "variant-in-the-same-run",
+    "repetition": 0,
+    "confirm": true
+  }
+}
+```
+
+Before calling ComfyUI, it checks project existence (nonarchived Workspace project), active benchmark run, matching project and variant, and uniqueness of the target repetition. After submission, it uses the **actual generation history token** to save an immutable binding. The response includes `benchmark_binding: "bound"` on success; if a job was successfully submitted but history or binding failed, it returns HTTP 201 with an explicit `benchmark_binding` warning, **never pretending the binding worked**.
+
+This does not introduce a new queue or change existing cancellation. It does **not** yet automatically save a terminal benchmark observation when Generation Studio checks status, or offer a Benchmark Studio UI; the result still needs a controlled finalization step. The project ID comes from the locally selected Workspace project: application access is restricted to launcher-local callers, but **there is no independently verified user-project ownership model**. The caller must not describe this as multi-user authorization. Because ComfyUI, history and benchmarks use separate transactions, a submitted-but-unbound job is possible and must be surfaced/reconciled.
+
+**Run the new B6d tests first:**
+```powershell
+git pull --ff-only
+python -m py_compile scripts/generation_studio.py scripts/benchmark_job_binding.py
+python -m unittest discover -s tests -p "test_benchmark_submission_preflight.py" -v
+python -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Four new preflight tests are included; **34 benchmark unit tests** are expected if there are no regressions. These offline tests do not execute the new HTTP submission route, so end-to-end ComfyUI acceptance and real GPU telemetry remain pending.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
