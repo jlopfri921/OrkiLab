@@ -245,6 +245,62 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertNotIn("graph", str(check))
         self.assertNotIn("prompt-1", str(check))
 
+    def test_b10_2_node_choices_are_explicit_read_only_and_project_bound(self):
+        import json
+        from unittest.mock import patch
+        self.fill()
+        protocol = {"schema":"orkilab-repro-v1","vary":"lora","workflow_id":"wf1"}
+        with closing(sqlite3.connect(self.db)) as con, con:
+            con.execute("UPDATE benchmark_runs SET protocol_json=? WHERE id='run-a'",
+                        (json.dumps(protocol),))
+            con.execute("INSERT INTO benchmark_variants VALUES (?,?,?,?)",
+                        ("variant-b","run-a","Variant B",json.dumps({"controlled_value":"b.safetensors"})))
+            con.execute("UPDATE benchmark_variants SET config_json=? WHERE id='variant-a'",
+                        (json.dumps({"controlled_value":"a.safetensors"}),))
+        wf = self.base / "settings" / "orkilab" / "workflows.sqlite3"
+        with closing(sqlite3.connect(wf)) as con, con:
+            con.execute("CREATE TABLE workflows (id TEXT,graph TEXT)")
+            con.execute("INSERT INTO workflows VALUES (?,?)",(
+                "wf1",json.dumps({"3":{"class_type":"LoraLoader","inputs":{
+                    "lora_name":"base.safetensors","strength_model":1.0}},
+                    "5":{"class_type":"CLIPTextEncode","inputs":{"text":"hello"}}})
+            ))
+        cfg = self.base / "settings" / "orkilab" / "comfyui.json"
+        cfg.write_text(json.dumps({"mode":"hybrid","url":"http://127.0.0.1:8188",
+            "model_folder":"","lora_folder":""}), encoding="utf-8")
+        before = self.db.read_bytes()
+        with patch("comfyui_connect.get_json",return_value={"LoraLoader":{
+            "input":{"required":{"lora_name":[[
+              "base.safetensors","a.safetensors","b.safetensors"]]}}}}) as fetch:
+            response = self.client.get(
+                "/api/workspace/benchmark/model-check?project_id=project-a&run_id=run-a")
+        self.assertEqual(response.status_code,200,response.get_json())
+        payload=response.get_json()
+        self.assertEqual(payload["status"],"static_candidate")
+        self.assertTrue(payload["graph_single_field_change_verified"])
+        self.assertEqual(len(payload["variants"]),2)
+        self.assertFalse(payload["comparison_execution_authorized"])
+        self.assertFalse(payload["file_bytes_verified"])
+        self.assertFalse(payload["generation_submitted"])
+        self.assertEqual(self.db.read_bytes(),before)
+        fetch.assert_called_once_with("http://127.0.0.1:8188",
+            "/object_info/LoraLoader",max_bytes=500_000,timeout=5)
+
+    def test_b10_2_denies_remote_and_cross_project_without_network(self):
+        from unittest.mock import patch
+        self.fill()
+        with patch("comfyui_connect.get_json") as fetch:
+            self.assertEqual(self.client.get(
+                "/api/workspace/benchmark/model-check?project_id=project-a&run_id=run-a",
+                environ_overrides={"REMOTE_ADDR":"198.51.100.90"}).status_code,403)
+            self.assertEqual(self.client.get(
+                "/api/workspace/benchmark/model-check?project_id=project-b&run_id=run-a"
+                ).status_code,404)
+            self.assertEqual(self.client.get(
+                "/api/workspace/benchmark/model-check?project_id=../bad&run_id=run-a"
+                ).status_code,400)
+            fetch.assert_not_called()
+
     def test_b10_1_declared_plan_does_not_authorize_execution(self):
         self.fill()
         before = self.db.read_bytes()
