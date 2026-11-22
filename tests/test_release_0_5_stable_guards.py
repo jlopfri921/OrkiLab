@@ -21,7 +21,7 @@ class Stable05ReleaseGuards(unittest.TestCase):
         self.assertIn('gh release view "v0.5.0"', source)
         self.assertNotIn("--prerelease", source)
 
-    def test_stable_gate_is_not_prematurely_approved(self):
+    def test_stable_gate_is_signed_off_by_operator(self):
         doc = (ROOT / "docs" / "orkilab" / "RC_0_5_0_STABLE_ACCEPTANCE.md").read_text(encoding="utf-8")
         self.assertIn("stable publication acceptance", doc.lower())
         self.assertIn("v0.5.0-rc.1", doc)
