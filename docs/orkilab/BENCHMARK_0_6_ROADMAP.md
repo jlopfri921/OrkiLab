@@ -80,6 +80,21 @@ Run `python -m py_compile scripts/benchmark_store.py scripts/benchmark_generatio
 
 **Still pending for full B6:** authenticated launcher-local API integration, scoped association of a generated job to a project and a benchmark variant, lifecycle tracking through the existing Generation Studio queue, cancellation behavior, and real ComfyUI testing.
 
+## B6b — Explicit generation-to-project association (tests pending)
+
+The operator reported B6 read-only bridge checks as OK and the full `test_benchmark*.py` set as OK (20 unit tests). This is local operator acceptance, not independent CI or GPU verification.
+
+The new `attach_history_generation` helper in `scripts/benchmark_history_bridge.py` takes an **explicit generation ID** from existing Generation History and a **user-selected project/run/variant/repetition**. It requires `confirmed=True`, rejects missing/running generations, and uses the B5 atomic SQLite writer. **It does not claim to discover the owning project from ComfyUI:** current `GenerationHistory` entries do not carry an independently verified project identity. A future launcher-local API must enforce project authorization and origin protections before calling this helper. No queue or cancellation logic is touched.
+
+Validate B6b with:
+```powershell
+git pull --ff-only
+python -m unittest discover -s tests -p "test_benchmark_history_attachment.py" -v
+python -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Five new unit tests cover lineage persistence, project/confirmation rejection, queued-history rejection, exact identifier selection, and duplicate prevention. **B6b is unverified until these are executed.** Further work is required to prevent ambiguous association of a single generation across different benchmark runs, enforce API-side authentication and establish a durable binding at generation submission.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
