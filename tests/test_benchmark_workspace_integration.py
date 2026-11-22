@@ -40,6 +40,18 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertNotIn('location.pathname.replace(/\\\\/$/', self.workspace)
         self.assertIn('location.pathname.replace(/\\/$/', self.workspace)
 
+    def test_run_picker_repairs_only_displayed_legacy_encoding(self):
+        self.assertIn('function readableName(value)', self.benchmark)
+        self.assertIn('new TextDecoder("utf-8",{fatal:true})', self.benchmark)
+        self.assertIn('option(readableName(run.name)+" · "+stateName(run.state),run.id)', self.benchmark)
+        self.assertIn('option(readableName(p.name),p.id)', self.benchmark)
+        self.assertIn('textContent=readableName(report.name)', self.benchmark)
+
+    def test_spanish_run_placeholder_is_correctly_encoded(self):
+        self.assertIn('chooseRun:"Selecciona una ejecución"', self.benchmark)
+        self.assertIn('<meta charset="utf-8">', self.benchmark)
+        self.assertNotIn('Selecciona una ejecuciÃ', self.benchmark)
+
     def test_spanish_accents_and_readable_diagnostics(self):
         self.assertIn('<meta charset="utf-8">', self.benchmark)
         for word in ("Comparabilidad", "Ejecución", "Política", "Resolución",
