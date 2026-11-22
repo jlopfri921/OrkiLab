@@ -24,6 +24,7 @@ import promotions_feed
 import project_checkpoints
 import managed_checkpoints
 import checkpoint_reviews
+import benchmark_reporting_routes
 
 
 def register(app, base, load_config):
@@ -32,6 +33,7 @@ def register(app, base, load_config):
     comfyui_connect.register(app, base)
     workflow_library.register(app, base)
     generation_studio.register(app, base)
+    benchmark_reporting_routes.report_routes(app, base)
     dataset_studio.register(app, base)
     multiview_studio.register(app, base)
     multiview_assist.register(app, base)
