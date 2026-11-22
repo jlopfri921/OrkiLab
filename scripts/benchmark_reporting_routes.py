@@ -6,6 +6,7 @@ Local launcher access only and explicit project/run binding for detail.
 """
 from __future__ import annotations
 
+import json
 import re
 import sqlite3
 from contextlib import closing
@@ -13,6 +14,7 @@ from pathlib import Path
 
 from flask import jsonify, request
 from benchmark_report_summary import summarize_benchmark_report
+from benchmark_comparability import assess_duration_comparability
 
 ID = re.compile(r"^[A-Za-z0-9_-]{1,200}$")
 
@@ -82,16 +84,31 @@ def report_routes(app, base):
                     "FROM benchmark_observations WHERE run_id=? "
                     "ORDER BY variant_id,repetition", (run_id,),
                 ).fetchall()
+                lineage = con.execute(
+                    "SELECT l.observation_id,l.snapshot_json "
+                    "FROM benchmark_generation_lineage l "
+                    "WHERE l.run_id=?", (run_id,),
+                ).fetchall()
+            snap = {x["observation_id"]: json.loads(x["snapshot_json"]) for x in lineage}
+            if any(not isinstance(v, dict) for v in snap.values()):
+                raise ValueError("Invalid lineage payload")
             report = {
                 "schema_version": 1, "run": dict(row),
                 "variants": [dict(v) for v in variants],
-                "observations": [dict(o) for o in obs],
+                "observations": [
+                    {**dict(o), "generation_lineage": {
+                        key: value for key, value in snap.get(o["id"], {}).items()
+                        if key in ("workflow_id", "submitted_graph_sha256", "execution_timing")
+                    } if o["id"] in snap else None}
+                    for o in obs
+                ],
             }
             result = summarize_benchmark_report(report)
+            result["comparability"] = assess_duration_comparability(report)
             result["project_id"] = project_id
             result["name"] = row["name"]
             result["run_created_at"] = row["created_at"]
             result["read_only"] = True
             return jsonify(result)
-        except (sqlite3.Error, ValueError, TypeError):
+        except (sqlite3.Error, ValueError, TypeError, json.JSONDecodeError):
             return jsonify(error="Benchmark report could not be verified"), 503
