@@ -495,3 +495,19 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 After refreshing the actual Python launcher process, inspect `http://127.0.0.1:4990/workspace/comfyui#generation` and ensure ComfyUI connection is configured. Do not merge PR #104 or claim 0.6.0 stable from these tests alone.
+
+## B8.2i acceptance / B8.2j terminal capture safeguards (awaiting operator validation)
+
+Operator answered `todo ok` after the B8.2i checklist, recorded as **operator-reported 117/117 benchmark tests and local UI acceptance** (raw console output not attached in this turn). No claim of having run a real monitored workflow or real background process monitoring has been made.
+
+B8.2j fixes a lifecycle ambiguity: **a bounded GPU monitor that runs out of samples without seeing the generation's completed ComfyUI history is now labelled `partial`, not `completed`**. Only reports explicitly ending with `termination=completed_history` are marked monitor-completed. A passive device-global monitor cannot establish true peak or attributable per-job VRAM even when it did observe the full time window, and terminal states are for the *monitor*, not the ComfyUI workflow. The contract now supports `scheduled | running | completed | partial | failed`; `peak_vram_bytes` remains NULL, no benchmark database writes. Generation Studio now attempts a final local read-only monitor report query on completed/error/cancelled generation, without waiting for capture to finish, rather than displaying a potentially stale state from the preceding poll. Ephemeral monitor report may still be running after a very fast workflow and may later complete; this is a documented limitation.
+
+Two new mocked Flask integration tests explicitly execute the real monitor-thread callback **synchronously with a fake thread and fake `observe`** to check success, truncated capture, no attributed VRAM, no benchmark writes and existing generation behavior. This addresses the previous gap where tests only checked that a thread was scheduled, not that its callback correctly transitioned states. **119 benchmark tests expected**, operator verification pending.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_monitor_contract.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+No new GPU generation required for these tests. After acceptance, perform *one consciously initiated small workflow* with the experimental monitor checked and inspect the result. Do not merge PR #104 before the live evidence is evaluated and critical regressions are resolved.
