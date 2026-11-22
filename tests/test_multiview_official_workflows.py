@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 
@@ -93,7 +94,7 @@ class OfficialWorkflowTests(unittest.TestCase):
         self.assertEqual(second.status_code, 200, second.get_json())
         self.assertEqual(first.get_json()["id"], second.get_json()["id"])
         db = self.root / "settings" / "orkilab" / "workflows.sqlite3"
-        with sqlite3.connect(db) as conn:
+        with closing(sqlite3.connect(db)) as conn:
             rows = conn.execute("SELECT name,graph FROM workflows").fetchall()
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][0], "OrkiLab · Multiview · Core Preserve")
