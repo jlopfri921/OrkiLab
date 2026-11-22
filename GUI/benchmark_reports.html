@@ -127,6 +127,26 @@ function reasons(values){
   reasonText[lang][code]||code.replaceAll("_"," ")).join(" · ");
 }
 
+// Display-only recovery for legacy UTF-8 text accidentally decoded as Windows-1252.
+// Never rewrite stored project/run names or their IDs; leave healthy Unicode untouched.
+function readableName(value){
+ const text=String(value??"");
+ if(!/[ÃÂâ][\u0080-\u00BF\u2018-\u2122]/u.test(text))return text;
+ const extra={"€":128,"‚":130,"ƒ":131,"„":132,"…":133,"†":134,
+  "‡":135,"ˆ":136,"‰":137,"Š":138,"‹":139,"Œ":140,"Ž":142,
+  "‘":145,"’":146,"“":147,"”":148,"•":149,"–":150,"—":151,
+  "˜":152,"™":153,"š":154,"›":155,"œ":156,"ž":158,"Ÿ":159};
+ try{
+  const bytes=Array.from(text, ch=>{
+   const n=ch.codePointAt(0);
+   return n<=255?n:extra[ch]??-1;
+  });
+  if(bytes.some(n=>n<0))return text;
+  const fixed=new TextDecoder("utf-8",{fatal:true}).decode(new Uint8Array(bytes));
+  if(fixed.includes("\uFFFD"))return text;
+  return fixed.normalize("NFC");
+ }catch{return text}
+}
 function option(text,value){const o=document.createElement("option");o.textContent=text;o.value=value;return o}
 function clearReport(){ $("report").hidden=true;$("metrics").replaceChildren();$("rows").replaceChildren();$("comparability-rows").replaceChildren()}
 async function get(path){const response=await fetch(path,{cache:"no-store",credentials:"same-origin"});const obj=await response.json();if(!response.ok)throw Error(obj.error||"HTTP "+response.status);return obj}
@@ -138,7 +158,7 @@ async function loadProjects(){
   if(seq!==requestSeq)return;
   projects=Array.isArray(data.projects)?data.projects:[];
   const select=$("project");const previous=select.value;select.replaceChildren(option(t("choose"),""));
-  for(const p of projects)select.append(option(p.name,p.id));
+  for(const p of projects)select.append(option(readableName(p.name),p.id));
   if(projects.some(p=>p.id===previous))select.value=previous;
   if(!projects.length)$("status").textContent=t("noProjects");
   await loadRuns();
@@ -153,7 +173,7 @@ async function loadRuns(){
   const data=await get("/api/workspace/benchmark/reports?project_id="+encodeURIComponent(projectId));
   if(seq!==requestSeq)return;
   runs=Array.isArray(data.runs)?data.runs:[];
-  for(const run of runs)select.append(option(run.name+" · "+stateName(run.state),run.id));
+  for(const run of runs)select.append(option(readableName(run.name)+" · "+stateName(run.state),run.id));
   select.disabled=!runs.length;
   if(!runs.length)$("status").textContent=t("empty");
  }catch(e){if(seq===requestSeq)$("status").textContent=t("loadError")+" "+e.message}
@@ -168,7 +188,7 @@ function td(value){const cell=document.createElement("td");cell.textContent=Stri
 function number(v){return typeof v==="number"&&Number.isFinite(v)?new Intl.NumberFormat(lang).format(v):t("noData")}
 function draw(report){
  clearReport();$("report").hidden=false;
- $("report-title").textContent=report.name||report.run_id;
+ $("report-title").textContent=readableName(report.name)||report.run_id;
  $("state").textContent=stateName(report.run_state);
  const proto=report.reproducibility_protocol||{};
  $("protocol-readiness").textContent=
