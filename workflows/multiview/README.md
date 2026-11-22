@@ -1,5 +1,78 @@
 # OrkiLab · Official Multiview workflows
 
+## Qué aporta esta biblioteca a OrkiLab
+
+Esta carpeta es la **biblioteca oficial de plantillas para Multiview Studio**.
+Su función no es sustituir ComfyUI, sino facilitar un recorrido seguro entre
+fotografías reales de un sujeto, un workflow preparado, una vista solicitada y
+una imagen sintética que el usuario pueda revisar y exportar.
+
+**Situación de la versión 0.5.0 RC.1:** están disponibles **tres plantillas
+Img2Img básicas de una referencia** para checkpoints compatibles con la
+arquitectura estándar de Stable Diffusion (SD1.5/SDXL). Las tres son
+adaptaciones del mismo grafo con distinta fuerza de transformación.
+Usan nodos básicos, pero la compatibilidad efectiva requiere un checkpoint
+instalado y validación contra la versión de ComfyUI en ejecución.
+
+| Plantilla disponible | Fotos | Denoise | Para qué sirve | Qué NO garantiza |
+| --- | ---: | ---: | --- | --- |
+| **OrkiLab · Multiview · Core Preserve** | 1 | 0,30 | Conservación de rasgos y pequeños retoques | Cambiar realmente el punto de vista |
+| **OrkiLab · Multiview · Core Img2Img** | 1 | 0,55 | Equilibrio entre fidelidad y modificación | Recuperar una parte oculta del sujeto |
+| **OrkiLab · Multiview · Core Variation** | 1 | 0,72 | Probar cambios de aspecto mayores | Mantener identidad y proporciones exactas |
+
+### Qué workflows faltan: planificación, no descargas disponibles
+
+| Próxima mejora | Estado 0.5.0 RC.1 | Requisitos antes de ofrecerla |
+| --- | --- | --- |
+| **OrkiLab · Multiview · Qwen-Image 2.1 Edit** | **Pendiente de próximas revisiones** | Adaptar un grafo de edición real; verificar los nodos, encoders, VAE y conexión de la imagen |
+| **OrkiLab · Multiview · FLUX.3 Klein Image Edit** | **Pendiente de próximas revisiones** | Adaptar el workflow nativo, comprobar la familia/versión de modelo y entradas de imagen |
+| **OrkiLab · Multiview · Multi-Reference (2–4)** | **Pendiente de próximas revisiones** | Demostrar condicionamiento conjunto real; varios LoadImage por sí solos no bastan |
+| **OrkiLab · Multiview · Camera-Control** | **Pendiente de próximas revisiones** | Modelo con control de cámara contrastado y pruebas de fidelidad |
+
+Los enlaces mostrados en la interfaz a los ejemplos de **Comfy-Org**
+para Qwen y FLUX son **referencias externas de investigación**, no
+archivos JSON de OrkiLab listos para importar desde la biblioteca ni
+una declaración de compatibilidad con ComfyUI Desktop o Portable.
+Los workflows propios para esos modelos aparecerán en el catálogo solo
+después de una validación real de sus nodos y salidas.
+
+### Flujo recomendado en la web-app
+
+1. Abre un proyecto de imagen y un sujeto en **Multiview Studio**.
+2. Selecciona fotografías reales; la orientación estimada por Ollama es
+   cualitativa y **no representa un ángulo medido**.
+3. En **Generar vista faltante**, selecciona una carpeta `input` existente
+   con **Examinar** o proporciona su ruta manual. Alternativamente, usa la API
+   de ComfyUI si el servidor no comparte el mismo sistema de archivos.
+4. Confirma **Copiar fotografías seleccionadas**. OrkiLab conserva los
+   originales y muestra los nombres de las copias transferidas.
+5. Si no aparecen workflows compatibles, despliega la **Biblioteca oficial**
+   en esta misma pantalla: puedes descargar el ZIP o importar una de las
+   tres plantillas básicas (requieren **una sola foto** y un checkpoint).
+6. Prepara el workflow; OrkiLab debe comprobar los nodos `LoadImage`,
+   las entradas de texto editables y los parámetros antes de generar.
+7. Revisa la vista resultante. Guárdala solo mediante la acción explícita
+   como **sintética, pendiente de revisión** y sin inventar mediciones.
+8. Exporta el dataset aprobado, con la procedencia real/sintética registrada.
+
+**Desktop/Portable:** la idea es facilitar ambos formatos sin forzar
+custom nodes, pero **no afirmar validación universal**. Sus rutas de
+`input`, `models` y sus versiones pueden ser distintas. Si no hay
+un checkpoint compatible, descargar el ZIP no lo instala automáticamente.
+
+### Criterios para incorporar Qwen o FLUX a la biblioteca oficial
+
+Antes de pasar cada plantilla de *prevista* a *disponible*:
+- Obtener un JSON API completo, con conexiones de referencia y prompt reales.
+- Especificar el modelo, sus pesos, licencia, VAE y codificadores necesarios.
+- Distinguir nodos básicos y terceros, y comprobar versiones de ComfyUI.
+- Validar importación, ejecución, cancelación y registro sintético en un
+  entorno real; probar Desktop y Portable antes de marcar ambos como compatibles.
+- Documentar número de fotografías aceptado, memoria usada y limitaciones
+  de coherencia geométrica, sin prometer reconstrucción fotogramétrica.
+
+---
+
 ## Compatibility policy: clean ComfyUI Desktop and Windows Portable
 
 Official project-maintained workflows always use the visible name **OrkiLab ·**
@@ -78,7 +151,7 @@ model weights by default.
 | **OrkiLab · Multiview · Qwen Multi-Reference** | 2–4 reference photos | Proven multi-image conditioning graph, not simply disconnected LoadImage nodes |
 | **OrkiLab · Multiview · Camera-Control** | Explicit camera motion | A camera-conditioned model/workflow; exact angles only when validated |
 
-**These four are proposals, not included runnable JSONs.** Each must be tested
+**Estas cuatro plantillas siguen pendientes de próximas revisiones; no hay JSONs ejecutables incluidos para ellas.** Each must be tested
 with actual models and complete connected nodes on ComfyUI Desktop and Portable
 before publishing as "compatible". Do not copy an unknown third-party
 workflow to the official library without checking its license.
