@@ -1,12 +1,13 @@
 # Roadmap
 
-## Current work: OrkiLab 0.6.0 B10.5 — release readiness (not published)
+## Current work: OrkiLab 0.6.0 B10.5 — RC1 staged (not published)
 
-The 0.6 Benchmark Studio development remains on **[PR #104](https://github.com/jlopfri921/OrkiLab/pull/104)**. B10.1–B10.4 have been accepted by the local operator, with **267 benchmark checks operator-reported PASS**. B10.5 adds a conservative RC publication checklist, optional **light/dark UI mode** across Workspace/Benchmark/Queue/Dataset and shared shell screens, and 16 new tests. **283 benchmark checks expected**, not yet verified by the operator on Windows. Acceptance is documented in [RC_0_6_0_READINESS.md](RC_0_6_0_READINESS.md); detailed evidence history in [BENCHMARK_0_6_ROADMAP.md](BENCHMARK_0_6_ROADMAP.md).
+The 0.6 Benchmark Studio development remains on **[PR #104](https://github.com/jlopfri921/OrkiLab/pull/104)**. B10.1–B10.4 have been accepted by the local operator, with **288 benchmark checks operator-reported PASS**. B10.5 adds a conservative RC publication checklist, optional **light/dark UI mode** across Workspace/Benchmark/Queue/Dataset and shared shell screens, and 16 new tests. **288 benchmark checks operator-reported PASS**; full-app CI and real GPU verification remain pending. Acceptance is documented in [RC_0_6_0_READINESS.md](RC_0_6_0_READINESS.md); detailed evidence history in [BENCHMARK_0_6_ROADMAP.md](BENCHMARK_0_6_ROADMAP.md).
 
-**B10 phase status:** B10.1 protocol declarations — accepted; B10.2 model-choice checks — accepted; B10.3 guided one-job submission — accepted by mocked tests/UI, real GPU still to certify; B10.4 descriptive pairwise results — accepted; **B10.5 final regression, web theme and RC acceptance — in development/pending tests**.
+**B10 phase status:** B10.1 protocol declarations — accepted; B10.2 model-choice checks — accepted; B10.3 guided one-job submission — accepted by mocked tests/UI, real GPU still to certify; B10.4 descriptive pairwise results — accepted; **B10.5 automated suite operator-accepted; full-app, GPU, backup and candidate CI still pending**.
 
 Do **not** interpret a passed local Benchmark test suite as verified scientifically comparable inference or release authorization. Complete Windows/Linux CI at the final commit, real ComfyUI/GPU acceptance with explicit consent, full app regression, mobile/light-theme visual review, data safety, documentation and author signoff **before** tagging `v0.6.0-rc1`. The older 0.5.0 prerelease notes below are historical, not this branch's current release decision. No 0.6.0 release tag has been created here.
+
 
 
 | Release | Scope | Acceptance gate |
@@ -22,13 +23,26 @@ Do **not** interpret a passed local Benchmark test suite as verified scientifica
 | 0.9 Desktop | portable application/installer | clean Windows/Linux install and rollback |
 | 1.0 Stable | documented supported matrix | regression and hardware validation |
 
+## Version evolution and documented phase tables
+
+For the complete historical phase-by-phase account of **0.1.0, 0.2.0, 0.3.0, 0.4.0, 0.5.0 and planned 0.6.0**, including RC acceptance qualifications and published-vs-unpublished status, see [OrkiLab release history](RELEASE_HISTORY.md).
+
+| Version | Documented phases (not necessarily GitHub tags) | Evidence |
+| --- | --- | --- |
+| **0.1.0** | dev → rc.1 → rc.2 | Historical candidate entries; no public release verified in this ledger |
+| **0.2.0** | dev.1 → rc.1 | Historical candidate entries; no public release verified in this ledger |
+| **0.3.0** | development → rc.1 | Published GitHub prerelease |
+| **0.4.0** | development / beta.1 slices → rc.1 | Published GitHub prerelease |
+| **0.5.0** | alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1 (+ follow-ups) | Published GitHub prerelease; stable pending |
+| **0.6.0** | alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable | Proposed development sequence; not released |
+
 ## Current milestone: 0.5.0-rc.1 — Multiview prerelease published; stable acceptance pending
 
-[v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) was published as a **prerelease on 2026-11-22**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, with Windows/Linux CI passed. This release includes Multiview development through PR #99 and comprehensive 0.5.0 documentation through PR #100. Operator-reported Windows/RTX 3090 acceptance covers earlier configurations, not all later workflows. There is **no stable v0.5.0 yet**. See [the 0.5 acceptance register](RC_0_5_0_READINESS.md) for final hardware, safety, compatibility and rollback gates. Proceed to **0.6.0** only after stable 0.5.0 acceptance. Earlier 0.4.0 stable blockers remain explicit.
+[v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1) was published as a **prerelease on 2026-11-22**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, with Windows/Linux CI passed. This release includes Multiview development through PR #99 and comprehensive 0.5.0 documentation through PR #100. Operator-reported Windows/RTX 3090 acceptance covers earlier configurations, not all later workflows. There is **no stable v0.5.0 yet**. See [the 0.5 acceptance register](RC_0_5_0_READINESS.md) for final hardware, safety, compatibility and rollback gates. Proceed to **0.6.0** only after stable 0.5.0 acceptance. Earlier 0.4.0 stable blockers remain explicit.
 
 ## Previous milestone: 0.4.0-rc.1 — integrated dataset and curated LoRA candidate
 
-**Status:** [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) is a published GitHub prerelease based on the candidate merged through PR #76. Subsequent Dataset Studio safety changes (PR #77) are in `main` and may be newer than the immutable release tag. This is not 0.4.0 stable. The Dataset Studio hardening checks (PR #77) were also merged after Windows/Linux CI. The last published prerelease remains `v0.3.0-rc.1` until GitHub Releases confirms otherwise.
+**Status:** [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1) is a published GitHub prerelease based on the candidate merged through PR #76. Subsequent Dataset Studio safety changes (PR #77) are in `main` and may be newer than the immutable release tag. This is not 0.4.0 stable. The Dataset Studio hardening checks (PR #77) were also merged after Windows/Linux CI. The published `v0.4.0-rc.1` prerelease is documented above; the release candidate does not establish stable 0.4.0 acceptance.
 
 **In candidate:** project-linked Dataset Studio, captions, non-destructive derived export, optional local Ollama preview, project-specific trainer draft handoff, named ComfyUI checkpoint management and comparison, human LoRA ratings and a searchable curated library, collapsible and searchable generation history, common footer and sidebar version.
 
@@ -40,7 +54,7 @@ Do **not** interpret a passed local Benchmark test suite as verified scientifica
 
 See [the detailed 0.5.0 delivery and acceptance plan](MULTIVIEW_0_5_ROADMAP.md). It covers subjects/captures/view metadata, source provenance, visual coverage, optional controlled ComfyUI view generation, group-aware exports, multilingual UI, and Windows/Linux plus GPU acceptance. The 0.5 milestone does not waive unfinished 0.4 stable release gates.
 
-## Immediate milestone: 0.3.0-rc.1 — ComfyUI integration candidate
+## Historical milestone: 0.3.0-rc.1 — ComfyUI integration candidate
 
 **Status:** **published as a prerelease on 2026-11-21** (tag `v0.3.0-rc.1`, commit `3d7dde0ce19d1937320cd2517523a5b36860b098`). The release is not designated stable; further acceptance and follow-up fixes are tracked separately.
 
