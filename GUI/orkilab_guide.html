@@ -96,16 +96,6 @@ code{background:#0b1727;border:1px solid #30465e;padding:2px 6px;border-radius:5
 <details><summary>Why is a missing view not generated?</summary><p>Check ComfyUI mode/connection and a validated, image-conditioned workflow with connected LoadImage nodes.</p></details>
 <details><summary>Are originals removed during reference review?</summary><p>Dataset/Multiview reference actions preserve original source files. Back up settings/orkilab before major changes.</p></details></section>
 </div></main></div>
-<script>
-(function(){
- function translate(){
-  const locale=typeof I18N!=="undefined"?I18N.lang:"es";const lang=locale==="es"?"es":"en";
-  document.querySelectorAll("[data-lang]").forEach(n=>n.hidden=n.dataset.lang!==lang);
-  document.querySelectorAll("[data-text-es]").forEach(n=>n.textContent=n.dataset[lang==="es"?"textEs":"textEn"]);
-  document.documentElement.lang=lang;
- }
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",translate);else translate();
- document.addEventListener("orkilab:language-changed",translate);
-})();
-</script><script src="/assets/orkilab/orkilab-shell.js"></script>
+<script src="/assets/orkilab/orkilab-guide-i18n.js"></script>
+<script src="/assets/orkilab/orkilab-shell.js"></script>
 </body></html>
