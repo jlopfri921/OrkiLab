@@ -22,6 +22,7 @@ from benchmark_b9_closure import summarize_b9_closure
 from benchmark_b10_preflight import inspect_comparison_plan
 from benchmark_b10_model_check import inspect_model_variants
 from benchmark_b10_results import describe_cross_variant_measurements
+from benchmark_b10_release_gate import summarize_b10_release_readiness
 from benchmark_draft_creation import create_confirmed_draft, validate_draft_payload
 
 ID = re.compile(r"^[A-Za-z0-9_-]{1,200}$")
@@ -364,6 +365,7 @@ def report_routes(app, base):
             )
             result["b9_closure"] = summarize_b9_closure(result)
             result["b10_comparison_preflight"] = inspect_comparison_plan(report)
+            result["b10_release_readiness"] = summarize_b10_release_readiness(result)
             result["project_id"] = project_id
             result["name"] = row["name"]
             result["run_created_at"] = row["created_at"]
