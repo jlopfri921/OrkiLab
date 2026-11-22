@@ -55,6 +55,68 @@ class BenchmarkReportsApiTests(unittest.TestCase):
             con.execute("INSERT INTO projects VALUES ('project-a',0)")
             con.execute("INSERT INTO projects VALUES ('project-archived',1)")
 
+    def test_draft_options_lists_real_workflows_and_devices_without_writes(self):
+        from unittest.mock import patch
+        self.create_active_project_fixture()
+        wf_db = self.base / "settings" / "orkilab" / "workflows.sqlite3"
+        from contextlib import closing
+        with closing(sqlite3.connect(wf_db)) as conn, conn:
+            conn.execute("CREATE TABLE workflows (id TEXT,name TEXT,category TEXT)")
+            conn.execute("INSERT INTO workflows VALUES ('wf-1','Flujo español','image')")
+        prior = wf_db.read_bytes()
+        with patch("benchmark_gpu_memory_probe.sample_devices", return_value={
+            "ok": True, "devices": [{"uuid":"GPU-123","name":"Test card","index":0}]
+        }) as mock:
+            response = self.client.get(
+                "/api/workspace/benchmark/draft-options?project_id=project-a"
+            )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        body = response.get_json()
+        self.assertEqual(body["workflows"][0]["name"], "Flujo español")
+        self.assertEqual(body["devices"][0]["uuid"], "GPU-123")
+        self.assertTrue(body["metadata_only"])
+        self.assertFalse(body["auto_verified"])
+        self.assertFalse(body["execution_submitted"])
+        self.assertEqual(wf_db.read_bytes(), prior)
+        self.assertFalse(self.db.exists())
+        mock.assert_called_once_with()
+
+    def test_draft_options_missing_workflow_database_and_gpu_returns_empty(self):
+        from unittest.mock import patch
+        self.create_active_project_fixture()
+        with patch("benchmark_gpu_memory_probe.sample_devices",
+                   return_value={"ok": False, "reason": "unavailable"}):
+            response = self.client.get(
+                "/api/workspace/benchmark/draft-options?project_id=project-a"
+            )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        self.assertEqual(response.get_json()["workflows"], [])
+        self.assertEqual(response.get_json()["devices"], [])
+        self.assertFalse(response.get_json()["gpu_inventory_available"])
+        self.assertFalse(self.db.exists())
+
+    def test_draft_options_reject_remote_and_other_projects(self):
+        from unittest.mock import patch
+        self.create_active_project_fixture()
+        remote = self.client.get(
+            "/api/workspace/benchmark/draft-options?project_id=project-a",
+            environ_overrides={"REMOTE_ADDR":"198.51.100.10"}
+        )
+        self.assertEqual(remote.status_code, 403)
+        unknown = self.client.get(
+            "/api/workspace/benchmark/draft-options?project_id=other"
+        )
+        self.assertEqual(unknown.status_code, 404)
+        archived = self.client.get(
+            "/api/workspace/benchmark/draft-options?project_id=project-archived"
+        )
+        self.assertEqual(archived.status_code, 404)
+        invalid = self.client.get(
+            "/api/workspace/benchmark/draft-options?project_id=../bad"
+        )
+        self.assertEqual(invalid.status_code, 400)
+        self.assertFalse(self.db.exists())
+
     def test_confirmed_draft_api_creates_only_inactive_plan(self):
         from test_benchmark_draft_creation import payload
         self.create_active_project_fixture()
