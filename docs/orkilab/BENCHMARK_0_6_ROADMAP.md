@@ -824,3 +824,26 @@ git pull --ff-only
 ```
 
 For UI acceptance without consuming GPU, open `http://127.0.0.1:4990/workspace/comfyui#benchmark`, select a project and an existing complete `draft`, inspect **«Ejecución controlada de variantes (B10.3)»**, and click **Activar protocolo (sin ejecutar)** only if intentionally ready to move that run to `running`; note this is a persistent state change. Clicking **Preparar una variante** is generation-free; if successful, confirm the Send button remains disabled until the checkbox is explicitly enabled. **Do not click Enviar una generación confirmada unless intentionally ready for real ComfyUI/GPU work.** Do not mark runtime generation verified from mocked tests alone.
+
+## B10.3 operator acceptance / B10.4 factual pairwise result descriptions
+
+The operator confirmed **`tok`** after B10.3 validation instructions, recording **254 benchmark tests as operator-reported PASS** (no raw Windows unittest transcript). This confirms acceptance of the guided interface/mocked tests, **not an independently proven real ComfyUI/GPU comparison**.
+
+B10.4 adds the pure module `scripts/benchmark_b10_results.py` for **descriptive, never-ranked** pairwise differences between **medians of completed, recorded, non-null durations**. Given an existing B9.1 summary and B9.3 comparability diagnostics scoped to the same run:
+- It builds up to 190 unique unordered variant pairs for at most 20 variants, with variant IDs, median A/B in milliseconds, observation coverage A/B, and the signed factual arithmetic `median B − median A` in milliseconds (no inferred percentage, acceleration, slowdown or model winner).
+- If either variant lacks a measured duration, the medians and difference stay **null**, with `insufficient_measurements`, not zero. Explicit B9.3 comparison blockers such as a cached sampler lead to `observed_difference_blocked`. Otherwise a non-null arithmetic difference is `observed_difference_unverified`, **never 'comparable' or 'verified'**. A negative difference never establishes B is faster under comparable conditions.
+- The module rejects contradictory run IDs, unpaired/duplicated variant IDs, malformed shapes and more than 20 variants. It does not write SQLite, run ComfyUI, invoke GPU telemetry, load model files, inspect output images, add subjective scores or invent visual quality. `ranking_eligible=false`, `best_variant=null`, `speedup_claim_allowed=false` are invariant.
+- Project-scoped read-only report detail now contains `b10_results`. The bilingual integrated **Diferencias observadas entre variantes (B10.4)** table shows only grounded pairwise descriptive values with prominent caveat, while preserving previously added B9 and B10 diagnostics.
+- This phase is an evidence-conservative **descriptive** B10.4, not a scientifically controlled ranking. B10.5 should focus on end-to-end regression, documentation, release readiness and explicit operator signoff; any truly controlled speedup/ranking requires further proof of executed model weights, input bytes, GPU/seed/cache and valid repeated inferencing, not merely sharing a benchmark run.
+
+**Twelve new tests**: 9 pure tests, 1 Flask route test, 2 UI tests; **266 benchmark tests expected** (254 operator-reported baseline + 12 new). JavaScript syntax parsed; Windows operator/browser suite remains pending. PR #104 remains open/unmerged.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_b10_results.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart launcher; open `http://127.0.0.1:4990/workspace/comfyui#benchmark`, choose a saved run, and inspect **Diferencias observadas entre variantes (B10.4)**. Runs without two timed variants show no invented pairwise difference; with two timed variants show A/B medians and B−A clearly marked **descriptive and not comparable**. **Do not submit a ComfyUI generation or change run state** just to check this reporting phase.
