@@ -1,0 +1,97 @@
+name: Publish OrkiLab 0.5.0 stable
+
+on:
+  workflow_dispatch:
+    inputs:
+      acceptance:
+        description: 'Type PUBLISH ORKILAB 0.5.0 STABLE after manual hardware acceptance'
+        type: string
+        required: true
+      accepted_sha:
+        description: 'Full 40-character main SHA approved after H1-H7 tests'
+        type: string
+        required: true
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: orkilab-v0.5.0-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify deliberate release authorization
+        env:
+          ACCEPTANCE: ${{ inputs.acceptance }}
+          ACCEPTED_SHA: ${{ inputs.accepted_sha }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$ACCEPTANCE" = "PUBLISH ORKILAB 0.5.0 STABLE"
+          [[ "$ACCEPTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$ACCEPTED_SHA" = "$CURRENT_SHA"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check stable metadata and acceptance record
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          assert Path("VERSION_ORKILAB").read_text(encoding="utf-8").strip() == "0.5.0"
+          cfg=json.loads(Path("GUI/launcher.json").read_text(encoding="utf-8"))
+          assert cfg["orkilab_version"] == "0.5.0"
+          readme=Path("README.md").read_text(encoding="utf-8")
+          assert 'alt="Version 0.5.0"' in readme
+          assert "version-0.5.0-" in readme
+          assert Path(".github/RELEASE_0_5_0.md").is_file()
+          record=Path("docs/orkilab/RC_0_5_0_STABLE_ACCEPTANCE.md").read_text(encoding="utf-8")
+          assert all(f"| H{i} |" in record for i in range(1,8))
+          for i in range(1,8):
+              row=next(row for row in record.splitlines() if row.startswith(f"| H{i} |"))
+              assert "**PENDING**" not in row, f"Missing manual approval: H{i}"
+          assert "**Status: release gate OPEN.**" not in record, "Release gate not signed off"
+      - name: Require successful Linux and Windows workflows for exact SHA
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for workflow in "OrkiLab foundation checks" "OrkiLab RC validation"; do
+            run_ids="$(gh run list --repo "$GH_REPO" --workflow "$workflow" --commit "$RELEASE_SHA" --limit 30 --json databaseId,event,status,conclusion \
+              --jq '.[] | select(.event == "push" and .status == "completed" and .conclusion == "success") | .databaseId')"
+            if [ -z "$run_ids" ]; then
+              echo "Missing passing push run: $workflow ($RELEASE_SHA)"
+              exit 1
+            fi
+            echo "$workflow validated at $RELEASE_SHA"
+          done
+      - name: Create stable GitHub Release once, never overwrite
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if gh release view "v0.5.0" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo "Stable release already exists; refusing overwrite"
+            exit 1
+          fi
+          if gh api "repos/$GH_REPO/git/ref/tags/v0.5.0" >/dev/null 2>&1; then
+            echo "Tag already exists; refusing to rewrite"
+            exit 1
+          fi
+          gh release create "v0.5.0" --repo "$GH_REPO" --target "$RELEASE_SHA" \
+            --title "OrkiLab v0.5.0" \
+            --notes-file ".github/RELEASE_0_5_0.md" --latest
+          gh release view "v0.5.0" --repo "$GH_REPO" --json isPrerelease,url,tagName

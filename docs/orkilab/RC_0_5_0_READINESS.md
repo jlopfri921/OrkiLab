@@ -38,6 +38,10 @@ The first operator-reported acceptance covered PRs #80–#85. Subsequent changes
 
 **Promotion decision:** prerelease `v0.5.0-rc.1` is appropriate when exact commit Windows/Linux checks pass; stable `v0.5.0` waits for documented on-device source-to-output, cancellation/rollback, workflow compatibility and no-data-loss acceptance. The next milestone is **0.6.0**, only after stable 0.5.0.
 
+## Stable 0.5.0 preparation (2026-11-22)
+
+A dedicated [stable-release acceptance checklist](RC_0_5_0_STABLE_ACCEPTANCE.md) lists H1–H7 hardware and regression checks. The draft stable publisher is **manual-only** and refuses publication while any H1–H7 item is pending. This avoids confusing the already-published RC.1 with a fully accepted stable version. The stable version/README metadata will be changed to `0.5.0` only after the checklist is signed off; no 0.6.0 work begins before a verified stable publication.
+
 ## Remaining release gates
 
 1. Verify current `main` SHA and rerun appropriate GitHub Actions Windows/Linux foundation and release checks on the exact candidate SHA; collect statuses and skipped cases.
