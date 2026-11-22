@@ -1,5 +1,13 @@
 # OrkiLab changelog
 
+## 0.5.0 — stable release preparation (NOT YET PUBLISHED)
+
+- Stable version metadata prepared in a release branch, pending manual acceptance and exact-commit Windows/Linux checks.
+- The operator reported carrying out H1–H7 on Windows; individual PASS/FAIL results, concrete ComfyUI configuration and blocking-issue confirmation still require recording before stable publication.
+- Stable release will use a manual, exact-SHA gated publisher and will not rewrite existing tags or claim universal workflow/model compatibility. The prior `v0.5.0-rc.1` remains a published prerelease.
+- Supported scope and included features are listed in the RC.1 history below; Qwen-Image/FLUX dedicated and true multi-reference workflows remain future work.
+
+
 ## 0.5.0-rc.1 — published GitHub prerelease (2026-11-22; not stable)
 
 **Status:** [v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) is published as a **GitHub prerelease**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, after Windows/Linux CI. There is no stable `v0.5.0` yet; stable release depends on additional real-device acceptance.
