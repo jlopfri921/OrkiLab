@@ -741,3 +741,21 @@ git pull --ff-only
 ```
 
 Restart OrkiLab and open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Choose a saved run and inspect **Estado de validación B9**: checks should say either **Solo constancia documental** or **Pendiente de acreditar** (never *experiment fully verified*), with a visible **Validación completa pendiente** or **Se han detectado incompatibilidades** heading. A legacy run or missing local history stays pending. Cache evidence on completed observations with unknown duration still blocks comparability. Preserve open PR #104, do not merge or publish 0.6.0, and continue to defer the separate workflow error correction catalogue unless asked.
+
+## B9.10 Windows test incident / SQLite temporary cleanup correction
+
+The operator supplied a full Windows 11 / Python 3.13 PowerShell unittest log. Following the B9.10 update to 222 cases:
+- `test_benchmark_b9_closure.py` **8/8 PASS**.
+- `test_benchmark_comparability.py` **10/10 PASS**.
+- Full `test_benchmark*.py`: **222 executed; 221 passed, one ERROR**, not `tok` and **not accepted**. The failing case is `test_b9_9_local_history_matches_immutable_lineage_without_backend_execution`.
+- Error is `PermissionError: [WinError 32]` during `tempfile.TemporaryDirectory.cleanup()`, attempting to delete the test fixture's *temporary* `benchmarks.sqlite3`. The traceback does **not** indicate corruption of the user's real benchmark DB. The fixture used `with sqlite3.connect(...) as conn:` in two locations. That block commits or rolls back but **does not close** a SQLite connection, allowing an unclosed handle to survive through Windows temp cleanup. Separate `ResourceWarning: unclosed database` messages corroborate this.
+
+Committed a narrowly scoped change in `tests/test_benchmark_reporting_routes.py` (`2158910`), using `with closing(sqlite3.connect(...)) as conn, conn:` for **both fixture connections** (benchmark lineage insert and generations history table/insert), ensuring close before the temporary directory is removed. This affects tests only: **no runtime API, DB schema, observed data, ComfyUI generation or model settings changed**. Count remains **222**, not 223; pending operator retest on Windows. Test error diagnosis is based on the actual uploaded log.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_reporting_routes.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+After retest, accept B9.10 only if all 222 cases pass and the benchmark UI remains correct. PR #104 must remain open/unmerged until operator authorization.
