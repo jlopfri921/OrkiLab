@@ -121,6 +121,22 @@ def report_routes(app, base):
             protocol = json.loads(row["protocol_json"])
             if not isinstance(protocol, dict) or protocol.get("schema") != "orkilab-repro-v1":
                 return jsonify(error="Versioned comparison protocol required"), 409
+            # The model selector is only inspected for a complete versioned
+            # declaration. A partial protocol must not look like a valid
+            # candidate even if ComfyUI advertises a similarly named model.
+            declaration = declared_protocol_readiness({
+                "run": {"id": run_id, "protocol": protocol},
+                "variants": [
+                    {"id": v["id"], "run_id": run_id,
+                     "config_json": v["config_json"]}
+                    for v in variants
+                ],
+            })
+            if declaration["status"] != "declared_unverified":
+                return jsonify(error="Complete comparison declaration required",
+                               reason_codes=declaration["reason_codes"],
+                               comparison_execution_authorized=False,
+                               generation_submitted=False), 409
             workflow_id = protocol.get("workflow_id")
             if not isinstance(workflow_id, str) or not ID.fullmatch(workflow_id):
                 return jsonify(error="Saved workflow reference required"), 409
