@@ -6,9 +6,51 @@ models, input images or original prompt text.
 """
 from __future__ import annotations
 
+import hashlib
+import json
+import re
 from typing import Any
 
 from benchmark_generation_adapter import snapshot_generation
+
+
+def match_declared_literal_text_hashes(history: Any, protocol: Any) -> dict:
+    """Find exact UTF-8 text hashes in trusted built-in CLIPTextEncode nodes.
+
+    Positive/negative polarity cannot be derived from text alone; a match only
+    confirms that these bytes appear as literal text in the persisted graph.
+    Other encoders, dynamic values and loaded media remain unknown.
+    """
+    result = {"status": "not_checked", "supported_literal_nodes": 0,
+              "positive_digest_found": False, "negative_digest_found": False,
+              "polarity_verified": False, "input_file_verified": False,
+              "models_verified": False}
+    if not isinstance(history, dict) or not isinstance(protocol, dict) or protocol.get("schema") != "orkilab-repro-v1":
+        return result
+    values = [protocol.get("prompt_sha256"), protocol.get("negative_prompt_sha256")]
+    if any(not isinstance(v, str) or re.fullmatch(r"[0-9a-f]{64}", v) is None for v in values):
+        return result
+    try:
+        graph = history.get("graph")
+        graph = json.loads(graph) if isinstance(graph, str) else graph
+        if not isinstance(graph, dict) or not 0 < len(graph) <= 2000:
+            return result
+        hashes = set()
+        for node in graph.values():
+            if (not isinstance(node, dict) or node.get("class_type") != "CLIPTextEncode"
+                    or not isinstance(node.get("inputs"), dict)):
+                continue
+            text = node["inputs"].get("text")
+            if not isinstance(text, str) or len(text.encode("utf-8")) > 1_000_000:
+                continue
+            hashes.add(hashlib.sha256(text.encode("utf-8")).hexdigest())
+            result["supported_literal_nodes"] += 1
+        result["status"] = "literal_nodes_inspected" if hashes else "no_supported_literal_nodes"
+        result["positive_digest_found"] = values[0] in hashes
+        result["negative_digest_found"] = values[1] in hashes
+    except (ValueError, TypeError, UnicodeError, OverflowError):
+        return result
+    return result
 
 
 def compare_saved_generation(snapshot: Any, history: Any) -> dict:
@@ -66,6 +108,9 @@ def summarize_saved_history_matches(report: Any, history_records: Any, *, trunca
                 or o.get("variant_id") not in group):
             raise ValueError("Invalid observation scope")
         group[o["variant_id"]].append(o)
+    protocol = report["run"].get("protocol", report["run"].get("protocol_json", {}))
+    if isinstance(protocol, str):
+        protocol = json.loads(protocol)
     result = []
     for v in report["variants"]:
         results = []
@@ -80,11 +125,26 @@ def summarize_saved_history_matches(report: Any, history_records: Any, *, trunca
                 results.append("history_missing")
             else:
                 results.append(compare_saved_generation(snap, history_records[generation_id])["status"])
+        text_checks = []
+        for observation in group[v["id"]]:
+            snap = observation.get("generation_lineage")
+            if not isinstance(snap, dict) or not isinstance(snap.get("generation_id"), str):
+                continue
+            record = history_records.get(snap["generation_id"])
+            if record is not None:
+                text_checks.append(match_declared_literal_text_hashes(record, protocol))
         counts = {state: results.count(state) for state in
                   ("local_record_match", "local_record_mismatch", "history_missing",
                    "history_invalid", "lineage_missing")}
         result.append({"variant_id": v["id"], "observations": len(group[v["id"]]),
                        "counts": counts,
+                       "literal_prompt_evidence": {
+                           "supported_literal_nodes": sum(c["supported_literal_nodes"] for c in text_checks),
+                           "positive_digest_found_in_any_record": any(c["positive_digest_found"] for c in text_checks),
+                           "negative_digest_found_in_any_record": any(c["negative_digest_found"] for c in text_checks),
+                           "polarity_verified": False,
+                           "input_file_verified": False,
+                       },
                        "status": "not_checked" if truncated else (
                            "mismatch" if counts["local_record_mismatch"] else
                            "local_records_consistent" if results and counts["local_record_match"] == len(results)
