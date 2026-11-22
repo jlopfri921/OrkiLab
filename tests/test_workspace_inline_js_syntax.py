@@ -161,6 +161,34 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         for lang in ("es","en","pt","fr","de","it","ja","ko"):
             self.assertIn(lang+":{",source)
 
+    def test_overview_help_explains_whole_app_in_all_eight_languages(self):
+        html=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
+        js=(ROOT/"assets"/"orkilab"/"orkilab-guide-i18n.js").read_text(encoding="utf-8")
+        for text in ('id="about"','href="#about"','OrkiLab: qué es, por qué existe',
+                     "Su filosofía:", "La visión de conjunto", "Qwen-Image y FLUX/Klein",
+                     "not released features"):
+            self.assertIn(text,html)
+        self.assertIn('const anchors=["about","flow","sections","multiview","modes","faq"]',js)
+        self.assertIn("renderOverview(main)",js)
+        self.assertIn("overviewContent[lang].nav",js)
+        for lang in ("pt","fr","de","it","ja","ko"):
+            self.assertIn('"'+lang+'":{"title":',js)
+        self.assertIn('panel.dataset.guideSection="about"',js)
+        self.assertIn('document.documentElement.lang=lang',js)
+
+    def test_multiview_readme_and_future_model_ui_are_explicit(self):
+        readme=(ROOT/"workflows"/"multiview"/"README.md").read_text(encoding="utf-8")
+        interface=(ROOT/"assets"/"orkilab"/"multiview-generate-view.js").read_text(encoding="utf-8")
+        self.assertIn("## Qué aporta esta biblioteca a OrkiLab",readme)
+        self.assertIn("Core Preserve",readme)
+        self.assertIn("Qwen-Image 2.1 Edit",readme)
+        self.assertIn("FLUX.3 Klein Image Edit",readme)
+        self.assertIn("Pendiente de próximas revisiones",readme)
+        self.assertIn("mejora futura no disponible en OrkiLab",interface)
+        self.assertIn("future improvement not available in OrkiLab",interface)
+        self.assertIn('officialText("upstream")',interface)
+        self.assertIn('officialText("externalHint")',interface)
+
     def test_general_guide_page_exists(self):
         page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
         for section in ('id="flow"','id="sections"','id="multiview"',

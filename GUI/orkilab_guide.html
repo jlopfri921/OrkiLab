@@ -9,6 +9,7 @@
 .tag{display:inline-block;color:#77ebe0;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px;margin:20px 0}
 .panel{border:1px solid #314a62;border-radius:13px;background:#14243b;padding:18px;scroll-margin-top:22px}
+.orki-guide-overview{margin:18px 0}.orki-guide-overview h3{font-size:1.05rem;margin:16px 0 6px;color:#eaf5ff}.orki-guide-overview p{line-height:1.65;color:#cad8e8}
 .panel h2{font-size:20px;margin:0 0 10px}.panel p,.panel li{line-height:1.65;color:#cad8e8}.panel ol,.panel ul{padding-left:24px}.panel a{display:inline-block;margin-top:6px}
 .sections{display:flex;gap:9px;flex-wrap:wrap;margin:17px 0}.sections a{padding:9px 12px;border:1px solid #3a6075;border-radius:9px;text-decoration:none}
 .qa details{border-top:1px solid #36516a;padding:12px 0}.qa summary{cursor:pointer;font-weight:650}.qa p{margin:8px 0}
@@ -41,7 +42,36 @@ code{background:#0b1727;border:1px solid #30465e;padding:2px 6px;border-radius:5
 <p>Un recorrido claro por la estructura de la aplicación, los proyectos, los datos, el entrenamiento y las funciones opcionales de IA. Trabaja a tu ritmo: ningún workflow se ejecuta ni se descarga ningún modelo por consultar esta guía.</p></section>
 <section class="hero" data-lang="en" hidden><span class="tag">OrkiLab / Help 0.5.0 RC.1</span><h1>OrkiLab user guide</h1>
 <p>A practical map of the application: projects, datasets, trainers, GPU, optional AI tools, and safe workflows. Reading the guide never starts generation or downloads models.</p></section>
-<nav class="sections" aria-label="Guide contents"><a href="#flow" data-text-es="Primeros pasos" data-text-en="Getting started">Primeros pasos</a><a href="#sections" data-text-es="Módulos" data-text-en="Modules">Módulos</a><a href="#multiview" data-text-es="Multiview" data-text-en="Multiview">Multiview</a><a href="#modes" data-text-es="Modos" data-text-en="Modes">Modos</a><a href="#faq" data-text-es="Preguntas frecuentes" data-text-en="FAQ">Preguntas frecuentes</a></nav>
+<nav class="sections" aria-label="Guide contents"><a href="#about" data-text-es="Qué es OrkiLab" data-text-en="About OrkiLab">Qué es OrkiLab</a><a href="#flow" data-text-es="Primeros pasos" data-text-en="Getting started">Primeros pasos</a><a href="#sections" data-text-es="Módulos" data-text-en="Modules">Módulos</a><a href="#multiview" data-text-es="Multiview" data-text-en="Multiview">Multiview</a><a href="#modes" data-text-es="Modos" data-text-en="Modes">Modos</a><a href="#faq" data-text-es="Preguntas frecuentes" data-text-en="FAQ">Preguntas frecuentes</a></nav>
+<section class="panel orki-guide-overview" data-lang="es" id="about">
+<h2>OrkiLab: qué es, por qué existe y hacia dónde va</h2>
+<p><strong>OrkiLab es un espacio de trabajo abierto, modular y centrado en el equipo del usuario</strong> para experimentar con modelos generativos, preparar conjuntos de datos, entrenar adaptadores LoRA y organizar flujos de generación. Busca conectar tareas que habitualmente se realizan en herramientas separadas, sin exigir un servicio de IA en la nube.</p>
+<p><strong>Su filosofía:</strong> control sobre los archivos y los recursos propios, transparencia sobre qué se ha generado o medido, seguridad por defecto, herramientas opcionales y una curva de aprendizaje accesible. Las imágenes originales no se modifican al registrar referencias; los entrenamientos o generaciones requieren acciones explícitas y cada integración declara sus límites.</p>
+<p><strong>Su objetivo práctico:</strong> acompañarte del proyecto al resultado: <em>organizar → preparar datos → revisar → entrenar o generar → comparar → exportar y reutilizar</em>. No es un modelo de IA en sí mismo: es una aplicación que organiza motores, datos, workflows y recursos del ordenador.</p>
+<h3>Cómo encaja todo</h3>
+<ul><li><strong>Workspace y Proyectos</strong> dan contexto y continuidad al trabajo.</li>
+<li><strong>Dataset Studio y Multiview</strong> organizan imágenes, metadatos, vistas, revisiones y conjuntos exportables.</li>
+<li><strong>Entrenadores y LoRA</strong> permiten preparar entrenamientos compatibles y consultar sus resultados.</li>
+<li><strong>Zona ComfyUI</strong> añade workflows y generación cuando se conecta voluntariamente.</li>
+<li><strong>Gestor GPU y Cola</strong> muestran recursos y ejecución; <strong>Ollama</strong> puede asistir localmente en tareas concretas, como orientar fotos.</li></ul>
+<h3>La visión de conjunto</h3>
+<p>La visión a largo plazo es convertir OrkiLab en un laboratorio de IA generativa <strong>reproducible, extensible y gratuito de código abierto</strong>, utilizable con hardware doméstico y con diferentes familias de modelos. Se pretende mejorar la interoperabilidad y simplificar el trabajo cotidiano, sin ocultar requisitos técnicos ni prometer compatibilidad universal.</p>
+<p><strong>Qué existe y qué está por llegar:</strong> actualmente están implementados módulos de proyectos, datasets, entrenadores, recursos, Multiview y la integración opcional con ComfyUI/Ollama en los ámbitos documentados. La biblioteca de workflows multivista incluye tres ejemplos básicos de imagen a imagen. Las plantillas específicas de <strong>Qwen-Image y FLUX/Klein</strong>, el uso genuino de varias referencias y un control de cámara verificable son mejoras previstas, <strong>no funciones listas ni validadas</strong>. La versión 0.5.0 sigue siendo candidata, no una versión estable.</p>
+</section>
+<section class="panel orki-guide-overview" data-lang="en" hidden>
+<h2>OrkiLab: purpose, philosophy and long-term vision</h2>
+<p><strong>OrkiLab is an open-source, modular, local-first workspace</strong> for working with generative models, preparing datasets, training LoRA adapters and organizing image-generation workflows. It connects steps that otherwise require different tools, without requiring a cloud AI subscription.</p>
+<p><strong>Its philosophy:</strong> control of your own files and computing resources, clarity about measured versus synthetic data, non-destructive references, explicit execution, optional integrations and accessible explanations. Models and engines must be installed separately where required; OrkiLab does not claim universal compatibility.</p>
+<p><strong>Its practical goal:</strong> project → dataset → review → train or generate → compare → export and reuse. OrkiLab is not itself a generative model: it coordinates your projects, compatible engines, workflows and local resources.</p>
+<h3>How the components fit together</h3>
+<ul><li><strong>Workspace and Projects:</strong> organization and continuity.</li>
+<li><strong>Dataset Studio and Multiview:</strong> images, viewpoints, metadata, review and export.</li>
+<li><strong>Trainers and LoRAs:</strong> compatible training tasks and recorded outputs.</li>
+<li><strong>ComfyUI Zone:</strong> optional workflow preparation and generation.</li>
+<li><strong>GPU Manager and Queue:</strong> hardware usage and jobs; <strong>Ollama:</strong> optional local assistance, including qualitative photo orientation.</li></ul>
+<h3>Where it is heading</h3>
+<p>The longer-term vision is an <strong>extensible, reproducible, free and open-source AI laboratory</strong> for everyday hardware, with clearer interoperability across model families. Current modules and optional connections are development implementations, not proof of compatibility with every setup. The three included Multiview workflows are basic img2img starters; dedicated <strong>Qwen-Image and FLUX/Klein</strong> workflows, true multi-reference conditioning and validated camera control remain <strong>planned improvements, not released features</strong>. Version 0.5.0 is still a release candidate.</p>
+</section>
 <div class="grid">
 <article class="panel" id="flow" data-lang="es"><h2>1. Primeros pasos</h2><ol><li>En <b>Proyectos</b>, crea un proyecto y selecciona su categoría y motor.</li><li>En <b>Dataset Studio</b>, incorpora imágenes por referencia, revisa su calidad y prepara las descripciones.</li><li>En <b>Entrenadores</b>, abre el motor compatible y configura el entrenamiento. Los proyectos no lanzan entrenamientos solos.</li><li>En <b>Cola de trabajo</b>, supervisa el progreso y controla los trabajos.</li><li>En <b>Mis LoRA entrenados</b>, consulta los resultados registrados.</li></ol><a href="/workspace#projects">Ir a proyectos</a></article>
 <article class="panel" data-lang="en" hidden><h2>1. Getting started</h2><ol><li>Create a project and choose its category/engine.</li><li>Reference, review, and caption images in Dataset Studio.</li><li>Open a compatible trainer; projects do not start training by themselves.</li><li>Track and manage jobs in the queue.</li><li>Inspect recorded results in My trained LoRAs.</li></ol><a href="/workspace#projects">Open projects</a></article>
