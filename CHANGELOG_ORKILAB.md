@@ -1,18 +1,18 @@
 # OrkiLab changelog
 
-## 0.6.0 — development, B10.5 candidate preparation (NOT released)
+## 0.6.0-rc1 — staged development candidate (NOT released)
 
-**Status:** Development in [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104), not merged to `main`, not tagged as `0.6.0-rc1` or stable. The prior 0.5.0 stable baseline and independent licensing changes must be reconciled before publishing.
+**Status:** Version metadata staged as `0.6.0-rc1` in [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104), not merged to `main`, not tagged or published as a GitHub Release. The 0.5.0 stable changes in `main` and independent licensing changes must be reconciled before publishing.
 
 - **Benchmark foundation (B1–B9):** project-scoped SQLite run/variant/observation records; immutable local ComfyUI generation lineage; versioned reproducibility declarations, timing diagnostics, cache blockers, history comparison and read-only reports. No invented performance evidence.
 - **B10.1/B10.2:** declaration preflight, manual model selection audit against standard ComfyUI node choices, and strict single-variable candidate checking for supported API graphs.
 - **B10.3:** explicit protocol activation, single variant/repetition preparation, user-confirmed submission and audit/history binding; no batch autoplay or hidden GPU work.
 - **B10.4:** factual paired observation medians and signed differences; incomplete measurements remain unknown, **no benchmark winner or speedup claims**.
 - **B10.5:** fail-closed RC gate visible in Benchmark Studio, manual release checklist, and optional persistent, eight-language **light/dark theme** across key web screens and shared-shell modules. Full trainer/mobile accessibility review still pending.
-- **Testing:** B10.4 accepted as **267 operator-reported benchmark checks**; B10.5 adds **16 automated tests**, targeting **283**, pending local Windows operator execution. Linux CI, full-application regression, privacy/data protection, actual GPU ComfyUI acceptance and maintainer release approval remain mandatory.
+- **Testing:** **283 benchmark checks operator-reported PASS**, through B10.5 acceptance (`tok`); no independently attached rerun transcript or verified exact-commit Windows/Linux CI. Linux CI, full-application regression, privacy/data protection, actual GPU ComfyUI acceptance and maintainer release approval remain mandatory.
 - **Release notes and acceptance matrix:** [docs/orkilab/RC_0_6_0_READINESS.md](docs/orkilab/RC_0_6_0_READINESS.md).
 
-Do not merge the feature branch, alter the stable version number, tag an RC, or issue a GitHub Release without independent acceptance and explicit maintainer authorization.
+Do not merge the feature branch, alter `main`'s stable `0.5.0` version, tag an RC, or issue a GitHub Release without full regression, exact-commit CI and explicit maintainer authorization. The `0.6.0-rc1` version here is **staged only**.
 
 
 ## 0.5.0-rc.1 — published GitHub prerelease (2026-11-22; not stable)
