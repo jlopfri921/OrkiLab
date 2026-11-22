@@ -14,7 +14,7 @@
   ko:["☾ 다크","☀ 라이트","다크 모드로 전환","라이트 모드로 전환"]
  };
  const language=()=>{
-  const code=(window.I18N?.lang||document.documentElement.lang||"en").toLowerCase().slice(0,2);
+  const code=(window.I18N?.lang||document.querySelector("select#language")?.value||document.documentElement.lang||"en").toLowerCase().slice(0,2);
   return names[code]||names.en;
  };
  const root=document.documentElement;
@@ -56,6 +56,7 @@
  else mount();
  window.addEventListener("storage",e=>{if(e.key===KEY)apply(read(),false)});
  document.addEventListener("orkilab:language-changed",()=>apply(root.dataset.orkiTheme,false));
+ document.addEventListener("change",e=>{if(e.target?.matches?.("select#language,select#workspace-language"))apply(root.dataset.orkiTheme,false)});
  window.addEventListener("message",e=>{
   if(e.origin!==window.location.origin||!e.data||e.data.type!=="orkilab-theme-request")return;
   apply(read(),false);
