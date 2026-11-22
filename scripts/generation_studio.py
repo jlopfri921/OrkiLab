@@ -434,11 +434,14 @@ def register(app, base):
     def finalize_benchmark(token):
         """Best-effort, local-only persistence; never changes generation outcome."""
         try:
+            db_path = base / "settings" / "orkilab" / "benchmarks.sqlite3"
+            if not db_path.is_file():
+                return "unbound"
             from benchmark_store import BenchmarkStore
             from benchmark_job_binding import finalize_bound_history_generation
-            with BenchmarkStore(base / "settings" / "orkilab" / "benchmarks.sqlite3") as bench:
+            with BenchmarkStore(db_path) as bench:
                 return finalize_bound_history_generation(bench, records, token)
-        except (OSError, ValueError, PermissionError, sqlite3.Error, KeyError) as exc:
+        except (OSError, ValueError, TypeError, PermissionError, sqlite3.Error, KeyError) as exc:
             app.logger.warning("Benchmark finalization deferred for %s: %s", token, exc)
             return "deferred"
 
