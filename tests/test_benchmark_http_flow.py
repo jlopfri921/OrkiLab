@@ -8,6 +8,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 
@@ -30,7 +31,7 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.graph = {"1": {"class_type": "SaveImage", "inputs": {}}}
-        with sqlite3.connect(settings / "workflows.sqlite3") as con:
+        with closing(sqlite3.connect(settings / "workflows.sqlite3")) as con, con:
             con.execute("CREATE TABLE workflows (id TEXT PRIMARY KEY, name TEXT, graph TEXT)")
             con.execute(
                 "INSERT INTO workflows VALUES (?,?,?)",
@@ -51,12 +52,13 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         self.client = self.app.test_client()
         self.mock_queue = {"queue_running": [], "queue_pending": []}
         self.history_entry = None
+        self.submitted_requests = []
         self.patches = [
             patch.object(generation_studio, "inspect_graph", return_value={"format": "api"}),
             patch.object(generation_studio, "node_schema", return_value={}),
             patch.object(generation_studio, "validate_prompt", return_value=None),
             patch.object(generation_studio, "editable_fields", return_value=[]),
-            patch.object(generation_studio, "submit", return_value=("prompt-comfy", "client-test")),
+            patch.object(generation_studio, "build_opener", side_effect=self.fake_opener),
             patch.object(generation_studio.project_layout, "training_in_progress", return_value=False),
             patch.object(generation_studio, "get_json", side_effect=self.fake_comfyui),
         ]
@@ -67,6 +69,31 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         for mocked in reversed(self.patches):
             mocked.stop()
         self.temp.cleanup()
+
+    def fake_opener(self, *handlers):
+        """Intercept only the real nested submit() HTTP call; never use network."""
+        testcase = self
+
+        class Response:
+            status = 200
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def read(self, *args):
+                return json.dumps({"prompt_id": "prompt-comfy"}).encode("utf-8")
+
+        class Opener:
+            def open(self, request, timeout=None):
+                if request.full_url != "http://127.0.0.1:8188/prompt" or request.get_method() != "POST":
+                    raise AssertionError("Unexpected HTTP request: " + request.full_url)
+                testcase.submitted_requests.append(request)
+                return Response()
+
+        return Opener()
 
     def fake_comfyui(self, url, path, **kwargs):
         if path == "/queue":
@@ -106,6 +133,7 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         self.assertEqual(created.status_code, 201, created.get_json())
         job = created.get_json()
         self.assertEqual(job["benchmark_binding"], "bound")
+        self.assertEqual(len(self.submitted_requests), 1)
         token = job["id"]
         self.history_entry = {"status": {"completed": True, "status_str": "success"},
                               "outputs": {}}
@@ -121,18 +149,23 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
     def test_cross_project_request_denied_before_submission(self):
         result = self.submit(project_id="not-active")
         self.assertEqual(result.status_code, 404)
+        self.assertEqual(len(self.submitted_requests), 0)
         self.assertEqual(self.observations(), [])
-        generation_rows = sqlite3.connect(
-            self.root / "settings" / "orkilab" / "generations.sqlite3"
-        ).execute("SELECT count(*) FROM generations").fetchone()[0] if (
-            self.root / "settings" / "orkilab" / "generations.sqlite3"
-        ).is_file() else 0
+        history_path = self.root / "settings" / "orkilab" / "generations.sqlite3"
+        if history_path.is_file():
+            with closing(sqlite3.connect(history_path)) as con:
+                generation_rows = con.execute(
+                    "SELECT count(*) FROM generations"
+                ).fetchone()[0]
+        else:
+            generation_rows = 0
         self.assertEqual(generation_rows, 0)
 
     def test_normal_generation_does_not_create_binding(self):
         created = self.submit(with_benchmark=False)
         self.assertEqual(created.status_code, 201)
         self.assertNotIn("benchmark_binding", created.get_json())
+        self.assertEqual(len(self.submitted_requests), 1)
         token = created.get_json()["id"]
         self.history_entry = {"status": {"completed": True}, "outputs": {}}
         self.assertEqual(
