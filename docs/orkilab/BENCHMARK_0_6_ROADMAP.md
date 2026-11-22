@@ -70,6 +70,16 @@ The first B5 run on Windows/Python 3.13 failed during test module import, before
 
 Run `python -m py_compile scripts/benchmark_store.py scripts/benchmark_generation_import.py scripts/benchmark_generation_adapter.py` first, then `python -m unittest discover -s tests -p "test_benchmark_atomic_lineage.py" -v`, and finally all benchmark tests.
 
+## B5 PASS and B6 read-only integration slice
+
+**B5 operator acceptance (2026-11-22, Windows/Python 3.13):** `test_benchmark_atomic_lineage.py` returned **5/5 OK** in 0.146 seconds, followed by the entire `test_benchmark*.py` unit suite **16/16 OK** in 0.301 seconds. This is user-reported local testing; CI and real GPU acceptance remain pending.
+
+**B6 first source increment (not validated yet):** `scripts/benchmark_history_bridge.py` reads a specifically requested generation from the pre-existing `GenerationHistory.get` and offers a read-only terminal observation proposal. It reuses the existing `settings/orkilab/generations.sqlite3` records and makes no queue, cancellation or HTTP calls. The caller must still establish local authorization, project ownership and explicit confirmation before any eventual write. It does **not** associate arbitrary history entries with project IDs automatically or claim measurement of VRAM or latency.
+
+**B6 tests:** `python -m unittest discover -s tests -p "test_benchmark_history_bridge.py" -v`. Four cases check queued-entry rejection, read-only completed snapshot, absent ID and failure-status propagation. These tests have not yet been reported as passing on Windows.
+
+**Still pending for full B6:** authenticated launcher-local API integration, scoped association of a generated job to a project and a benchmark variant, lifecycle tracking through the existing Generation Studio queue, cancellation behavior, and real ComfyUI testing.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
