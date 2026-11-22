@@ -237,6 +237,27 @@ git pull --ff-only
 
 The audit reports `state`, `output_count`, actual `generation_id`/`prompt_id` and optionally `benchmark_binding`/`benchmark_observation`. **A plain Generation Studio run is not automatically a Benchmark run**; without the opt-in benchmark payload, binding should correctly be `none`. Do not describe the pilot as a measured or bound benchmark unless an actual binding exists. No per-job runtime, output digest or peak VRAM is inferred from history. A separate opt-in benchmark run / UI integration is required before true B7 performance comparison.
 
+## B7.3 — Confirm the *running* launcher's benchmark capability
+
+The operator successfully generated a real image, then explicitly recovered and attached it to the original B7.2 run/variant. The read-only audit confirms `benchmark_binding=bound`, `benchmark_observation=recorded`, `binding_workflow_matches=true`. **This is recovery, not proof of automatic submission binding.** The initial HTTP submission response lacked the `benchmark_binding` property, so the active launcher may have been started before the latest feature branch was pulled.
+
+A new **read-only, launcher-local** GET endpoint now exposes the actual loaded route capability: `/api/workspace/generation/capabilities`. Unlike reading the checked-out Python file, probing this endpoint distinguishes an old running Flask process from the new code without initiating inference or writing a DB. An old process should return 404 (or an old route's not-found response) rather than `benchmark_submit: true`.
+
+1. Run tests first (two new capability tests; **expected 57 total** benchmark tests only if the prior 51-test B7 gate and four recovery tests also pass):
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+2. Query the currently serving launcher **before restarting**:
+```powershell
+Invoke-RestMethod "http://127.0.0.1:4990/api/workspace/generation/capabilities" | Format-List
+```
+3. If old/404, verify no active ComfyUI work, then restart **only OrkiLab launcher**. Keep ComfyUI running; query endpoint again. Expected marker: `generation_studio: benchmark-submission-v1`, `benchmark_submit: True`, `benchmark_terminal_finalization: True`.
+4. If endpoint already shows marker, investigate why POST response lacked benchmark binding before launching more GPU work; do not infer from code or retry the completed run/repetition.
+
+No new generation is required by this diagnostic.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
