@@ -62,6 +62,49 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn('modeHelp.src="/assets/orkilab/orkilab-mode-help.js"',shell)
         self.assertIn('"/workspace/guide"',shell)
 
+    def test_multiview_all_supported_locales_cover_visible_fields(self):
+        import json
+        import re
+        page=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
+        keys=set(re.findall(r'\bt\(\s*"([^"]+)"',page))
+        keys.update(re.findall(r'\b(?:field|selector)\(\s*"([^"]+)"',page))
+        keys.update(re.findall(
+            r'\[\s*"(?:real_photo|video_frame|synthetic|unknown|manual|workflow|embedded_exif|estimated|unreviewed|approved|rejected|newest|oldest|name|azimuth|distance)"\s*,\s*"([^"]+)"',page))
+        # Dynamic statuses (projectLabels) are translated inside their own module.
+        keys-={"project","loading","found","none","archived","other","missing","error","remote","video_frame"}
+        keys.update((
+            "Organize multiple photographs of a subject by viewpoint, angle and distance. Real and synthetic sources are clearly distinguished. Your original files are never changed.",
+            "Choose a project","Manage projects","Use an existing image project. Multiview metadata belongs to this project only.",
+            "Subjects","Subject name","Create subject","Search subjects","Sort subjects",
+            "Most photographs","Multiview Studio"))
+        for lang in ("es","pt","fr","de","it","ja","ko"):
+            with self.subTest(language=lang):
+                translations=json.loads((ROOT/"GUI"/"locales"/(lang+".json")).read_text(encoding="utf-8"))
+                missing=sorted(k for k in keys if not translations.get(k))
+                self.assertEqual(missing,[],f"{lang}: untranslated Multiview UI labels: {missing}")
+        self.assertIn('localize(capture.requested_direction)',page)
+        rc=(ROOT/"assets"/"orkilab"/"multiview-rc1.js").read_text(encoding="utf-8")
+        self.assertIn('status.textContent=t("limit30")',rc)
+
+    def test_optional_multiview_ai_panels_support_all_eight_languages(self):
+        languages=("es","en","pt","fr","de","it","ja","ko")
+        for filename in ("multiview-viewpoint-ai.js","multiview-generate-view.js"):
+            with self.subTest(module=filename):
+                source=(ROOT/"assets"/"orkilab"/filename).read_text(encoding="utf-8")
+                for locale in languages:
+                    self.assertIn(" "+locale+":{",source)
+                self.assertIn("I18N.lang",source)
+                self.assertNotIn('I18N.lang==="es"?"es":"en"',source)
+        generator=(ROOT/"assets"/"orkilab"/"multiview-generate-view.js").read_text(encoding="utf-8")
+        self.assertIn("window.OrkiMultiviewGenerateViews={mount,translate:t}",generator)
+        self.assertIn('status(t("max4"))',generator)
+        recovery=(ROOT/"assets"/"orkilab"/"multiview-rc1.js").read_text(encoding="utf-8")
+        self.assertIn('status.textContent=t("limit30")',recovery)
+        for locale in languages:
+            self.assertIn(locale+":{",recovery)
+        page=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
+        self.assertIn('translate("requestedLabel")',page)
+
     def test_general_guide_page_exists(self):
         page=(ROOT/"GUI"/"orkilab_guide.html").read_text(encoding="utf-8")
         for section in ('id="flow"','id="sections"','id="multiview"',
