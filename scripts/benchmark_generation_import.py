@@ -1,13 +1,13 @@
-"""Read-only preparation of benchmark observations from terminal ComfyUI history.
+"""Read-only preparation and explicitly confirmed persistence of terminal history.
 
-No job submission, queue manipulation, SQLite writes, or metadata loss.
-Persistence is deliberately deferred until atomic provenance/lineage storage
-and launcher-local authorization are implemented and tested.
+No job submission or queue manipulation; API endpoint authorization remains
+separate from the project-scope and confirmation checks in this module.
 """
 from __future__ import annotations
 
 from typing import Any
-from benchmark_generation_adapter import snapshot_generation\nfrom benchmark_store import BenchmarkStore
+from benchmark_generation_adapter import snapshot_generation
+from benchmark_store import BenchmarkStore
 
 
 def prepare_terminal_observation(generation_record: dict[str, Any]) -> dict[str, Any]:
