@@ -659,3 +659,21 @@ git pull --ff-only
 ```
 
 Restart OrkiLab and open `http://127.0.0.1:4990/workspace/comfyui#benchmark`. Select an existing project, expand **Crear protocolo de Benchmark (borrador)** and inspect the new imported-workflow/NVIDIA-GPU selectors. Choose a real existing workflow and device; verify the exact identifiers populate the manual fields. Do not save a draft if actual prompt/negative/input SHA-256 fingerprints have not been established. Feature PR #104 remains open and unmerged.
+
+## B9.6 operator acceptance / B9.7 explicit client-local SHA-256 fingerprint helper
+
+Operator confirmed `tok` immediately after B9.6 validation instructions: **176 benchmark tests operator-reported successful**; as with earlier phases, no raw console transcript or CI evidence was provided. B9.7 is now implemented for validation.
+
+- In **Zona ComfyUI → Benchmark Studio → Crear protocolo de Benchmark (borrador)**, the form now includes a positive prompt textarea, negative prompt textarea (empty string is allowed and hashed as empty UTF-8), and a local input file picker. The operator must **explicitly click** separate SHA-256 calculation buttons. The frontend uses **browser Web Crypto** `crypto.subtle.digest("SHA-256", ...)` on `TextEncoder` UTF-8 bytes of the exact textarea value (no trim or Unicode normalization) or selected file raw bytes. Result is lowercase 64-character hex and is inserted in the existing protocol digest field. No source content, filename or file blob is sent to OrkiLab/ComfyUI; only existing SHA-256 fields are sent to the existing draft endpoint **if the operator explicitly confirms saving**.
+- File hashing is deliberately capped at **20 MiB** so a large file cannot cause accidental unbounded browser memory use; larger files are **not read** and can still be represented using a verified hash entered manually. No automatic scan of disk, project assets or ComfyUI files.
+- If any source textarea/file changes after calculation, the associated digest is cleared and draft-save checkbox unchecked. Asynchronous results are ignored when their source changes mid-hash, preventing a stale digest being inserted. Browser without Web Crypto displays a visible error and leaves fields for deliberate manual entry. Users can still manually provide SHA-256 hashes obtained from a trusted local process.
+- This is a **hashing aid, not provenance attestation**. It does not prove the prompt actually submitted to ComfyUI, preprocessing, model weights, graph equality, GPU conditions or the input media's equivalence. The existing `orkilab-repro-v1` declaration remains `declared_unverified`; no ranking is introduced.
+- The visual integration preserves the existing OrkiLab shell and bilingual Spanish/English copy with accents. Four static UI regression tests added to `tests/test_benchmark_workspace_integration.py`; **180 benchmark tests expected** (operator-reported B9.6 baseline 176 + 4). Browser execution/privacy check and full Windows suite remain operator acceptance gates. No API or database migration.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_workspace_integration.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+Restart OrkiLab, open `http://127.0.0.1:4990/workspace/comfyui#benchmark`, select a project and expand the protocol draft form. Paste a *non-sensitive* known sample text into positive prompt, click **Calcular SHA-256 local**, and verify exactly 64 hex characters appear in the matching digest field. Change the text by one character and verify the digest clears. Try a small local file and verify a hash appears; changing the file must clear it. Verify Spanish/English labels, no generation job and no automatic draft storage. No need to save a draft. PR #104 remains open and unmerged, and per-workflow fault catalogue remains deferred.
