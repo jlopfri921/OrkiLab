@@ -13,6 +13,13 @@
 
 See the [complete phase-by-phase release history](docs/orkilab/RELEASE_HISTORY.md) for what was delivered at each milestone, linked evidence and outstanding acceptance gates. **Phase names in historical development notes do not imply public tags or stable releases.**
 
+## 0.5.0 — stable release candidate (not yet published)
+
+- H1–H7 manual acceptance confirmed as PASS without blocking incidents by the operator on 2026-11-22; independent hardware logs and exact workflow/checkpoint details were not provided.
+- Stable metadata and guarded manual GitHub publication prepared for validation on the exact main commit and Windows/Linux CI.
+- Qwen/FLUX dedicated camera controls, calibrated multiview reconstruction and universal trainer compatibility are **not** claimed.
+- The published release remains `v0.5.0-rc.1` until the stable publisher completes successfully.
+
 ## 0.5.0-rc.1 — published GitHub prerelease (2026-11-22; not stable)
 
 **Status:** [v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) is published as a **GitHub prerelease**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, after Windows/Linux CI. There is no stable `v0.5.0` yet; stable release depends on additional real-device acceptance.
