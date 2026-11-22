@@ -87,6 +87,23 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('Los textos y el archivo se procesan exclusivamente en este navegador', self.benchmark)
         self.assertIn('Este navegador no admite SHA-256 local mediante Web Crypto', self.benchmark)
 
+    def test_b10_3_two_stage_explicit_confirmed_generation_ui(self):
+        self.assertIn('id="b10-start"', self.benchmark)
+        self.assertIn('id="b10-prepare"', self.benchmark)
+        self.assertIn('id="b10-submit" disabled', self.benchmark)
+        self.assertIn('id="b10-send-confirm"', self.benchmark)
+        self.assertIn('/api/workspace/benchmark/start', self.benchmark)
+        self.assertIn('/api/workspace/generation/benchmark/prepare-one', self.benchmark)
+        self.assertIn('"/api/workspace/generation",', self.benchmark)
+
+    def test_b10_3_no_background_batch_and_failed_submission_not_retried(self):
+        self.assertIn('b10GuidedPrepared=null;', self.benchmark)
+        self.assertIn('if(b10GuidedBusy||!b10GuidedPrepared', self.benchmark)
+        self.assertIn('b10InvalidatePrepared();', self.benchmark)
+        self.assertIn('No hay ejecución automática de lotes.', self.benchmark)
+        self.assertIn('No automatic batches.', self.benchmark)
+        self.assertIn('Puede usar GPU y generar archivos.', self.benchmark)
+
     def test_b10_2_explicit_model_check_is_integrated_and_bilingual(self):
         self.assertIn('id="b10-model-check"', self.benchmark)
         self.assertIn('id="b10-model-rows"', self.benchmark)
