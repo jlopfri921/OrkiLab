@@ -172,7 +172,7 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn("renderOverview(main)",js)
         self.assertIn("overviewContent[lang].nav",js)
         for lang in ("pt","fr","de","it","ja","ko"):
-            self.assertIn(lang+':{"title":',js)
+            self.assertIn('"'+lang+'":{"title":',js)
         self.assertIn('data.guideSection="about"',js)
         self.assertIn('document.documentElement.lang=lang',js)
 
