@@ -1,5 +1,6 @@
 """B9.2 Flask read-only Benchmark report API tests on isolated SQLite fixtures."""
 import sqlite3
+from contextlib import closing
 import sys
 import tempfile
 import unittest
@@ -215,13 +216,13 @@ class BenchmarkReportsApiTests(unittest.TestCase):
             "outputs": "[]",
         }
         snap = snapshot_generation(gen)
-        with sqlite3.connect(self.db) as conn:
+        with closing(sqlite3.connect(self.db)) as conn, conn:
             conn.execute(
                 "INSERT INTO benchmark_generation_lineage VALUES (?,?,?,?)",
                 ("obs-a", "run-a", gen["id"], json.dumps(snap)),
             )
         history = self.base / "settings" / "orkilab" / "generations.sqlite3"
-        with sqlite3.connect(history) as conn:
+        with closing(sqlite3.connect(history)) as conn, conn:
             conn.execute(
                 "CREATE TABLE generations (id TEXT,prompt_id TEXT,workflow_id TEXT,"
                 "state TEXT,graph TEXT,outputs TEXT)"
