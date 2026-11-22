@@ -1,5 +1,5 @@
 """Workspace routes, alongside the existing launcher."""
-from flask import jsonify, request, send_from_directory
+from flask import jsonify, request, send_from_directory, redirect
 import shutil
 import sqlite3
 from contextlib import closing
@@ -59,6 +59,8 @@ def register(app, base, load_config):
     def benchmark_reports_page():
         if request.remote_addr not in ("127.0.0.1", "::1"):
             return jsonify(error="Benchmark reports available on launcher PC only"), 403
+        if request.args.get("embed") != "1":
+            return redirect("/workspace/comfyui#benchmark", code=302)
         return send_from_directory(str(base / "GUI"), "benchmark_reports.html")
 
     @app.get("/workspace/multiview")
