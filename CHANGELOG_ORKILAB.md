@@ -11,6 +11,7 @@
 - **B10.5:** fail-closed RC gate visible in Benchmark Studio, manual release checklist, and optional persistent, eight-language **light/dark theme** across key web screens and shared-shell modules. Full trainer/mobile accessibility review still pending.
 - **Testing:** **283 benchmark checks operator-reported PASS**, through B10.5 acceptance (`tok`); no independently attached rerun transcript or verified exact-commit Windows/Linux CI. Linux CI, full-application regression, privacy/data protection, actual GPU ComfyUI acceptance and maintainer release approval remain mandatory.
 - **Release notes and acceptance matrix:** [docs/orkilab/RC_0_6_0_READINESS.md](docs/orkilab/RC_0_6_0_READINESS.md).
+- **RC1 staging:** source `VERSION_ORKILAB`, launcher metadata and README now identify `0.6.0-rc1` as staged/unpublished, with draft `.github/RELEASE_0_6_0_RC1_DRAFT.md`. Five new metadata/license acceptance tests bring the expected Benchmark suite to **288** (283 previously operator-confirmed; five pending Windows retest). The feature branch remains behind `main` and requires reconciliation and exact-head CI before publishing.
 
 Do not merge the feature branch, alter `main`'s stable `0.5.0` version, tag an RC, or issue a GitHub Release without full regression, exact-commit CI and explicit maintainer authorization. The `0.6.0-rc1` version here is **staged only**.
 
