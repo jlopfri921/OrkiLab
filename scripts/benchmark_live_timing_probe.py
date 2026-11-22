@@ -41,6 +41,18 @@ def inspect(base: Path, generation_id: str, *, fetch=get_json) -> dict:
         history = fetch(cfg["url"], "/history/" + prompt_id, timeout=10, max_bytes=16_000_000)
         entry = history.get(prompt_id) if isinstance(history, dict) else None
         timing = measured_execution_timing(entry, prompt_id)
+        # History events do not necessarily expose node execution or cache
+        # reuse. Report only observed evidence; never label a tiny duration
+        # as a valid *full inference* benchmark without that evidence.
+        messages = (entry.get("status", {}).get("messages")
+                    if isinstance(entry, dict)
+                    and isinstance(entry.get("status"), dict) else None)
+        event_names = [
+            item[0] for item in messages
+            if isinstance(item, (list, tuple)) and len(item) == 2
+            and isinstance(item[0], str)
+        ] if isinstance(messages, list) else []
+        cache_event_observed = "execution_cached" in event_names
         result = {
             "ok": True,
             "generation_id": generation_id,
@@ -52,6 +64,13 @@ def inspect(base: Path, generation_id: str, *, fetch=get_json) -> dict:
             "source": timing["source"] if timing else None,
             "queue_time_included": False if timing else None,
             "benchmark_database_modified": False,
+            "execution_cached_event_observed": cache_event_observed,
+            "cache_status": "cache_event_observed" if cache_event_observed else "undetermined",
+            "full_inference_verified": False,
+            "interpretation": (
+                "Measured server event interval only; does not establish full "
+                "image inference or absence of cached node outputs."
+            ),
         }
         if timing is None:
             result["reason"] = "ComfyUI history has no valid paired execution timestamps for this prompt"
