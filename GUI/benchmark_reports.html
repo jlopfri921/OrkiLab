@@ -12,8 +12,8 @@ h1{margin:0 0 4px;font-size:clamp(1.5rem,3vw,2rem)}h2{font-size:1.15rem}
 .muted{color:#b7c5da}article,.panel{border:1px solid #354457;border-radius:14px;background:#182333;padding:20px;margin:14px 0}
 .controls{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
 label{display:flex;flex-direction:column;gap:7px;font-weight:600}
-select,button{font:inherit;min-height:42px;color:#eaf1fb;border:1px solid #51647f;background:#1c3047;border-radius:8px;padding:8px 12px;max-width:100%}
-select{min-width:240px}button{cursor:pointer}button:hover{background:#2a4463}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #8ac9ff;outline-offset:2px}
+select,button,input{font:inherit;min-height:42px;color:#eaf1fb;border:1px solid #51647f;background:#1c3047;border-radius:8px;padding:8px 12px;max-width:100%}
+select{min-width:240px}input:not([type="checkbox"]){min-width:180px;width:100%}label:has(input[type="checkbox"]){flex-direction:row;align-items:center;margin-top:12px}button{cursor:pointer}button:hover{background:#2a4463}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #8ac9ff;outline-offset:2px}
 button:disabled{opacity:.5;cursor:default}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .badge{display:inline-block;border:1px solid #51647f;border-radius:40px;padding:3px 9px;font-size:.8rem}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.stat{background:#111d2c;border:1px solid #394c63;border-radius:10px;padding:13px}
@@ -32,6 +32,30 @@ button:disabled{opacity:.5;cursor:default}.row{display:flex;gap:10px;flex-wrap:w
 <label><span data-i18n="run">Ejecución</span><select id="run" aria-label="Ejecución" disabled><option value="">Selecciona un proyecto</option></select></label>
 <button type="button" id="refresh" data-i18n="refresh">Actualizar</button>
 </div><p id="status" role="status" class="muted"></p></article>
+<details class="panel" id="draft-section"><summary data-i18n="draftTitle">Crear protocolo de Benchmark (borrador)</summary>
+<p class="muted" data-i18n="draftExplanation">Solo guarda un plan; no ejecuta ComfyUI. Los hashes SHA-256 deben corresponder a los datos reales y son declaraciones pendientes de verificar.</p>
+<form id="draft-form">
+<div class="controls">
+<label><span data-i18n="draftName">Nombre del protocolo</span><input id="draft-name" required maxlength="120"></label>
+<label><span data-i18n="draftVary">Variable que cambia</span><select id="draft-vary"><option value="checkpoint">Checkpoint</option><option value="lora">LoRA</option></select></label>
+<label><span data-i18n="draftWorkflow">ID del workflow guardado</span><input id="draft-workflow" maxlength="200" required></label>
+<label><span data-i18n="draftGpu">UUID de la GPU NVIDIA</span><input id="draft-gpu" maxlength="128" placeholder="GPU-..." required></label>
+<label><span data-i18n="draftPositive">SHA-256 del prompt positivo</span><input id="draft-positive" minlength="64" maxlength="64" required pattern="[a-f0-9]{64}"></label>
+<label><span data-i18n="draftNegative">SHA-256 del prompt negativo</span><input id="draft-negative" minlength="64" maxlength="64" required pattern="[a-f0-9]{64}"></label>
+<label><span data-i18n="draftInput">SHA-256 de la entrada</span><input id="draft-input" minlength="64" maxlength="64" required pattern="[a-f0-9]{64}"></label>
+<label><span data-i18n="draftCache">Política de caché</span><select id="draft-cache"><option value="warm_sampler">Warm sampler</option><option value="cold">Cold</option></select></label>
+<label><span data-i18n="draftSeed">Política de semilla</span><select id="draft-seed"><option value="fixed">Fixed</option><option value="enumerated">Enumerated</option></select></label>
+<label><span data-i18n="draftRepetitions">Repeticiones</span><input type="number" id="draft-repetitions" required value="3" min="1" max="100"></label>
+<label><span data-i18n="draftWidth">Ancho</span><input type="number" id="draft-width" required value="1024" min="64" max="16384"></label>
+<label><span data-i18n="draftHeight">Alto</span><input type="number" id="draft-height" required value="1024" min="64" max="16384"></label>
+<label><span data-i18n="draftVariantA">Variante A</span><input id="draft-a" maxlength="200" required></label>
+<label><span data-i18n="draftVariantB">Variante B</span><input id="draft-b" maxlength="200" required></label>
+</div>
+<label class="row"><input type="checkbox" required id="draft-confirm"> <span data-i18n="draftConsent">Confirmo guardar solo un borrador, sin iniciar ninguna generación.</span></label>
+<div class="row"><button type="submit" id="draft-save" data-i18n="draftSave">Guardar borrador</button></div>
+<p id="draft-status" class="muted" role="status"></p>
+</form>
+</details>
 <section id="report" hidden aria-labelledby="report-title"><article>
 <div class="row"><h2 id="report-title"></h2><span class="badge" id="state"></span></div>
 <div class="cards" id="metrics"></div>
@@ -48,8 +72,8 @@ button:disabled{opacity:.5;cursor:default}.row{display:flex;gap:10px;flex-wrap:w
 "use strict";
 const $=id=>document.getElementById(id);
 const labels={
-es:{protocolTitle:"Protocolo reproducible",protocolCaveat:"Una configuración declarada no demuestra que las ejecuciones hayan seguido ese protocolo.",protocolLegacy:"Sin protocolo versionado; evidencia no acreditada",protocolIncomplete:"Declaración incompleta",protocolDeclared:"Declarado, pendiente de comprobar en ejecuciones reales",comparabilityTitle:"Comparabilidad de resultados",comparabilityStatus:"Estado",comparabilityReasons:"Evidencias pendientes o incompatibles",unverified:"No acreditada",blocked:"Bloqueada",comparabilityExplanation:"Ninguna variante se clasifica automáticamente como comparable o ganadora.",language:"Idioma",back:"← Proyectos",title:"Informes de Benchmark Studio",intro:"Consulta por proyecto las pruebas y variantes registradas. Solo lectura: no se envían trabajos a ComfyUI.",project:"Proyecto",run:"Ejecución",refresh:"Actualizar",warning:"Estos tiempos son descriptivos: no acreditan igualdad de condiciones, ausencia de caché ni un modelo ganador. Las mediciones de VRAM desconocidas permanecen vacías.",variants:"Variantes y mediciones",variant:"Variante",completed:"Completadas",failed:"Fallidas",cancelled:"Canceladas",measured:"Tiempos medidos",median:"Mediana (ms)",range:"Mín.–máx. (ms)",missing:"Tiempos desconocidos",vram:"Picos VRAM por trabajo confirmados",scope:"No se muestra ranking automático. La VRAM global muestreada no se atribuye a un workflow.",choose:"Selecciona un proyecto",chooseRun:"Selecciona una ejecución",empty:"Este proyecto todavía no tiene ejecuciones de Benchmark.",noProjects:"No hay proyectos disponibles.",noData:"Sin medición",runs:"Ejecuciones",observations:"Observaciones",missingVram:"VRAM por trabajo desconocida",variantsCount:"Variantes",loadError:"No se pudieron consultar los informes.",draft:"Borrador",running:"En curso",completedState:"Completada",failedState:"Fallida",cancelledState:"Cancelada"},
-en:{protocolTitle:"Reproducibility protocol",protocolCaveat:"A declared configuration does not prove that the executions followed it.",protocolLegacy:"No versioned protocol; evidence not established",protocolIncomplete:"Incomplete declaration",protocolDeclared:"Declared, not yet verified against real executions",comparabilityTitle:"Result comparability",comparabilityStatus:"Status",comparabilityReasons:"Unverified or incompatible evidence",unverified:"Not established",blocked:"Blocked",comparabilityExplanation:"No variant is automatically classified as comparable or a winner.",language:"Language",back:"← Projects",title:"Benchmark Studio reports",intro:"Browse recorded runs and variants by project. Read-only: no ComfyUI jobs are submitted.",project:"Project",run:"Run",refresh:"Refresh",warning:"These times are descriptive: they do not prove identical conditions, absence of caching, or a winning model. Unknown VRAM measurements remain unknown.",variants:"Variants and measurements",variant:"Variant",completed:"Completed",failed:"Failed",cancelled:"Cancelled",measured:"Measured durations",median:"Median (ms)",range:"Min–max (ms)",missing:"Unknown durations",vram:"Verified per-job VRAM peaks",scope:"There is no automatic ranking. Sampled device-global VRAM is not attributed to an individual workflow.",choose:"Select a project",chooseRun:"Select a run",empty:"This project has no benchmark runs yet.",noProjects:"No projects available.",noData:"No measurement",runs:"Runs",observations:"Observations",missingVram:"Unknown per-job VRAM",variantsCount:"Variants",loadError:"Reports could not be loaded.",draft:"Draft",running:"Running",completedState:"Completed",failedState:"Failed",cancelledState:"Cancelled"}};
+es:{draftTitle:"Crear protocolo de Benchmark (borrador)",draftExplanation:"Solo guarda un plan; no ejecuta ComfyUI. Los hashes SHA-256 deben corresponder a los datos reales y son declaraciones pendientes de verificar.",draftName:"Nombre del protocolo",draftVary:"Variable que cambia",draftWorkflow:"ID del workflow guardado",draftGpu:"UUID de GPU NVIDIA",draftPositive:"SHA-256 del prompt positivo",draftNegative:"SHA-256 del prompt negativo",draftInput:"SHA-256 de la entrada",draftCache:"Política de caché",draftSeed:"Política de semilla",draftRepetitions:"Repeticiones",draftWidth:"Ancho",draftHeight:"Alto",draftVariantA:"Variante A",draftVariantB:"Variante B",draftConsent:"Confirmo guardar solo un borrador, sin iniciar ninguna generación.",draftSave:"Guardar borrador",draftChoose:"Selecciona un proyecto antes de guardar.",draftSaved:"Borrador guardado. No se ha ejecutado ninguna generación.",draftError:"No se pudo guardar el borrador.",protocolTitle:"Protocolo reproducible",protocolCaveat:"Una configuración declarada no demuestra que las ejecuciones hayan seguido ese protocolo.",protocolLegacy:"Sin protocolo versionado; evidencia no acreditada",protocolIncomplete:"Declaración incompleta",protocolDeclared:"Declarado, pendiente de comprobar en ejecuciones reales",comparabilityTitle:"Comparabilidad de resultados",comparabilityStatus:"Estado",comparabilityReasons:"Evidencias pendientes o incompatibles",unverified:"No acreditada",blocked:"Bloqueada",comparabilityExplanation:"Ninguna variante se clasifica automáticamente como comparable o ganadora.",language:"Idioma",back:"← Proyectos",title:"Informes de Benchmark Studio",intro:"Consulta por proyecto las pruebas y variantes registradas. Solo lectura: no se envían trabajos a ComfyUI.",project:"Proyecto",run:"Ejecución",refresh:"Actualizar",warning:"Estos tiempos son descriptivos: no acreditan igualdad de condiciones, ausencia de caché ni un modelo ganador. Las mediciones de VRAM desconocidas permanecen vacías.",variants:"Variantes y mediciones",variant:"Variante",completed:"Completadas",failed:"Fallidas",cancelled:"Canceladas",measured:"Tiempos medidos",median:"Mediana (ms)",range:"Mín.–máx. (ms)",missing:"Tiempos desconocidos",vram:"Picos VRAM por trabajo confirmados",scope:"No se muestra ranking automático. La VRAM global muestreada no se atribuye a un workflow.",choose:"Selecciona un proyecto",chooseRun:"Selecciona una ejecución",empty:"Este proyecto todavía no tiene ejecuciones de Benchmark.",noProjects:"No hay proyectos disponibles.",noData:"Sin medición",runs:"Ejecuciones",observations:"Observaciones",missingVram:"VRAM por trabajo desconocida",variantsCount:"Variantes",loadError:"No se pudieron consultar los informes.",draft:"Borrador",running:"En curso",completedState:"Completada",failedState:"Fallida",cancelledState:"Cancelada"},
+en:{draftTitle:"Create benchmark protocol (draft)",draftExplanation:"Stores a plan only; no ComfyUI execution. SHA-256 hashes must match real inputs and remain unverified declarations.",draftName:"Protocol name",draftVary:"Variable to change",draftWorkflow:"Saved workflow ID",draftGpu:"NVIDIA GPU UUID",draftPositive:"Positive prompt SHA-256",draftNegative:"Negative prompt SHA-256",draftInput:"Input SHA-256",draftCache:"Cache policy",draftSeed:"Seed policy",draftRepetitions:"Repetitions",draftWidth:"Width",draftHeight:"Height",draftVariantA:"Variant A",draftVariantB:"Variant B",draftConsent:"I confirm saving a draft only, without submitting a generation.",draftSave:"Save draft",draftChoose:"Select a project before saving.",draftSaved:"Draft saved. No generation was executed.",draftError:"Could not save draft.",protocolTitle:"Reproducibility protocol",protocolCaveat:"A declared configuration does not prove that the executions followed it.",protocolLegacy:"No versioned protocol; evidence not established",protocolIncomplete:"Incomplete declaration",protocolDeclared:"Declared, not yet verified against real executions",comparabilityTitle:"Result comparability",comparabilityStatus:"Status",comparabilityReasons:"Unverified or incompatible evidence",unverified:"Not established",blocked:"Blocked",comparabilityExplanation:"No variant is automatically classified as comparable or a winner.",language:"Language",back:"← Projects",title:"Benchmark Studio reports",intro:"Browse recorded runs and variants by project. Read-only: no ComfyUI jobs are submitted.",project:"Project",run:"Run",refresh:"Refresh",warning:"These times are descriptive: they do not prove identical conditions, absence of caching, or a winning model. Unknown VRAM measurements remain unknown.",variants:"Variants and measurements",variant:"Variant",completed:"Completed",failed:"Failed",cancelled:"Cancelled",measured:"Measured durations",median:"Median (ms)",range:"Min–max (ms)",missing:"Unknown durations",vram:"Verified per-job VRAM peaks",scope:"There is no automatic ranking. Sampled device-global VRAM is not attributed to an individual workflow.",choose:"Select a project",chooseRun:"Select a run",empty:"This project has no benchmark runs yet.",noProjects:"No projects available.",noData:"No measurement",runs:"Runs",observations:"Observations",missingVram:"Unknown per-job VRAM",variantsCount:"Variants",loadError:"Reports could not be loaded.",draft:"Draft",running:"Running",completedState:"Completed",failedState:"Failed",cancelledState:"Cancelled"}};
 let lang="es",projects=[],runs=[],requestSeq=0;
 function t(k){return labels[lang][k]||k}
 function option(text,value){const o=document.createElement("option");o.textContent=text;o.value=value;return o}
@@ -133,6 +157,46 @@ async function loadReport(){
   if(seq===requestSeq)draw(d);
  }catch(e){if(seq===requestSeq)$("status").textContent=t("loadError")+" "+e.message}
 }
+$("draft-form").addEventListener("submit",async event=>{
+ event.preventDefault();
+ const projectId=$("project").value,status=$("draft-status");
+ if(!projectId){status.textContent=t("draftChoose");return}
+ if(!$("draft-confirm").checked)return;
+ const getVal=id=>$(id).value.trim();
+ const data={
+  project_id:projectId,name:getVal("draft-name"),confirm:true,
+  protocol:{
+   schema:"orkilab-repro-v1",vary:getVal("draft-vary"),
+   workflow_id:getVal("draft-workflow"),
+   prompt_sha256:getVal("draft-positive"),
+   negative_prompt_sha256:getVal("draft-negative"),
+   input_sha256:getVal("draft-input"),
+   gpu_uuid:getVal("draft-gpu"),cache:getVal("draft-cache"),
+   seed_policy:getVal("draft-seed"),
+   repetitions:Number(getVal("draft-repetitions")),
+   resolution:[Number(getVal("draft-width")),Number(getVal("draft-height"))]
+  },
+  variants:[
+   {label:"Variant A",controlled_value:getVal("draft-a")},
+   {label:"Variant B",controlled_value:getVal("draft-b")}
+  ],
+ };
+ const button=$("draft-save");button.disabled=true;status.textContent="";
+ try{
+  const response=await fetch("/api/workspace/benchmark/drafts",{
+   method:"POST",credentials:"same-origin",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify(data)
+  });
+  const output=await response.json();
+  if(!response.ok)throw Error(output.error||"HTTP "+response.status);
+  status.textContent=t("draftSaved")+" · "+output.id;
+  await loadRuns();$("run").value=output.id;
+  await loadReport();
+  $("draft-confirm").checked=false;
+ }catch(error){status.textContent=t("draftError")+" "+error.message}
+ finally{button.disabled=false}
+});
 $("project").addEventListener("change",loadRuns);
 $("run").addEventListener("change",loadReport);
 $("refresh").addEventListener("click",loadProjects);
