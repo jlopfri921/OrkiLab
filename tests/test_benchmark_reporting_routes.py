@@ -417,6 +417,22 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         self.assertFalse(preflight["ranking_eligible"])
         self.assertEqual(self.db.read_bytes(), before)
 
+    def test_b10_4_pairwise_report_is_descriptive_and_read_only(self):
+        self.fill()
+        before=self.db.read_bytes()
+        response=self.client.get(
+            "/api/workspace/benchmark/reports/run-a?project_id=project-a"
+        )
+        self.assertEqual(response.status_code,200,response.get_json())
+        pairwise=response.get_json()["b10_results"]
+        self.assertEqual(pairwise["status"],"descriptive_only")
+        self.assertFalse(pairwise["ranking_eligible"])
+        self.assertFalse(pairwise["speedup_claim_allowed"])
+        self.assertFalse(pairwise["generation_submitted"])
+        self.assertFalse(pairwise["database_modified"])
+        self.assertIsNone(pairwise["best_variant"])
+        self.assertEqual(self.db.read_bytes(),before)
+
     def test_b9_10_closeout_read_only_and_not_a_ranking(self):
         self.fill()
         before = self.db.read_bytes()
