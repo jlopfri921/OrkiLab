@@ -71,7 +71,7 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         keys.update(re.findall(
             r'\[\s*"(?:real_photo|video_frame|synthetic|unknown|manual|workflow|embedded_exif|estimated|unreviewed|approved|rejected|newest|oldest|name|azimuth|distance)"\s*,\s*"([^"]+)"',page))
         # Dynamic statuses (projectLabels) are translated inside their own module.
-        keys-={"project","loading","found","none","archived","other","missing","error","remote"}
+        keys-={"project","loading","found","none","archived","other","missing","error","remote","video_frame"}
         keys.update((
             "Organize multiple photographs of a subject by viewpoint, angle and distance. Real and synthetic sources are clearly distinguished. Your original files are never changed.",
             "Choose a project","Manage projects","Use an existing image project. Multiview metadata belongs to this project only.",
