@@ -87,6 +87,17 @@ class BenchmarkWorkspaceIntegrationTests(unittest.TestCase):
         self.assertIn('Los textos y el archivo se procesan exclusivamente en este navegador', self.benchmark)
         self.assertIn('Este navegador no admite SHA-256 local mediante Web Crypto', self.benchmark)
 
+    def test_b9_9_local_history_table_is_bilingual_and_read_only(self):
+        self.assertIn('id="saved-history-rows"', self.benchmark)
+        self.assertIn('report.saved_history_consistency?.variants', self.benchmark)
+        self.assertIn('Correspondencia con historial local', self.benchmark)
+        self.assertIn('Local generation history consistency', self.benchmark)
+
+    def test_b9_9_no_remote_comfy_claim_or_raw_graph_in_ui(self):
+        self.assertIn('Comprueba la coherencia de dos registros locales', self.benchmark)
+        self.assertIn('Registros locales coherentes; contenido sin verificar', self.benchmark)
+        self.assertIn('savedHistoryNotChecked', self.benchmark)
+
     def test_b9_8_recorded_execution_evidence_is_visible_in_zone(self):
         self.assertIn('data-i18n="executionEvidenceTitle"', self.benchmark)
         self.assertIn('id="execution-evidence-rows"', self.benchmark)
