@@ -204,6 +204,21 @@ git pull --ff-only
 ```
 Expected after validation: six HTTP cases and 46 total benchmark tests. **B6g remains pending local operator acceptance**. Live ComfyUI cancellation, output integrity, timings, VRAM, and CI still need independent verification.
 
+## B6g operator PASS; B7 read-only live preflight (not yet run)
+
+The operator reports **B6g PASS**, with six HTTP lifecycle tests and the cumulative suite **46/46** passing in the project virtual environment on Windows. This is user-reported acceptance; full successful output and CI have not been independently inspected.
+
+**B7 phase 1 — safe, read-only ComfyUI readiness probe:** `scripts/benchmark_comfyui_preflight.py` reads the existing local ComfyUI connection configuration and checks whether OrkiLab training is active. If training is inactive, it sends only **GET** requests to the configured private ComfyUI `/system_stats` and `/queue` endpoints, validating the returned device inventory and that both queue lists are empty. It fails closed for missing configuration, disabled ComfyUI mode, unreachable server, malformed data or occupied queue. It does not submit or cancel tasks, alter models, run inference, allocate VRAM for generation, create databases or claim a valid benchmark measurement.
+
+**B7 test and live probe commands (Windows repository root):**
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_comfyui_preflight.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+.\\venv\\Scripts\\python.exe scripts/benchmark_comfyui_preflight.py
+```
+Five new offline preflight tests have been added (**51** cumulative benchmark tests expected). The last command contacts the **real configured ComfyUI** read-only and returns `ready: true` only when the safety checks pass. A nonzero exit code with `ready: false` is a protective refusal, not necessarily an application fault. This probe is **not** a substitute for actual inference or RTX 3090 benchmark acceptance.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
