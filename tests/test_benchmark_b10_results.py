@@ -62,6 +62,14 @@ class B10ResultDescriptionTests(unittest.TestCase):
         self.assertIsNone(pair["median_a_ms"])
         self.assertIsNone(pair["median_b_ms"])
 
+    def test_nonfinite_median_is_unknown_and_never_serialized(self):
+        for value in (float("nan"),float("inf"),float("-inf")):
+            summary,compare=fixture()
+            summary["variants"][1]["duration_ms_median"]=value
+            pair=describe_cross_variant_measurements(summary,compare)["pairs"][0]
+            self.assertIsNone(pair["median_b_minus_a_ms"])
+            self.assertEqual(pair["status"],"insufficient_measurements")
+
     def test_multiple_variants_create_unique_pairs_not_ranking(self):
         summary,compare=fixture()
         summary["variants"].append({"variant_id":"v3","label":"C",
