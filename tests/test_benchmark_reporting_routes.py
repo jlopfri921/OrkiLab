@@ -46,6 +46,45 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         # Python's sqlite3 context commits but doesn't close connections.
         conn.close()
 
+    def create_active_project_fixture(self):
+        projects_db = self.base / "settings" / "orkilab" / "projects.sqlite3"
+        projects_db.parent.mkdir(parents=True, exist_ok=True)
+        from contextlib import closing
+        with closing(sqlite3.connect(projects_db)) as con, con:
+            con.execute("CREATE TABLE projects (id TEXT PRIMARY KEY, archived INT)")
+            con.execute("INSERT INTO projects VALUES ('project-a',0)")
+            con.execute("INSERT INTO projects VALUES ('project-archived',1)")
+
+    def test_confirmed_draft_api_creates_only_inactive_plan(self):
+        from test_benchmark_draft_creation import payload
+        self.create_active_project_fixture()
+        response = self.client.post("/api/workspace/benchmark/drafts", json=payload())
+        self.assertEqual(response.status_code, 201, response.get_json())
+        self.assertEqual(response.get_json()["state"], "draft")
+        self.assertFalse(response.get_json()["generation_submitted"])
+        self.assertFalse(response.get_json()["execution_verified"])
+        index = self.client.get("/api/workspace/benchmark/reports?project_id=project-a")
+        self.assertEqual(index.status_code, 200, index.get_json())
+        self.assertEqual(index.get_json()["runs"][0]["id"], response.get_json()["id"])
+        self.assertEqual(index.get_json()["runs"][0]["variant_count"], 2)
+        self.assertEqual(index.get_json()["runs"][0]["observation_count"], 0)
+
+    def test_draft_api_refuses_remote_invalid_and_archived_project(self):
+        from test_benchmark_draft_creation import payload
+        self.create_active_project_fixture()
+        remote = self.client.post("/api/workspace/benchmark/drafts", json=payload(),
+                                 environ_overrides={"REMOTE_ADDR":"198.51.100.7"})
+        self.assertEqual(remote.status_code, 403)
+        bad = payload()
+        bad["confirm"] = False
+        self.assertEqual(self.client.post("/api/workspace/benchmark/drafts",
+                                          json=bad).status_code, 400)
+        archived = payload()
+        archived["project_id"] = "project-archived"
+        self.assertEqual(self.client.post("/api/workspace/benchmark/drafts",
+                                          json=archived).status_code, 404)
+        self.assertFalse(self.db.exists())
+
     def test_absent_database_returns_empty_without_creating_one(self):
         result = self.client.get("/api/workspace/benchmark/reports?project_id=project-a")
         self.assertEqual(result.status_code, 200)
