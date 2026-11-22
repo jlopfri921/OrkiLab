@@ -383,9 +383,16 @@ function renderCapture(capture,subjectId,refresh){
   container.append(node("p",capture.width+" × "+capture.height+" · "+capture.bytes+" "+t("bytes"),"muted"));
   if(capture.requested_direction){
    const spanish=typeof I18N!=="undefined"&&I18N.lang==="es";
+   const translations={
+    front:"frontal",front_right:"frontal derecha",right:"derecha",back_right:"trasera derecha",
+    back:"trasera",back_left:"trasera izquierda",left:"izquierda",front_left:"frontal izquierda",
+    top:"superior",bottom:"inferior",above:"desde arriba",level:"a nivel",below:"desde abajo",
+    close:"cerca",medium:"media",far:"lejos",unknown:"desconocida"
+   };
+   const localize=value=>spanish?(translations[value]||value):value;
    const description=(spanish?"Vista solicitada (sintética, NO medida): ":"Requested view (synthetic, NOT measured): ")+
-    capture.requested_direction+" · "+(capture.requested_elevation||"unknown")+" · "+
-    (capture.requested_distance||"unknown");
+    localize(capture.requested_direction)+" · "+localize(capture.requested_elevation||"unknown")+" · "+
+    localize(capture.requested_distance||"unknown");
    container.append(node("p",description,"muted no-i18n"));
   }
   const form=node("form"),row=node("div",undefined,"row");
