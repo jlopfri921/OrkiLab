@@ -163,6 +163,21 @@ python -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 Six new tests have been added; **40** benchmark unit tests are expected if all earlier 34 still pass. These are offline tests; real ComfyUI and RTX 3090 acceptance remain pending.
 
+## B6e operator PASS; B6f local Flask HTTP integration tests (pending)
+
+The operator reports **B6e PASS** with Python compilation, six new terminal-finalizer tests and the full benchmark unit suite **40/40** on Windows / Python 3.13. This is operator-reported, not verified CI.
+
+**B6f** introduces `tests/test_benchmark_http_flow.py`, exercising the actual Flask `/api/workspace/generation/prepare`, `POST /api/workspace/generation`, and `GET /api/workspace/generation/<token>` routes with isolated temporary project/benchmark/history/workflow SQLite databases and a fully mocked ComfyUI queue, submission and history. The three cases check a successful opt-in benchmark binding and exactly-once observation on status polling, rejection of a nonexistent project before generation submission, and unaffected normal generation requests.
+
+Run on the feature branch:
+```powershell
+git pull --ff-only
+python -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+python -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+
+**Expected if no regressions:** three new cases and **43** total benchmark unit/integration tests. These have **not yet been operator-validated**. The fake ComfyUI runs no model and provides no GPU utilization, output digest or performance data. B6 still requires safe cancellation/error HTTP coverage, multi-process reconciliation and a real-world ComfyUI test before release acceptance.
+
 ## Remaining 0.6 sequence
 
 | Milestone | Concrete deliverable | Gate |
