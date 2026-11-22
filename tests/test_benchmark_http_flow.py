@@ -428,5 +428,32 @@ class BenchmarkHttpFlowTests(unittest.TestCase):
         self.assertEqual(status.status_code, 403)
 
 
+
+    def test_gpu_monitor_inventory_local_only_and_read_only(self):
+        from benchmark_gpu_memory_probe import sample_devices
+        snapshot = {"ok": True, "devices": [
+            {"index": 0, "uuid": "GPU-test", "name": "NVIDIA RTX 3090",
+             "total_bytes": 24000, "used_bytes": 4000, "free_bytes": 20000},
+        ]}
+        # Resolve the imported function where the route imports it.
+        with patch("benchmark_gpu_memory_probe.sample_devices", return_value=snapshot):
+            response = self.client.get("/api/workspace/generation/gpu-monitor/devices")
+        self.assertEqual(response.status_code, 200, response.get_json())
+        self.assertEqual(response.get_json()["devices"][0]["uuid"], "GPU-test")
+        self.assertEqual(response.get_json()["scope"], "device_global_only")
+        self.assertEqual(len(self.submitted_requests), 0)
+        denied = self.client.get(
+            "/api/workspace/generation/gpu-monitor/devices",
+            environ_overrides={"REMOTE_ADDR": "192.0.2.10"},
+        )
+        self.assertEqual(denied.status_code, 403)
+
+    def test_gpu_monitor_inventory_unavailable_does_not_infer_gpu(self):
+        with patch("benchmark_gpu_memory_probe.sample_devices",
+                   return_value={"ok": False}):
+            response = self.client.get("/api/workspace/generation/gpu-monitor/devices")
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(len(self.submitted_requests), 0)
+
 if __name__ == "__main__":
     unittest.main()
