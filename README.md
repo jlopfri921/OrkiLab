@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="VERSION_ORKILAB"><img alt="Version 0.5.0" src="https://img.shields.io/badge/version-0.5.0-087F91"></a>
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-315DB3"></a>
+  <a href="LICENSING.md"><img alt="Apache-2.0 and upstream MIT" src="https://img.shields.io/badge/license-Apache--2.0%20%2B%20MIT-315DB3"></a>
   <img alt="Windows and Linux" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-293C60">
   <a href="https://ko-fi.com/jorgelf"><img alt="Support OrkiLab on Ko-fi" src="https://img.shields.io/badge/Ko--fi-Support%20OrkiLab-FF5E5B?logo=kofi&logoColor=white"></a>
 </p>
@@ -13,7 +13,7 @@
 
 # OrkiLab — LoRA Trainer Studio
 
-Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, open-source and local-first workspace for adapting generative models with LoRA and connecting training, datasets and optional ComfyUI image-generation workflows. Workspace is the default interface. **Stable candidate 0.5.0 is prepared with H1–H7 operator-confirmed PASS. The published GitHub release remains v0.5.0-rc.1 until the guarded stable publication completes.** The preceding public prereleases are [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) and [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1).
+Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, open-source and local-first workspace for adapting generative models with LoRA and connecting training, datasets and optional ComfyUI image-generation workflows. Workspace is the default interface. **Stable candidate 0.5.0 is prepared with H1–H7 operator-confirmed PASS. The published GitHub release remains v0.5.0-rc.1 until the guarded stable publication completes.** The preceding public prereleases are [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1) and [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1).
 
 ## Version history — all phases (0.1.0 to 0.6.0)
 
@@ -23,9 +23,9 @@ The following chronology separates **documented development phases**, **release 
 | --- | --- | --- | --- |
 | **0.1.0 · Foundation** | **dev → rc.1 → rc.2** | Independent OrkiLab brand, safe updater, CI/regression baseline, consistent launcher/trainer identity | Historical RC candidates documented; public tag/release not verified here |
 | **0.2.0 · Workspace** | **dev.1 → rc.1** | Local project SQLite, modern dashboard, trainer navigation, new default Workspace | Historical RC candidate documented; public tag/release not verified here |
-| **0.3.0 · Connect** | Development increments → **rc.1** | ComfyUI Zone, Bridge, workflow generation, GPU monitoring | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1); stable not verified |
-| **0.4.0 · Dataset** | Incremental development/beta.1 work → **rc.1** | Dataset Studio, captions, trainer handoff, checkpoint/LoRA library | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1); stable pending |
-| **0.5.0 · Multiview** | **alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1** (+ follow-ups) | Photo subjects, camera coverage, view generation, reproducible export | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1); stable pending |
+| **0.3.0 · Connect** | Development increments → **rc.1** | ComfyUI Zone, Bridge, workflow generation, GPU monitoring | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1); stable not verified |
+| **0.4.0 · Dataset** | Incremental development/beta.1 work → **rc.1** | Dataset Studio, captions, trainer handoff, checkpoint/LoRA library | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1); stable pending |
+| **0.5.0 · Multiview** | **alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1** (+ follow-ups) | Photo subjects, camera coverage, view generation, reproducible export | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1); stable pending |
 | **0.6.0 · Benchmark** | **alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable** *(planned)* | Reproducible evaluation, model and LoRA comparison, reports | Development plan; not published |
 
 **Complete phase-by-phase details for every version:** [OrkiLab release history (0.1 → 1.0)](docs/orkilab/RELEASE_HISTORY.md), including the previously under-documented **0.1.0-rc.1 / rc.2** and **0.2.0-rc.1**; also see [Changelog](CHANGELOG_ORKILAB.md) and [Roadmap](docs/orkilab/ROADMAP.md). Versions 0.1–0.4 are not assigned invented alpha/beta releases.
@@ -38,16 +38,16 @@ The following chronology separates **documented development phases**, **release 
 | --- | --- | --- | --- |
 | **0.1.0 · Foundation** | **dev → rc.1 → rc.2** | Independent OrkiLab brand, safe updater, CI/regression baseline, consistent launcher/trainer identity | Historical RC candidates documented; public tag/release not verified here |
 | **0.2.0 · Workspace** | **dev.1 → rc.1** | Local project SQLite, modern dashboard, trainer navigation, new default Workspace | Historical RC candidate documented; public tag/release not verified here |
-| **0.3.0 · Connect** | Development increments → **rc.1** | ComfyUI Zone, Bridge, workflow generation, GPU monitoring | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1); stable not verified |
-| **0.4.0 · Dataset** | Incremental development/beta.1 work → **rc.1** | Dataset Studio, captions, trainer handoff, checkpoint/LoRA library | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1); stable pending |
-| **0.5.0 · Multiview** | **alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1** (+ follow-ups) | Photo subjects, camera coverage, view generation, reproducible export | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1); stable pending |
+| **0.3.0 · Connect** | Development increments → **rc.1** | ComfyUI Zone, Bridge, workflow generation, GPU monitoring | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1); stable not verified |
+| **0.4.0 · Dataset** | Incremental development/beta.1 work → **rc.1** | Dataset Studio, captions, trainer handoff, checkpoint/LoRA library | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1); stable pending |
+| **0.5.0 · Multiview** | **alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1** (+ follow-ups) | Photo subjects, camera coverage, view generation, reproducible export | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1); stable pending |
 | **0.6.0 · Benchmark** | **alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable** *(planned)* | Reproducible evaluation, model and LoRA comparison, reports | Development plan; not published |
 
 **Complete phase-by-phase details for every version:** [OrkiLab release history (0.1 → 1.0)](docs/orkilab/RELEASE_HISTORY.md), including the previously under-documented **0.1.0-rc.1 / rc.2** and **0.2.0-rc.1**; also see [Changelog](CHANGELOG_ORKILAB.md) and [Roadmap](docs/orkilab/ROADMAP.md). Versions 0.1–0.4 are not assigned invented alpha/beta releases.
 
 ## OrkiLab 0.5.0 — stable release preparation
 
-**Stable candidate source version: `0.5.0` (pending exact-SHA CI and publication).** [**GitHub prerelease `v0.5.0-rc.1` is published**](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1), from validated commit `b4bc236bd61db2888aa035986b6dca84126dd83b` (2026-11-22). This is **not** stable `v0.5.0`. The preceding prerelease is [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1).
+**Stable candidate source version: `0.5.0` (pending exact-SHA CI and publication).** [**GitHub prerelease `v0.5.0-rc.1` is published**](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1), from validated commit `b4bc236bd61db2888aa035986b6dca84126dd83b` (2026-11-22). This is **not** stable `v0.5.0`. The preceding prerelease is [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1).
 
 **Why OrkiLab exists.** OrkiLab aims to be an independent, open-source, local-first workbench that connects projects, data preparation, LoRA training, compatible ComfyUI generation, model/GPU inspection and export. It coordinates tools and models installed by the user rather than being a model itself. The [eight-language in-app guide](http://127.0.0.1:4990/workspace/guide) now explains the overall philosophy, practical use, individual modules, limitations and future direction.
 
@@ -98,7 +98,7 @@ Further details: [Multiview implementation roadmap](docs/orkilab/MULTIVIEW_0_5_R
 
 Reported Windows/RTX 3090 acceptance includes saved projects/photos, persistence, representative ComfyUI generation, dataset ZIP and browser layout. The **newer** copy-to-input, guided official workflow import and full Multiview flow still need appropriately scoped evidence against the final installed code. A user-reported success does not automatically validate all Desktop/Portable versions, model families, complete training runs, custom nodes, remote-access safety or upgrade/rollback.
 
-**Published RC evidence:** Windows/Linux CI passed on commit `b4bc236`, and the [v0.5.0-rc.1 GitHub prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) is available. Stable `v0.5.0` is separately gated on actual device/workflow compatibility, non-destructive upgrade and rollback testing, safety and regression acceptance. The next milestone after stable is **0.6.0**.
+**Published RC evidence:** Windows/Linux CI passed on commit `b4bc236`, and the [v0.5.0-rc.1 GitHub prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1) is available. Stable `v0.5.0` is separately gated on actual device/workflow compatibility, non-destructive upgrade and rollback testing, safety and regression acceptance. The next milestone after stable is **0.6.0**.
 
 **Stable manual acceptance (2026-11-22):** H1–H7 were explicitly confirmed PASS without blocking issues by the operator; no independent logs, exact workflow/checkpoint, image hash values, or ComfyUI version were supplied. Final GitHub CI and stable-release publication remain pending. See [stable acceptance register](docs/orkilab/RC_0_5_0_STABLE_ACCEPTANCE.md).
 
@@ -106,7 +106,7 @@ Reported Windows/RTX 3090 acceptance includes saved projects/photos, persistence
 
 **Candidate scope:** a searchable and multilingual training Workspace, Dataset Studio (image library, quality/duplicate review, manually approved captions and optional local vision suggestions), project-aware prepared dataset handoff, managed ComfyUI checkpoints, and a curated **My trained LoRAs / Mis LoRA entrenados** catalog. The catalog supports 1–5 star ratings, Best/Final flags, optional reference images, collapsed model cards, and local SQLite metadata. ComfyUI Generation history also offers collapsed, searchable and sortable jobs.
 
-The main application's version is read from `VERSION_ORKILAB` and shown beneath the active left navigation. The shared footer links to the [OrkiLab GitHub project](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio). Current integration is local-first: original training weights and imported datasets are preserved, and saved library records refer to local files.
+The main application's version is read from `VERSION_ORKILAB` and shown beneath the active left navigation. The shared footer links to the [OrkiLab GitHub project](https://github.com/jlopfri921/OrkiLab). Current integration is local-first: original training weights and imported datasets are preserved, and saved library records refer to local files.
 
 **Important scope limits:** the prepared image/caption workflow does not establish that every trainer can successfully pre-cache/train from its generated dataset. Per-engine export profiles, a formal train/validation split, reproducibility acceptance across engines, full trainer/GPU validation, and real Windows image/Ollama smoke tests remain separate gates for the eventual **0.4.0 stable** milestone. The candidate's CI uses CPU-only dependencies and synthetic fixtures; it does not run a real GPU training pass. See [candidate readiness](docs/orkilab/RC_0_4_0_READINESS.md), [Dataset Studio scope](docs/orkilab/DATASET_STUDIO_0_4_SCOPE.md), and [managed checkpoints](docs/orkilab/MANAGED_COMFYUI_CHECKPOINTS.md).
 
@@ -272,7 +272,7 @@ Open **Workspace** at `/` or `/workspace` on the launcher host. Create and archi
 ## Quick start
 
 ```bash
-git clone https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio.git
+git clone https://github.com/jlopfri921/OrkiLab.git
 cd OrkiLab-LoRA-TrainerStudio
 ```
 
@@ -372,7 +372,7 @@ Python, Git and every library are installed by the installer. GTX 10xx and older
 **Option A — Git (recommended, makes updating easy).** Open the folder where you want to install it, type `cmd` in the address bar of the Windows Explorer, press Enter and run:
 
 ```bash
-git clone https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio.git
+git clone https://github.com/jlopfri921/OrkiLab.git
 ```
 
 **Option B — ZIP.** Press the green **Code** button → **Download ZIP** and unzip it where you want to install it (the folder is called `OrkiLab-LoRA-TrainerStudio-main`).
@@ -1200,7 +1200,13 @@ Models and LoRAs downloaded at run time (not part of this repository): MelBandRo
 
 **YouTube** — Coming soon · **X** — Coming soon · **Discord** — Coming soon · **[Ko-fi — Support OrkiLab](https://ko-fi.com/jorgelf)**
 
-Report issues in the [OrkiLab issue tracker](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/issues).
+Report issues in the [OrkiLab issue tracker](https://github.com/jlopfri921/OrkiLab/issues).
+
+## License and contributors / Licencia y colaboradores
+
+**OrkiLab's original contributions are licensed under Apache License 2.0**, while the **upstream Academia SD LoRAlab core remains MIT**. Original upstream notices are retained and third-party files retain their own terms. See [LICENSING.md](LICENSING.md), [Apache-2.0 text](LICENSE), [upstream MIT text](LICENSES/MIT-ORIGINAL) and [NOTICE](NOTICE).
+
+**Founder and maintainer:** [Jorge López Frías (@jlopfri921)](https://github.com/jlopfri921). See [CONTRIBUTORS.md](CONTRIBUTORS.md) for formal project and upstream credits. The automatic GitHub contributor graph is controlled by commit authorship/email recognition, not the README credits.
 
 ## Credits
 
