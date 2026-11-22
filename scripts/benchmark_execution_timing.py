@@ -22,13 +22,17 @@ def measured_execution_timing(entry: Any, prompt_id: str) -> dict | None:
 
     start = None
     end = None
+    cache_observed = False
     for message in messages:
         if not isinstance(message, (list, tuple)) or len(message) != 2:
             continue
         kind, details = message
-        if kind not in ("execution_start", "execution_success"):
+        if kind not in ("execution_start", "execution_success", "execution_cached"):
             continue
         if not isinstance(details, dict) or details.get("prompt_id") != prompt_id:
+            continue
+        if kind == "execution_cached":
+            cache_observed = True
             continue
         timestamp = details.get("timestamp")
         if (type(timestamp) not in (int, float)
@@ -59,4 +63,6 @@ def measured_execution_timing(entry: Any, prompt_id: str) -> dict | None:
         "end_timestamp_ms": end,
         "prompt_id": prompt_id,
         "includes_queue_wait": False,
+        "execution_cached_event_observed": cache_observed,
+        "full_inference_verified": False,
     }
