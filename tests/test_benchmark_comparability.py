@@ -53,6 +53,32 @@ class BenchmarkComparabilityTests(unittest.TestCase):
         self.assertEqual(result["status"], "blocked")
         self.assertIn("cached_sampler_observed", result["variants"][0]["reason_codes"])
 
+    def test_cached_sampler_blocks_even_when_duration_is_null(self):
+        sample = fixture()
+        sample["observations"][0]["duration_ms"] = None
+        timing = sample["observations"][0]["generation_lineage"]["execution_timing"]
+        timing["sampler_cache_status"] = "cached"
+        timing["comparability"] = "sampler_cached_not_comparable"
+        result = assess_duration_comparability(sample)
+        item = result["variants"][0]
+        self.assertEqual(item["status"], "blocked")
+        self.assertEqual(item["measured_observations"], 0)
+        self.assertIn("cached_sampler_observed", item["reason_codes"])
+        self.assertIn("no_completed_measured_duration", item["reason_codes"])
+
+    def test_cached_sampler_on_untimed_repeat_blocks_timed_repeats(self):
+        sample = fixture()
+        other = copy.deepcopy(sample["observations"][0])
+        other["id"], other["repetition"] = "uncounted", 1
+        other["duration_ms"] = None
+        other["generation_lineage"]["execution_timing"]["sampler_cache_status"] = "cached"
+        sample["observations"].append(other)
+        result = assess_duration_comparability(sample)
+        self.assertEqual(result["variants"][0]["status"], "blocked")
+        self.assertEqual(result["variants"][0]["measured_observations"], 1)
+        self.assertIn("incomplete_duration_coverage",
+                      result["variants"][0]["reason_codes"])
+
     def test_unverified_missing_lineage_not_auto_blocked(self):
         sample = fixture()
         sample["observations"][0]["generation_lineage"] = None
