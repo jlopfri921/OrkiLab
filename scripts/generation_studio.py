@@ -39,7 +39,8 @@ def register(app, base):
             report = observe(base, generation_id, gpu_uuid=option["gpu_uuid"],
                              samples_limit=option["samples_limit"],
                              interval_seconds=option["interval_seconds"])
-            state = "completed" if report.get("ok") is True else "failed"
+            state = ("completed" if report.get("ok") is True and report.get("termination") == "completed_history"
+                     else "partial" if report.get("ok") is True else "failed")
             payload = {**report, **monitoring_receipt(state)}
         except Exception as exc:
             app.logger.warning("Experimental VRAM monitor failed: %s", exc)
