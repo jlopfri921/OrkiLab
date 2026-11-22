@@ -62,23 +62,26 @@ class WorkspaceJavaScriptSyntaxTests(unittest.TestCase):
         self.assertIn('modeHelp.src="/assets/orkilab/orkilab-mode-help.js"',shell)
         self.assertIn('"/workspace/guide"',shell)
 
-    def test_multiview_spanish_visible_text_and_dynamic_labels(self):
+    def test_multiview_all_supported_locales_cover_visible_fields(self):
         import json
         import re
         page=(ROOT/"GUI"/"multiview_studio.html").read_text(encoding="utf-8")
-        translations=json.loads((ROOT/"GUI"/"locales"/"es.json").read_text(encoding="utf-8"))
-        keys=set(re.findall(r'\\bt\\(\\s*"([^"]+)"',page))
-        keys.update(re.findall(r'\\b(?:field|selector)\\(\\s*"([^"]+)"',page))
-        keys.update(re.findall(r'\\[\\s*"(?:real_photo|video_frame|synthetic|unknown|manual|workflow|embedded_exif|estimated|unreviewed|approved|rejected|newest|oldest|name|azimuth|distance)"\\s*,\\s*"([^"]+)"',page))
-        # These are runtime translation keys, not project names or protocol values.
-        missing=sorted(k for k in keys if k not in translations and k not in
-                       ("project","loading","found","none","archived","other","missing","error","remote"))
-        self.assertEqual(missing,[],f"Untranslated Multiview interface labels: {missing}")
-        static=(
+        keys=set(re.findall(r'\bt\(\s*"([^"]+)"',page))
+        keys.update(re.findall(r'\b(?:field|selector)\(\s*"([^"]+)"',page))
+        keys.update(re.findall(
+            r'\[\s*"(?:real_photo|video_frame|synthetic|unknown|manual|workflow|embedded_exif|estimated|unreviewed|approved|rejected|newest|oldest|name|azimuth|distance)"\s*,\s*"([^"]+)"',page))
+        # Dynamic statuses (projectLabels) are translated inside their own module.
+        keys-={"project","loading","found","none","archived","other","missing","error","remote"}
+        keys.update((
             "Organize multiple photographs of a subject by viewpoint, angle and distance. Real and synthetic sources are clearly distinguished. Your original files are never changed.",
             "Choose a project","Manage projects","Use an existing image project. Multiview metadata belongs to this project only.",
-            "Subjects","Subject name","Create subject","Search subjects","Sort subjects","Most photographs")
-        self.assertTrue(all(translations.get(k) for k in static))
+            "Subjects","Subject name","Create subject","Search subjects","Sort subjects",
+            "Most photographs","Multiview Studio"))
+        for lang in ("es","pt","fr","de","it","ja","ko"):
+            with self.subTest(language=lang):
+                translations=json.loads((ROOT/"GUI"/"locales"/(lang+".json")).read_text(encoding="utf-8"))
+                missing=sorted(k for k in keys if not translations.get(k))
+                self.assertEqual(missing,[],f"{lang}: untranslated Multiview UI labels: {missing}")
         self.assertIn('localize(capture.requested_direction)',page)
         rc=(ROOT/"assets"/"orkilab"/"multiview-rc1.js").read_text(encoding="utf-8")
         self.assertIn('status.textContent=t("limit30")',rc)
