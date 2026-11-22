@@ -480,3 +480,18 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 ```
 No live ComfyUI inference is required for these tests. Future work: expose the experimental option clearly in the Generation Studio UI, show real-time progress/status with explicit device-global labels, introduce cancellation for monitoring alone, and make results restart-safe if the user opts into persistence—without compromising immutable benchmark observations.
+
+## B8.2h operator acceptance / B8.2i Generation Studio opt-in UI (pending validation)
+
+Operator reported that all **115 B8.2h benchmark tests passed** (confirmation in chat; full execution log not attached). B8.2i adds the **default-off** experimental NVIDIA device-global VRAM checkbox to `GUI/workspace.html`, a GPU selection drop-down populated by a local-only, one-shot `GET /api/workspace/generation/gpu-monitor/devices` read-only NVIDIA inventory endpoint, and a diagnostic monitor status readout while a generation is running. The selected UUID is provided using the previously validated explicit `gpu_monitor` consent contract, with a 120-sample limit and 0.3s nominal interval. The existing submitted workflow, seed, checkpoint and scheduler are untouched by enabling monitoring. The new HTML has Spanish/English explanatory copy and labels. Controls are disabled while the generation is active.
+
+When a generation was submitted with monitoring enabled, its session-only results are queried through local-only `GET /api/workspace/generation/<generation_id>/gpu-monitor`. Values, if present, are explicitly labelled **maximum observed global GPU VRAM**, **not** job- or process-attributed VRAM; WDDM's per-process memory remains unavailable. There is NO data insertion into benchmark observations, and `peak_vram_bytes` stays NULL. This is not a reliable continuous VRAM peak capture; very short workflows may complete before sampling. Monitoring errors must not invalidate a submitted generation. Without the user's checkbox selection, the existing generation path stays unchanged. Read-only UUID endpoint reports only index/name/UUID (not memory or any process secrets) and rejects remote clients.
+
+Two mocked Flask tests added for GPU UUID inventory endpoint/local-only access/unsupported inventory. **117 benchmark tests expected**, pending Windows operator verification. In addition, verify the UI manually by opening Generation Studio, confirm the experimental checkbox is initially unchecked, check GPU selection, uncheck it again, and run no workflow. Confirm labels and selection in Spanish and English without running inference. The scope of this round is UI and endpoint readiness, **not** an acceptance claim about a real monitored inference.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_http_flow.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+```
+After refreshing the actual Python launcher process, inspect `http://127.0.0.1:4990/workspace/comfyui#generation` and ensure ComfyUI connection is configured. Do not merge PR #104 or claim 0.6.0 stable from these tests alone.
