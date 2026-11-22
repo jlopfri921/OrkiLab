@@ -363,8 +363,6 @@ def register(app, base):
             from benchmark_repro_protocol import declared_protocol_readiness
             from benchmark_b10_model_check import inspect_model_variants
             from benchmark_job_binding import preflight_submission_binding
-            from benchmark_store import BenchmarkStore
-            from workspace_store import ProjectStore
             projects_db = base / "settings" / "orkilab" / "projects.sqlite3"
             bench_db = base / "settings" / "orkilab" / "benchmarks.sqlite3"
             wf_db = base / "settings" / "orkilab" / "workflows.sqlite3"
@@ -374,13 +372,19 @@ def register(app, base):
                 row = con.execute("SELECT id FROM projects WHERE id=? AND archived=0", (project_id,)).fetchone()
             if row is None:
                 return jsonify(error="Active project unavailable"), 404
-            with BenchmarkStore(bench_db) as bench:
-                preflight_submission_binding(bench, project_id=project_id, run_id=run_id,
-                                             variant_id=variant_id, repetition=repetition)
-                run = bench.db.execute("SELECT protocol_json FROM benchmark_runs WHERE id=?",
-                                       (run_id,)).fetchone()
-                variants = bench.db.execute("SELECT id,run_id,config_json FROM benchmark_variants "
-                                            "WHERE run_id=? ORDER BY id LIMIT 21", (run_id,)).fetchall()
+            # Read-only: preflight takes a store-like object exposing a
+            # connection. Never instantiate BenchmarkStore here (it applies
+            # schema DDL and would make preparation a DB-writing operation).
+            from types import SimpleNamespace
+            with closing(sqlite3.connect(bench_db.resolve().as_uri()+"?mode=ro",uri=True)) as con:
+                con.row_factory=sqlite3.Row
+                preflight_submission_binding(SimpleNamespace(db=con), project_id=project_id,
+                                             run_id=run_id,variant_id=variant_id,
+                                             repetition=repetition)
+                run=con.execute("SELECT protocol_json FROM benchmark_runs WHERE id=?",
+                                (run_id,)).fetchone()
+                variants=con.execute("SELECT id,run_id,config_json FROM benchmark_variants "
+                                     "WHERE run_id=? ORDER BY id LIMIT 21",(run_id,)).fetchall()
             protocol = json.loads(run["protocol_json"])
             report = {"run":{"id":run_id,"protocol":protocol},
                       "variants":[dict(v) for v in variants]}
