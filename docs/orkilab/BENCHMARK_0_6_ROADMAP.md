@@ -338,3 +338,22 @@ git pull --ff-only
 .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
 .\\venv\\Scripts\\python.exe scripts/benchmark_live_timing_probe.py --generation-id 41b8689d219a4c10883533036ebd91c5
 ```
+
+## B8.1.5 Windows operator acceptance
+
+Operator confirmed the post-fix B8.1.5 suite was successful following the `f3634c7` test-assertion correction (**expected 74/74**; exact raw log not provided in this turn). Real B8.1.4 historical read-only classification remains `sampler_cache_miss_partial_cache` with a 13,622ms measured event interval; the already recorded immutable observation was not rewritten. No claim of fully cold inference is made.
+
+## B8.2a — NVIDIA memory read-only inventory (pending operator validation)
+
+`scripts/benchmark_gpu_memory_probe.py` runs a **single** bounded `nvidia-smi --query-gpu=index,uuid,name,memory.total,memory.used,memory.free --format=csv,noheader,nounits` diagnostic with 5-second timeout, parses up to 16 GPUs and reports device-wide used/free/total bytes. It does **not** call ComfyUI, send a workflow, change its queue, write any SQLite data, change GPU settings, or infer a per-job peak. On invalid/unsupported NVML results it fails closed. **`peak_vram_bytes` intentionally stays NULL** until a future explicit job-scoped, time-windowed and source-attributed sampler is implemented. The global used-memory value includes cached allocations and other applications, and must never be labelled benchmark peak. Multi-GPU index and GPU UUID are retained.
+
+Four mocked unit tests cover CSV parsing on two GPUs, malformed/device mismatch, command failures, and non-attribution semantics. **78 benchmark tests** expected after the operator-confirmed 74 baseline, pending actual verification.
+
+```powershell
+git pull --ff-only
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark_gpu_memory_probe.py" -v
+.\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_benchmark*.py" -v
+.\\venv\\Scripts\\python.exe scripts/benchmark_gpu_memory_probe.py
+```
+
+Next B8.2b: explicit start/stop capture linked to a specific Generation Studio job, session-bound to device UUID and preferably ComfyUI PID/process memory rather than device global memory, with sampling interval, baseline, max sample, and flags for observed concurrent GPU jobs/processes and missed windows. No attribution without isolation evidence and no extrapolated true peak beyond observed samples.
