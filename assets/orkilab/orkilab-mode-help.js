@@ -14,6 +14,7 @@ function reconcile(){
    if(nav.closest("#orki-mobile-sheet"))return;
    if(!nav.querySelector('a[href="/workspace/guide"]')){
     const a=document.createElement("a");a.href="/workspace/guide";a.textContent=label();a.className="orki-guide-link";
+    if(location.pathname.replace(/\\/$/,"")==="/workspace/guide")a.setAttribute("aria-current","page");
     nav.append(a);
    }else nav.querySelectorAll('a[href="/workspace/guide"]').forEach(a=>{if(a.textContent!==label())a.textContent=label()});
   });
