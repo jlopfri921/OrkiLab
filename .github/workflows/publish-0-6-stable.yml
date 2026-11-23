@@ -1,0 +1,119 @@
+name: Publish OrkiLab 0.6.0 stable
+
+on:
+  workflow_dispatch:
+    inputs:
+      acceptance:
+        description: 'Type PUBLISH ORKILAB 0.6.0 STABLE'
+        type: string
+        required: true
+      accepted_sha:
+        description: 'Exact 40-character main SHA approved for stable release'
+        type: string
+        required: true
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: orkilab-v0.6.0-stable-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Require deliberate exact SHA publication authorization
+        env:
+          ACCEPTANCE: ${{ inputs.acceptance }}
+          ACCEPTED_SHA: ${{ inputs.accepted_sha }}
+          CURRENT_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$ACCEPTANCE" = "PUBLISH ORKILAB 0.6.0 STABLE"
+          [[ "$ACCEPTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$ACCEPTED_SHA" = "$CURRENT_SHA"
+
+      - name: Checkout exactly approved main commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Validate stable metadata, notes, attribution and acceptance
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          version = Path("VERSION_ORKILAB").read_text(encoding="utf-8").strip()
+          launcher = json.loads(Path("GUI/launcher.json").read_text(encoding="utf-8"))
+          assert version == "0.6.0"
+          assert launcher["orkilab_version"] == "0.6.0"
+          for path in (
+              "README.md", "CHANGELOG_ORKILAB.md",
+              ".github/RELEASE_0_6_0.md",
+              "docs/orkilab/RC_0_6_0_STABLE_ACCEPTANCE.md",
+              "LICENSE", "LICENSES/MIT-ORIGINAL", "LICENSING.md",
+          ):
+              assert Path(path).is_file(), path
+          readme = Path("README.md").read_text(encoding="utf-8")
+          assert "0.6.0" in readme and "v0.6.0-rc1" in readme
+          notes = Path(".github/RELEASE_0_6_0.md").read_text(encoding="utf-8")
+          assert "Benchmark Studio" in notes and "Apache-2.0" in notes and "MIT" in notes
+          assert "do not prove" in notes
+          acceptance = Path("docs/orkilab/RC_0_6_0_STABLE_ACCEPTANCE.md").read_text(encoding="utf-8")
+          for section, n in (("E1", 5), ("E2", 6), ("E3", 6), ("E4", 6), ("E5", 6), ("E6", 6)):
+              assert f"| {section} ({n}) |" in acceptance
+          assert "35/35" in acceptance
+          assert "NOT RELEASED OR TAGGED" in acceptance
+          assert "Apache" in Path("LICENSING.md").read_text(encoding="utf-8")
+          assert "MIT License" in Path("LICENSES/MIT-ORIGINAL").read_text(encoding="utf-8")
+          print("Stable metadata and operator acceptance verified")
+
+      - name: Verify both Linux and Windows CI workflows passed on exact main SHA
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for workflow in "OrkiLab foundation checks" "OrkiLab RC validation"; do
+            ids="$(gh run list --repo "$GH_REPO" --workflow "$workflow" --commit "$RELEASE_SHA" --limit 50 \
+              --json databaseId,event,status,conclusion,headSha \
+              --jq '.[] | select(.event == "push" and .status == "completed" and .conclusion == "success" and .headSha == env.RELEASE_SHA) | .databaseId')"
+            if [ -z "$ids" ]; then
+              echo "Missing passing main push CI for $workflow on $RELEASE_SHA"
+              exit 1
+            fi
+            echo "$workflow validated at $RELEASE_SHA"
+          done
+
+      - name: Create stable release without moving an existing tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          tag="v0.6.0"
+          if gh release view "$tag" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo "Stable release already exists; refusing overwrite"
+            exit 1
+          fi
+          if gh api "repos/$GH_REPO/git/ref/tags/$tag" >/dev/null 2>&1; then
+            echo "Tag already exists; refusing to move"
+            exit 1
+          fi
+          gh release create "$tag" \
+            --repo "$GH_REPO" \
+            --target "$RELEASE_SHA" \
+            --title "OrkiLab v0.6.0 — Benchmark Studio" \
+            --notes-file ".github/RELEASE_0_6_0.md" \
+            --latest
+          gh release view "$tag" --repo "$GH_REPO" --json isPrerelease,url,tagName
