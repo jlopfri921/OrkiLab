@@ -34,9 +34,11 @@ ComfyUI workflow compatibility is **partial, not universal**. OrkiLab may reject
 ## Provenance and evidence
 
 - Milestones B1–B10.5 implemented in the open [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104).
-- **283 Benchmark unit checks operator-reported PASS**, via user acceptance; complete independent Windows/Linux CI and full-app test logs for the exact candidate SHA are still required.
-- Source metadata staged at `0.6.0-rc1` **only** on the development branch. Main retains stable 0.5.0 metadata; branch reconciliation and release approval are outstanding.
-- [Acceptance checklist](../docs/orkilab/RC_0_6_0_READINESS.md) specifies backup, regression, ComfyUI/RTX GPU verification and approval gates.
+- **Benchmark Studio GPU acceptance:** operator reports a successful single generation and project recording on NVIDIA RTX 3090 (24 GB); specific Benchmark run identifier and local logs not attached. Independently, New Generation completed using `image_flux2_text_to_image_9b.json` (generation `f69ac654-d111-4c96-ad71-506329085771`). These are separate flows, and neither proves universal workflow support.
+- **Automated validation:** Windows/Linux Foundation and RC workflows succeeded on commit `2412178f5f0729f949b4fe20ba2f40e32a9870da` (runs `45187558918` and `45187559318`). Verify CI again on the final merge candidate SHA; historical test-count estimates must not substitute for current CI.
+- Source metadata staged at `0.6.0-rc1` **only** on the development branch pending PR merge. Reconciliation of `main` has been completed (0 commits behind at review). **No prerelease tag or GitHub Release has been published or authorized.**
+- Operator reports a completed backup of `settings`, SQLite quick checks and separate-directory SHA-256 restore comparison. No full restored-app boot proof or backup of external datasets/model files is claimed.
+- [Acceptance checklist](../docs/orkilab/RC_0_6_0_READINESS.md) records the remaining limits and separate publication approval.
 
 ## Upgrade caution
 
