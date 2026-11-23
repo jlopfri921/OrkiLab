@@ -32,14 +32,17 @@ class BenchmarkRcMetadataTests(unittest.TestCase):
         self.assertIn("DRAFT ONLY", notes)
         self.assertIn("not published", notes)
         self.assertIn("No tag or GitHub Release is authorized", notes)
-        self.assertIn("283 Benchmark unit checks operator-reported PASS", notes)
+        self.assertIn("Benchmark Studio GPU acceptance:", notes)
+        self.assertIn("final merge candidate SHA", notes)
+        self.assertIn("No tag or GitHub Release is authorized", notes)
         self.assertIn("ComfyUI", notes)
 
     def test_acceptance_register_keeps_manual_release_gates(self):
         acceptance = (
             ROOT / "docs" / "orkilab" / "RC_0_6_0_READINESS.md"
         ).read_text(encoding="utf-8")
-        self.assertIn("283 benchmark tests operator-reported PASS", acceptance)
+        self.assertIn("Benchmark Studio con RTX 3090: PASS comunicado", acceptance)
+        self.assertIn("no implica aprobación explícita para publicar", acceptance)
         for marker in ("B10.5-B", "B10.5-C", "B10.5-F", "B10.5-I", "B10.5-J"):
             self.assertIn(marker, acceptance)
         self.assertIn("No release tag, GitHub Release", acceptance)
