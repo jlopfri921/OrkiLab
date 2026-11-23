@@ -65,7 +65,8 @@ class BridgeCloneSafetyTests(unittest.TestCase):
         for snippet in (
             'client_id = str(uuid.uuid4())',
             'return ident, client_id',
-            'return jsonify(id=token, prompt_id=ident, client_id=client_id), 201',
+            'result = dict(id=token, prompt_id=ident, client_id=client_id)',
+            'return jsonify(result), 201',
             'details.prompt_id!==runningGeneration.prompt_id',
             'executionSocket=new WebSocket(wsUrl.href)',
             'message.type==="executing"',

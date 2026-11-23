@@ -152,5 +152,5 @@
       "run": "Run_LoRAlab-SDXL.bat"
     }
   ],
-  "orkilab_version": "0.5.0"
+  "orkilab_version": "0.6.0-rc1"
 }

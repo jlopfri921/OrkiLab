@@ -59,10 +59,52 @@ def validate_prompt(prompt, schema):
         kind = node["class_type"]
         spec = schema[kind]
         fields = spec.get("input", {})
-        required = fields.get("required", {})
-        optional = fields.get("optional", {})
-        for name in required:
+        required = dict(fields.get("required", {}))
+        optional = dict(fields.get("optional", {}))
+        # ComfyUI V3 DynamicCombo is a scalar option key, not a link socket.
+        # Only the selected option's explicitly declared nested inputs exist.
+        for parent, desc in tuple(required.items()) + tuple(optional.items()):
+            if not isinstance(desc, list) or not desc or desc[0] != "COMFY_DYNAMICCOMBO_V3":
+                continue
+            meta = desc[1] if len(desc) > 1 and isinstance(desc[1], dict) else {}
+            options = meta.get("options")
+            selected = node["inputs"].get(parent)
+            if (not isinstance(selected, str) or not isinstance(options, list)
+                    or not 0 < len(options) <= 100
+                    or any(not isinstance(o, dict) or not isinstance(o.get("key"), str)
+                           for o in options)):
+                raise ValueError(f"{kind} #{ident}: invalid dynamic dropdown for {parent}")
+            matches = [o for o in options if o["key"] == selected]
+            if len(matches) != 1:
+                raise ValueError(f"{kind} #{ident}: unavailable dynamic option {parent}: {selected}")
+            nested = matches[0].get("inputs")
+            if not isinstance(nested, dict):
+                raise ValueError(f"{kind} #{ident}: invalid dynamic option metadata for {parent}")
+            for target, section in ((required, nested.get("required", {})),
+                                    (optional, nested.get("optional", {}))):
+                if not isinstance(section, dict) or len(section) > 64:
+                    raise ValueError(f"{kind} #{ident}: invalid dynamic input schema for {parent}")
+                for child, descriptor in section.items():
+                    if (not isinstance(child, str) or not child or "." in child
+                            or child == parent or not isinstance(descriptor, list)
+                            or not descriptor or parent + "." + child in required
+                            or parent + "." + child in optional):
+                        raise ValueError(f"{kind} #{ident}: invalid nested input {parent}")
+                    target[parent + "." + child] = descriptor
+        for name, descriptor in required.items():
             if name not in node["inputs"]:
+                # A required-section COMFY_AUTOGROW_V3 marker represents a
+                # family of generated sockets. If its template explicitly
+                # allows zero slots, absence of the marker is valid (e.g.
+                # Qwen Image 2.1 text-to-image without reference images).
+                if (isinstance(descriptor, list) and descriptor
+                        and descriptor[0] == "COMFY_AUTOGROW_V3"
+                        and len(descriptor) > 1
+                        and isinstance(descriptor[1], dict)
+                        and isinstance(descriptor[1].get("template"), dict)
+                        and type(descriptor[1]["template"].get("min")) is int
+                        and descriptor[1]["template"]["min"] == 0):
+                    continue
                 raise ValueError(f"{kind} #{ident}: missing input {name}")
         for name, value in node["inputs"].items():
             descriptor = required.get(name, optional.get(name))
@@ -78,6 +120,9 @@ def validate_prompt(prompt, schema):
                     raise ValueError(f"{kind} #{ident}: invalid output slot")
                 if isinstance(typ, str) and typ not in ("*", outputs[value[1]]):
                     raise ValueError(f"{kind} #{ident}: incompatible link {name}")
+                continue
+            if typ == "COMFY_DYNAMICCOMBO_V3":
+                # Option and selected child fields were validated above.
                 continue
             if isinstance(typ, list) or typ == "COMBO":
                 choices = combo_choices(descriptor)

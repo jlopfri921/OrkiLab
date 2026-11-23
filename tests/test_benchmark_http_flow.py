@@ -1,0 +1,633 @@
+"""B6f: Flask route integration using a fake ComfyUI; never contacts a GPU.
+
+Exercises the real Generation Studio HTTP endpoints, generation history,
+benchmark binding and finalization in isolated temporary SQLite databases.
+"""
+import json
+import sqlite3
+import sys
+import tempfile
+import unittest
+from contextlib import closing
+from pathlib import Path
+from unittest.mock import patch
+
+from flask import Flask
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import generation_studio
+from benchmark_store import BenchmarkStore
+from workspace_store import ProjectStore
+
+
+class BenchmarkHttpFlowTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        settings = self.root / "settings" / "orkilab"
+        settings.mkdir(parents=True)
+        (settings / "comfyui.json").write_text(
+            json.dumps({"mode": "hybrid", "url": "http://127.0.0.1:8188"}),
+            encoding="utf-8",
+        )
+        self.graph = {"1": {"class_type": "SaveImage", "inputs": {}}}
+        with closing(sqlite3.connect(settings / "workflows.sqlite3")) as con, con:
+            con.execute("CREATE TABLE workflows (id TEXT PRIMARY KEY, name TEXT, graph TEXT)")
+            con.execute(
+                "INSERT INTO workflows VALUES (?,?,?)",
+                ("workflow-1", "Fixture workflow", json.dumps(self.graph)),
+            )
+        project_store = ProjectStore(settings / "projects.sqlite3")
+        project = project_store.create({
+            "name": "Fixture project", "engine": "fixture", "category": "image"
+        }, {"fixture"})
+        self.project_id = project["id"]
+        self.benchmark_path = settings / "benchmarks.sqlite3"
+        with BenchmarkStore(self.benchmark_path) as bench:
+            self.run_id = bench.create_run(self.project_id, "Integration", {"seed": 42})
+            self.variant_id = bench.add_variant(self.run_id, "checkpoint-1", {"weight": 0.5})
+            bench.transition(self.run_id, "running")
+        self.app = Flask(__name__)
+        generation_studio.register(self.app, self.root)
+        self.client = self.app.test_client()
+        self.mock_queue = {"queue_running": [], "queue_pending": []}
+        self.history_entry = None
+        self.submitted_requests = []
+        self.patches = [
+            patch.object(generation_studio, "inspect_graph", return_value={"format": "api"}),
+            patch.object(generation_studio, "node_schema", return_value={}),
+            patch.object(generation_studio, "validate_prompt", return_value=None),
+            patch.object(generation_studio, "editable_fields", return_value=[]),
+            patch.object(generation_studio, "build_opener", side_effect=self.fake_opener),
+            patch.object(generation_studio.project_layout, "training_in_progress", return_value=False),
+            patch.object(generation_studio, "get_json", side_effect=self.fake_comfyui),
+        ]
+        for mocked in self.patches:
+            mocked.start()
+
+    def tearDown(self):
+        for mocked in reversed(self.patches):
+            mocked.stop()
+        self.temp.cleanup()
+
+    def fake_opener(self, *handlers):
+        """Intercept only the real nested submit() HTTP call; never use network."""
+        testcase = self
+
+        class Response:
+            status = 200
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def read(self, *args):
+                return json.dumps({"prompt_id": "prompt-comfy"}).encode("utf-8")
+
+        class Opener:
+            def open(self, request, timeout=None):
+                if request.full_url != "http://127.0.0.1:8188/prompt" or request.get_method() != "POST":
+                    raise AssertionError("Unexpected HTTP request: " + request.full_url)
+                testcase.submitted_requests.append(request)
+                return Response()
+
+        return Opener()
+
+    def fake_comfyui(self, url, path, **kwargs):
+        if path == "/queue":
+            return self.mock_queue
+        if path == "/history/prompt-comfy":
+            return {"prompt-comfy": self.history_entry} if self.history_entry else {}
+        raise AssertionError("Unexpected external request: " + path)
+
+    def prepare(self):
+        response = self.client.post(
+            "/api/workspace/generation/prepare", json={"workflow_id": "workflow-1"}
+        )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        return response.get_json()["token"]
+
+    def submit(self, with_benchmark=True, project_id=None):
+        payload = {
+            "workflow_id": "workflow-1", "confirm": True,
+            "token": self.prepare(),
+        }
+        if with_benchmark:
+            payload["benchmark"] = {
+                "project_id": project_id or self.project_id,
+                "run_id": self.run_id,
+                "variant_id": self.variant_id,
+                "repetition": 0,
+                "confirm": True,
+            }
+        return self.client.post("/api/workspace/generation", json=payload)
+
+    def observations(self):
+        with BenchmarkStore(self.benchmark_path) as bench:
+            return bench.report(self.run_id)["observations"]
+
+    def configure_guided_variant_fixture(self):
+        """Two declared LoRA filenames; all other API graph inputs fixed."""
+        self.graph={
+            "1":{"class_type":"LoraLoader","inputs":{
+                "lora_name":"base.safetensors","strength_model":1.0,
+                "strength_clip":1.0}},
+            "2":{"class_type":"CLIPTextEncode","inputs":{"text":"fixed prompt"}},
+            "3":{"class_type":"KSampler","inputs":{"seed":123}},
+        }
+        settings=self.root/"settings"/"orkilab"
+        with closing(sqlite3.connect(settings/"workflows.sqlite3")) as con, con:
+            con.execute("UPDATE workflows SET graph=? WHERE id='workflow-1'",
+                        (json.dumps(self.graph),))
+        protocol={
+            "schema":"orkilab-repro-v1","vary":"lora","workflow_id":"workflow-1",
+            "prompt_sha256":"a"*64,"negative_prompt_sha256":"b"*64,
+            "input_sha256":"c"*64,"gpu_uuid":"GPU-mocked",
+            "cache":"cold","seed_policy":"fixed","repetitions":2,
+            "resolution":[1024,1024],
+        }
+        with closing(sqlite3.connect(self.benchmark_path)) as con, con:
+            con.execute("UPDATE benchmark_runs SET protocol_json=? WHERE id=?",
+                        (json.dumps(protocol),self.run_id))
+            con.execute("UPDATE benchmark_variants SET config_json=? WHERE id=?",
+                        (json.dumps({"controlled_value":"a.safetensors"}),self.variant_id))
+            con.execute(
+                "INSERT INTO benchmark_variants "
+                "(id,run_id,label,config_json) VALUES (?,?,?,?)",
+                ("variant-b",self.run_id,"Variant B",
+                 json.dumps({"controlled_value":"b.safetensors"}))
+            )
+
+    def test_b10_3_prepare_then_separate_confirmation_submits_one_variant(self):
+        self.configure_guided_variant_fixture()
+        schema={"input":{"required":{
+            "lora_name":[["base.safetensors","a.safetensors","b.safetensors"]]
+        }}}
+        with patch.object(generation_studio,"node_schema",return_value=schema):
+            response=self.client.post(
+                "/api/workspace/generation/benchmark/prepare-one",
+                json={"project_id":self.project_id,"run_id":self.run_id,
+                      "variant_id":self.variant_id,"repetition":0},
+            )
+        self.assertEqual(response.status_code,200,response.get_json())
+        prepared=response.get_json()
+        self.assertFalse(prepared["execution_submitted"])
+        self.assertTrue(prepared["submission_requires_confirmation"])
+        self.assertEqual(len(self.submitted_requests),0)
+        submission=self.client.post("/api/workspace/generation",json={
+            "workflow_id":"workflow-1","token":prepared["token"],"confirm":True,
+            "benchmark":{"project_id":self.project_id,"run_id":self.run_id,
+                         "variant_id":self.variant_id,"repetition":0,"confirm":True},
+        })
+        self.assertEqual(submission.status_code,201,submission.get_json())
+        self.assertEqual(submission.get_json()["benchmark_binding"],"bound")
+        self.assertEqual(len(self.submitted_requests),1)
+        graph=json.loads(self.submitted_requests[0].data)["prompt"]
+        self.assertEqual(graph["1"]["inputs"]["lora_name"],"a.safetensors")
+        self.assertEqual(graph["2"]["inputs"]["text"],"fixed prompt")
+        self.assertEqual(graph["3"]["inputs"]["seed"],123)
+
+    def test_b10_3_guided_token_cannot_be_submitted_for_other_variant(self):
+        self.configure_guided_variant_fixture()
+        schema={"input":{"required":{
+            "lora_name":[["base.safetensors","a.safetensors","b.safetensors"]]
+        }}}
+        with patch.object(generation_studio,"node_schema",return_value=schema):
+            prepared=self.client.post(
+                "/api/workspace/generation/benchmark/prepare-one",
+                json={"project_id":self.project_id,"run_id":self.run_id,
+                      "variant_id":self.variant_id,"repetition":0},
+            ).get_json()
+        response=self.client.post("/api/workspace/generation",json={
+            "workflow_id":"workflow-1","token":prepared["token"],"confirm":True,
+            "benchmark":{"project_id":self.project_id,"run_id":self.run_id,
+                         "variant_id":"variant-b","repetition":0,"confirm":True},
+        })
+        self.assertEqual(response.status_code,409,response.get_json())
+        self.assertEqual(len(self.submitted_requests),0)
+
+    def test_b10_3_guided_token_cannot_be_modified_by_parameter_route(self):
+        self.configure_guided_variant_fixture()
+        schema={"input":{"required":{
+            "lora_name":[["base.safetensors","a.safetensors","b.safetensors"]]
+        }}}
+        with patch.object(generation_studio,"node_schema",return_value=schema):
+            response=self.client.post(
+                "/api/workspace/generation/benchmark/prepare-one",
+                json={"project_id":self.project_id,"run_id":self.run_id,
+                      "variant_id":self.variant_id,"repetition":0},
+            )
+        self.assertEqual(response.status_code,200,response.get_json())
+        token=response.get_json()["token"]
+        changed=self.client.post("/api/workspace/generation/parameters",json={
+            "token":token,"edits":[]
+        })
+        self.assertEqual(changed.status_code,409,changed.get_json())
+        self.assertEqual(len(self.submitted_requests),0)
+
+    def test_b10_3_prepare_refuses_remote_wrong_project_and_repetition(self):
+        self.configure_guided_variant_fixture()
+        payload={"project_id":self.project_id,"run_id":self.run_id,
+                 "variant_id":self.variant_id,"repetition":0}
+        self.assertEqual(self.client.post(
+            "/api/workspace/generation/benchmark/prepare-one",json=payload,
+            environ_overrides={"REMOTE_ADDR":"198.51.100.10"}).status_code,403)
+        self.assertEqual(self.client.post(
+            "/api/workspace/generation/benchmark/prepare-one",
+            json={**payload,"project_id":"other"}).status_code,404)
+        self.assertEqual(self.client.post(
+            "/api/workspace/generation/benchmark/prepare-one",
+            json={**payload,"repetition":2}).status_code,409)
+        self.assertEqual(len(self.submitted_requests),0)
+
+    def test_capabilities_reports_live_benchmark_route_without_submitting(self):
+        response = self.client.get("/api/workspace/generation/capabilities")
+        self.assertEqual(response.status_code, 200)
+        body = response.get_json()
+        self.assertEqual(body["generation_studio"], "benchmark-submission-v1")
+        self.assertIs(body["benchmark_submit"], True)
+        self.assertIs(body["benchmark_terminal_finalization"], True)
+        self.assertEqual(self.submitted_requests, [])
+        self.assertEqual(self.observations(), [])
+
+    def test_capabilities_rejects_nonlocal_client(self):
+        response = self.client.get(
+            "/api/workspace/generation/capabilities",
+            environ_overrides={"REMOTE_ADDR": "192.0.2.10"},
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.submitted_requests, [])
+
+    def test_benchmark_submission_and_terminal_status_records_once(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        job = created.get_json()
+        self.assertEqual(job["benchmark_binding"], "bound")
+        self.assertEqual(len(self.submitted_requests), 1)
+        token = job["id"]
+        self.history_entry = {"status": {"completed": True, "status_str": "success"},
+                              "outputs": {}}
+        status = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["state"], "completed")
+        self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
+        rows = self.observations()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["generation_lineage"]["generation_id"], token)
+        self.assertIsNone(rows[0]["peak_vram_bytes"])
+
+    def test_real_comfyui_history_event_duration_is_stored_with_provenance(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {
+            "status": {
+                "completed": True,
+                "status_str": "success",
+                "messages": [
+                    ["execution_start", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_000}],
+                    ["execution_success", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_003_600}],
+                ],
+            },
+            "outputs": {},
+        }
+        result = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.get_json()["state"], "completed")
+        first = self.observations()
+        self.assertEqual(len(first), 1)
+        self.assertEqual(first[0]["duration_ms"], 3600)
+        self.assertEqual(
+            first[0]["generation_lineage"]["execution_timing"]["source"],
+            "comfyui_history_status_messages",
+        )
+        self.assertIsNone(first[0]["peak_vram_bytes"])
+        # Terminal polling and a launcher restart must never duplicate or
+        # rewrite the original measurement.
+        self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
+        self.assertEqual(self.observations(), first)
+
+    def test_cached_generation_retains_interval_only_as_audit_not_comparison(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {
+            "status": {
+                "completed": True, "status_str": "success",
+                "messages": [
+                    ["execution_start", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_000}],
+                    ["execution_cached", {"prompt_id": "prompt-comfy", "nodes": ["1"]}],
+                    ["execution_success", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_014}],
+                ],
+            },
+            "outputs": {},
+        }
+        status = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["state"], "completed")
+        rows = self.observations()
+        self.assertEqual(len(rows), 1)
+        self.assertIsNone(rows[0]["duration_ms"])
+        timing = rows[0]["generation_lineage"]["execution_timing"]
+        self.assertEqual(timing["duration_ms"], 14)
+        self.assertTrue(timing["execution_cached_event_observed"])
+        # The fixture has only SaveImage, no supported KSampler. A cached
+        # node cannot be mistaken for a known sampler; keep the
+        # comparison duration NULL and mark the sampler as unverified.
+        self.assertEqual(timing["comparability"], "unverified")
+        self.assertEqual(timing["sampler_node_ids"], [])
+        self.assertEqual(timing["sampler_cached_node_ids"], [])
+        self.assertFalse(timing["full_inference_verified"])
+        self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
+        self.assertEqual(self.observations(), rows)
+
+    def test_warm_sampler_duration_kept_when_loader_cached(self):
+        self.graph["7"] = {"class_type": "KSampler", "inputs": {"seed": 43}}
+        with closing(sqlite3.connect(
+            self.root / "settings" / "orkilab" / "workflows.sqlite3"
+        )) as con, con:
+            con.execute("UPDATE workflows SET graph=? WHERE id=?",
+                        (json.dumps(self.graph), "workflow-1"))
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {
+            "status": {"completed": True, "status_str": "success", "messages": [
+                ["execution_start", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_000}],
+                ["execution_cached", {"prompt_id": "prompt-comfy", "nodes": ["1"]}],
+                ["execution_success", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_013_622}],
+            ]}, "outputs": {},
+        }
+        self.assertEqual(
+            self.client.get("/api/workspace/generation/" + token).get_json()["state"],
+            "completed",
+        )
+        observation = self.observations()[0]
+        self.assertEqual(observation["duration_ms"], 13622)
+        timing = observation["generation_lineage"]["execution_timing"]
+        self.assertEqual(timing["sampler_node_ids"], ["7"])
+        self.assertEqual(timing["sampler_cached_node_ids"], [])
+        self.assertEqual(timing["comparability"], "sampler_cache_miss_partial_cache")
+        self.assertFalse(timing["full_inference_verified"])
+
+    def test_cached_sampler_never_populates_comparison_duration(self):
+        self.graph["7"] = {"class_type": "KSampler", "inputs": {"seed": 42}}
+        with closing(sqlite3.connect(
+            self.root / "settings" / "orkilab" / "workflows.sqlite3"
+        )) as con, con:
+            con.execute("UPDATE workflows SET graph=? WHERE id=?",
+                        (json.dumps(self.graph), "workflow-1"))
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {
+            "status": {"completed": True, "status_str": "success", "messages": [
+                ["execution_start", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_000}],
+                ["execution_cached", {"prompt_id": "prompt-comfy", "nodes": ["1", "7"]}],
+                ["execution_success", {"prompt_id": "prompt-comfy", "timestamp": 1_800_000_000_014}],
+            ]}, "outputs": {},
+        }
+        self.assertEqual(
+            self.client.get("/api/workspace/generation/" + token).get_json()["state"],
+            "completed",
+        )
+        observation = self.observations()[0]
+        self.assertIsNone(observation["duration_ms"])
+        timing = observation["generation_lineage"]["execution_timing"]
+        self.assertEqual(timing["sampler_cached_node_ids"], ["7"])
+        self.assertEqual(timing["comparability"], "sampler_cached_not_comparable")
+
+    def test_missing_comfyui_events_never_infers_duration(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {"status": {"completed": True}, "outputs": {}}
+        self.assertEqual(
+            self.client.get("/api/workspace/generation/" + token).get_json()["state"],
+            "completed",
+        )
+        self.assertIsNone(self.observations()[0]["duration_ms"])
+
+    def test_cross_project_request_denied_before_submission(self):
+        result = self.submit(project_id="not-active")
+        self.assertEqual(result.status_code, 404)
+        self.assertEqual(len(self.submitted_requests), 0)
+        self.assertEqual(self.observations(), [])
+        history_path = self.root / "settings" / "orkilab" / "generations.sqlite3"
+        if history_path.is_file():
+            with closing(sqlite3.connect(history_path)) as con:
+                generation_rows = con.execute(
+                    "SELECT count(*) FROM generations"
+                ).fetchone()[0]
+        else:
+            generation_rows = 0
+        self.assertEqual(generation_rows, 0)
+
+    def test_normal_generation_does_not_create_binding(self):
+        created = self.submit(with_benchmark=False)
+        self.assertEqual(created.status_code, 201)
+        self.assertNotIn("benchmark_binding", created.get_json())
+        self.assertEqual(len(self.submitted_requests), 1)
+        token = created.get_json()["id"]
+        self.history_entry = {"status": {"completed": True}, "outputs": {}}
+        self.assertEqual(
+            self.client.get("/api/workspace/generation/" + token).get_json()["state"],
+            "completed",
+        )
+        self.assertEqual(self.observations(), [])
+        with BenchmarkStore(self.benchmark_path) as bench:
+            count = bench.db.execute(
+                "SELECT COUNT(*) FROM benchmark_generation_bindings"
+            ).fetchone()[0]
+            self.assertEqual(count, 0)
+
+    def test_comfyui_error_records_failed_observation(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.history_entry = {"status": {"completed": False, "status_str": "error"},
+                              "outputs": {}}
+        response = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["state"], "error")
+        rows = self.observations()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["status"], "failed")
+        self.assertEqual(rows[0]["generation_lineage"]["generation_id"], token)
+
+    def test_running_job_does_not_finalize_benchmark(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        self.mock_queue = {
+            "queue_running": [[1, "prompt-comfy"]],
+            "queue_pending": [],
+        }
+        response = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["state"], "running")
+        self.assertEqual(self.observations(), [])
+
+    def test_cancelled_generation_history_records_cancelled_once(self):
+        created = self.submit()
+        self.assertEqual(created.status_code, 201, created.get_json())
+        token = created.get_json()["id"]
+        # The existing status handler finalizes a previously acknowledged
+        # cancellation when ComfyUI no longer lists its prompt in the queue.
+        from generation_history import GenerationHistory
+        GenerationHistory(self.root).update(token, "cancelling", [])
+        response = self.client.get("/api/workspace/generation/" + token)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["state"], "cancelled")
+        self.assertEqual(self.client.get("/api/workspace/generation/" + token).status_code, 200)
+        rows = self.observations()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["status"], "cancelled")
+
+
+
+
+    def test_opt_in_gpu_monitor_is_scheduled_without_real_gpu_or_network(self):
+        class FakeThread:
+            started = False
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+            def start(self):
+                FakeThread.started = True
+        payload = {"workflow_id": "workflow-1", "confirm": True,
+                   "token": self.prepare(),
+                   "gpu_monitor": {
+                       "confirm": True, "gpu_uuid": "GPU-test",
+                       "samples": 5, "interval": 0.3,
+                   }}
+        with patch.object(generation_studio.threading, "Thread", FakeThread):
+            response = self.client.post("/api/workspace/generation", json=payload)
+        self.assertEqual(response.status_code, 201, response.get_json())
+        self.assertEqual(response.get_json()["gpu_monitor"], "scheduled")
+        self.assertTrue(FakeThread.started)
+        generation_id = response.get_json()["id"]
+        status = self.client.get("/api/workspace/generation/" +
+                                 generation_id + "/gpu-monitor")
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["state"], "scheduled")
+        self.assertIsNone(status.get_json()["peak_vram_bytes"])
+        self.assertEqual(len(self.submitted_requests), 1)
+        self.assertEqual(self.observations(), [])
+
+    def test_gpu_monitor_invalid_consent_rejected_before_submission(self):
+        token = self.prepare()
+        response = self.client.post("/api/workspace/generation", json={
+            "workflow_id": "workflow-1", "confirm": True, "token": token,
+            "gpu_monitor": {"confirm": False, "gpu_uuid": "GPU-test",
+                            "samples": 5, "interval": 0.3},
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(self.submitted_requests), 0)
+
+    def test_no_opt_in_monitor_does_not_run_or_have_status(self):
+        created = self.submit(with_benchmark=False)
+        self.assertEqual(created.status_code, 201, created.get_json())
+        self.assertNotIn("gpu_monitor", created.get_json())
+        status = self.client.get("/api/workspace/generation/" +
+                                 created.get_json()["id"] + "/gpu-monitor")
+        self.assertEqual(status.status_code, 404)
+
+    def test_gpu_monitor_status_requires_local_launcher(self):
+        status = self.client.get(
+            "/api/workspace/generation/not-a-job/gpu-monitor",
+            environ_overrides={"REMOTE_ADDR": "192.0.2.10"},
+        )
+        self.assertEqual(status.status_code, 403)
+
+
+
+    def test_gpu_monitor_inventory_local_only_and_read_only(self):
+        from benchmark_gpu_memory_probe import sample_devices
+        snapshot = {"ok": True, "devices": [
+            {"index": 0, "uuid": "GPU-test", "name": "NVIDIA RTX 3090",
+             "total_bytes": 24000, "used_bytes": 4000, "free_bytes": 20000},
+        ]}
+        # Resolve the imported function where the route imports it.
+        with patch("benchmark_gpu_memory_probe.sample_devices", return_value=snapshot):
+            response = self.client.get("/api/workspace/generation/gpu-monitor/devices")
+        self.assertEqual(response.status_code, 200, response.get_json())
+        self.assertEqual(response.get_json()["devices"][0]["uuid"], "GPU-test")
+        self.assertEqual(response.get_json()["scope"], "device_global_only")
+        self.assertEqual(len(self.submitted_requests), 0)
+        denied = self.client.get(
+            "/api/workspace/generation/gpu-monitor/devices",
+            environ_overrides={"REMOTE_ADDR": "192.0.2.10"},
+        )
+        self.assertEqual(denied.status_code, 403)
+
+    def test_gpu_monitor_inventory_unavailable_does_not_infer_gpu(self):
+        with patch("benchmark_gpu_memory_probe.sample_devices",
+                   return_value={"ok": False}):
+            response = self.client.get("/api/workspace/generation/gpu-monitor/devices")
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(len(self.submitted_requests), 0)
+
+
+    def test_opt_in_monitor_reports_real_completion_from_mocked_observer(self):
+        import benchmark_gpu_live_capture
+        class InlineThread:
+            def __init__(self, *, target, args, **kwargs):
+                self.target, self.args = target, args
+            def start(self):
+                self.target(*self.args)
+        payload = {
+            "workflow_id": "workflow-1", "confirm": True,
+            "token": self.prepare(),
+            "gpu_monitor": {"confirm": True, "gpu_uuid": "GPU-test",
+                            "samples": 5, "interval": 0.3},
+        }
+        fake_report = {
+            "ok": True, "termination": "completed_history",
+            "max_observed_global_used_bytes": 9000,
+            "sample_count_in_window": 2,
+        }
+        with patch.object(generation_studio.threading, "Thread", InlineThread), \
+             patch.object(benchmark_gpu_live_capture, "observe",
+                          return_value=fake_report) as monitor:
+            response = self.client.post("/api/workspace/generation", json=payload)
+        self.assertEqual(response.status_code, 201, response.get_json())
+        generation_id = response.get_json()["id"]
+        report = self.client.get("/api/workspace/generation/" +
+                                 generation_id + "/gpu-monitor").get_json()
+        self.assertEqual(report["state"], "completed")
+        self.assertEqual(report["max_observed_global_used_bytes"], 9000)
+        self.assertIsNone(report["peak_vram_bytes"])
+        self.assertFalse(report["attributable_to_generation"])
+        self.assertEqual(monitor.call_args.kwargs["gpu_uuid"], "GPU-test")
+        self.assertEqual(self.observations(), [])
+
+    def test_truncated_monitor_does_not_claim_completion(self):
+        import benchmark_gpu_live_capture
+        class InlineThread:
+            def __init__(self, *, target, args, **kwargs):
+                self.target, self.args = target, args
+            def start(self):
+                self.target(*self.args)
+        payload = {
+            "workflow_id": "workflow-1", "confirm": True,
+            "token": self.prepare(),
+            "gpu_monitor": {"confirm": True, "gpu_uuid": "GPU-test",
+                            "samples": 5, "interval": 0.3},
+        }
+        with patch.object(generation_studio.threading, "Thread", InlineThread), \
+             patch.object(benchmark_gpu_live_capture, "observe", return_value={
+                 "ok": True, "termination": "sample_limit",
+                 "sampling_ended_before_confirmed_terminal": True,
+             }):
+            response = self.client.post("/api/workspace/generation", json=payload)
+        self.assertEqual(response.status_code, 201, response.get_json())
+        report = self.client.get("/api/workspace/generation/" +
+                                 response.get_json()["id"] + "/gpu-monitor").get_json()
+        self.assertEqual(report["state"], "partial")
+        self.assertIsNone(report["peak_vram_bytes"])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -8,9 +8,9 @@ This ledger differentiates **features in source**, **development candidates**, *
 | --- | --- | --- | --- | --- |
 | **0.1.0 — Foundation** | `0.1.0-dev` → `0.1.0-rc.1` → `0.1.0-rc.2` | Identity, documentation, safe updater, basic regression/CI | Historical changelog entries; **no verified public release link included in this ledger** | Historical CI/device checks are not independently re-certified here |
 | **0.2.0 — Workspace** | `0.2.0-dev.1` → `0.2.0-rc.1` | Projects, local SQLite, dashboard and modern navigation | Historical changelog entries; **no verified public release link included in this ledger** | Trainer smoke test was user-reported; GPU/regression evidence incomplete |
-| **0.3.0 — Connect** | Development increments → `0.3.0-rc.1` | ComfyUI Zone, Bridge, generation/history, GPU monitoring | [Published prerelease v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1) | Not stable; representative real GPU and workflow matrix |
-| **0.4.0 — Dataset** | Incremental development / beta.1 slices → `0.4.0-rc.1` | Dataset Studio, captions, LoRA library, checkpoint management | [Published prerelease v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1) | Trainer-specific exports and full data-to-training validation |
-| **0.5.0 — Multiview** | `alpha.1` → `alpha.2` → `beta.1` → `beta.2` → `rc.1` and follow-ups | Subjects, angles, photo linkage, synthetic generation, grouped export | [Published prerelease v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) | Stable hardware/workflow/security/rollback gates remain |
+| **0.3.0 — Connect** | Development increments → `0.3.0-rc.1` | ComfyUI Zone, Bridge, generation/history, GPU monitoring | [Published prerelease v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1) | Not stable; representative real GPU and workflow matrix |
+| **0.4.0 — Dataset** | Incremental development / beta.1 slices → `0.4.0-rc.1` | Dataset Studio, captions, LoRA library, checkpoint management | [Published prerelease v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1) | Trainer-specific exports and full data-to-training validation |
+| **0.5.0 — Multiview** | `alpha.1` → `alpha.2` → `beta.1` → `beta.2` → `rc.1` and follow-ups | Subjects, angles, photo linkage, synthetic generation, grouped export | [Published prerelease v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1) | Stable hardware/workflow/security/rollback gates remain |
 | **0.6.0 — Benchmark** | Proposed `alpha.1` → `alpha.2` → `alpha.3` → `beta.1` → `beta.2` → `beta.3` → `rc.1` → stable | Reproducible tests, LoRA/model comparisons, evaluation and reports | **Not published.** Development PR #104 is a draft, not a release | Hardware, automation, evaluation and release gates |
 
 The names **alpha.1**, **beta.1** and similar within the development history describe work phases unless they are explicitly associated with a published GitHub tag. The same distinction applies to the 0.6 plan.
@@ -45,7 +45,7 @@ The names **alpha.1**, **beta.1** and similar within the development history des
 | Phase | What changed | Status / evidence |
 | --- | --- | --- |
 | **Development increments** | ComfyUI connection modes, read-only node/model inventory, workflow library and Bridge, Generation Studio, progress and cancellation, generation history, GPU Manager and RAM/VRAM instrumentation | Development entries in the changelog and [roadmap](ROADMAP.md); exact alpha/beta tags are **not** established here |
-| **0.3.0-rc.1** | Candidate for ComfyUI connection, safe graph preparation/execution and generation monitoring with a dedicated navigable UI | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1), dated 2026-11-21; [acceptance register](RC_0_3_0_READINESS.md) |
+| **0.3.0-rc.1** | Candidate for ComfyUI connection, safe graph preparation/execution and generation monitoring with a dedicated navigable UI | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1), dated 2026-11-21; [acceptance register](RC_0_3_0_READINESS.md) |
 | **Deferred / experimental** | LoRA comparison, every custom workflow, full replacement of legacy trainer UI and exhaustive GPU/engine compatibility | Not certified by the 0.3 candidate |
 
 ## 0.4.0 — Dataset
@@ -54,7 +54,7 @@ The names **alpha.1**, **beta.1** and similar within the development history des
 | --- | --- | --- |
 | **Dataset development** | Project image references, quality/duplicate review, Caption Studio edit/history, separate caption ZIP export | Development slices (including beta.1 work), not independently published beta tags |
 | **Dataset/integration expansion** | Optional local vision caption suggestions, reviewed batch operations, derived image-and-caption export, selected trainer draft handoff, trained LoRA catalog, ComfyUI checkpoint identification/management | Incremental development in source; no universal trainer adapter guarantee |
-| **0.4.0-rc.1** | Consolidated Dataset Studio and curated LoRA candidate, multilingual polish and automated checks | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1), dated 2026-11-21; [acceptance register](RC_0_4_0_READINESS.md) |
+| **0.4.0-rc.1** | Consolidated Dataset Studio and curated LoRA candidate, multilingual polish and automated checks | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1), dated 2026-11-21; [acceptance register](RC_0_4_0_READINESS.md) |
 | **Stable readiness** | Per-engine compatible exports, reproducible split, real GPU full training, rollback and upgrade safety | **Pending:** not automatically satisfied by prerelease publication |
 
 ## 0.5.0 — Multiview
@@ -67,7 +67,7 @@ The names **alpha.1**, **beta.1** and similar within the development history des
 | **Beta.2 · PR #83** | Non-destructive deterministic train/validation grouped ZIP | Merged development phase |
 | **RC.1 · PRs #84–#85** | Existing project/photo discovery and persisted linkage | Merged RC preparation |
 | **RC.1 follow-ups · PRs #86–#99** | Guidance and eight-language UI, local vision orientation, safe input reference staging, curated official workflow templates, branding/docs | Later source refinements; inclusion in a tag must be checked against that tag's actual commit |
-| **Published v0.5.0-rc.1** | Current prerelease; see full [0.5 readiness register](RC_0_5_0_READINESS.md) and [Multiview roadmap](MULTIVIEW_0_5_ROADMAP.md) | [Published prerelease](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1), dated 2026-11-22; no stable v0.5.0 yet |
+| **Published v0.5.0-rc.1** | Current prerelease; see full [0.5 readiness register](RC_0_5_0_READINESS.md) and [Multiview roadmap](MULTIVIEW_0_5_ROADMAP.md) | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1), dated 2026-11-22; no stable v0.5.0 yet |
 
 ## 0.6.0 — Benchmark (planned/in development)
 

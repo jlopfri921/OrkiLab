@@ -1,5 +1,5 @@
 """Workspace routes, alongside the existing launcher."""
-from flask import jsonify, request, send_from_directory
+from flask import jsonify, request, send_from_directory, redirect
 import shutil
 import sqlite3
 from contextlib import closing
@@ -24,6 +24,7 @@ import promotions_feed
 import project_checkpoints
 import managed_checkpoints
 import checkpoint_reviews
+import benchmark_reporting_routes
 
 
 def register(app, base, load_config):
@@ -32,6 +33,7 @@ def register(app, base, load_config):
     comfyui_connect.register(app, base)
     workflow_library.register(app, base)
     generation_studio.register(app, base)
+    benchmark_reporting_routes.report_routes(app, base)
     dataset_studio.register(app, base)
     multiview_studio.register(app, base)
     multiview_assist.register(app, base)
@@ -52,6 +54,14 @@ def register(app, base, load_config):
     @app.get("/workspace/datasets")
     def dataset_studio_page():
         return send_from_directory(str(base / "GUI"), "dataset_studio.html")
+
+    @app.get("/workspace/benchmark")
+    def benchmark_reports_page():
+        if request.remote_addr not in ("127.0.0.1", "::1"):
+            return jsonify(error="Benchmark reports available on launcher PC only"), 403
+        if request.args.get("embed") != "1":
+            return redirect("/workspace/comfyui#benchmark", code=302)
+        return send_from_directory(str(base / "GUI"), "benchmark_reports.html")
 
     @app.get("/workspace/multiview")
     def multiview_studio_page():

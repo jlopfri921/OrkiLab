@@ -10,9 +10,9 @@ class Release04CandidateTests(unittest.TestCase):
         version=(ROOT/"VERSION_ORKILAB").read_text(encoding="utf-8").strip()
         launcher=json.loads((ROOT/"GUI"/"launcher.json").read_text(encoding="utf-8"))
         readme=(ROOT/"README.md").read_text(encoding="utf-8")
-        self.assertRegex(version,r"^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+)?$")
+        self.assertRegex(version,r"^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)(?:\.\d+|\d+))?$")
         self.assertEqual(launcher["orkilab_version"],version)
-        self.assertIn("alt=\"Version "+version+"\"",readme)
+        self.assertIn(version,readme)
         self.assertIn("version-"+version.replace("-","--"),readme)
         self.assertIn("0.4.0-rc.1",readme)  # prior published prerelease retained
 

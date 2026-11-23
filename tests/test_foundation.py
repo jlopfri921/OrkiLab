@@ -26,7 +26,8 @@ class BrandingTests(unittest.TestCase):
             self.assertTrue(ET.parse(path).getroot().tag.endswith("svg"))
         self.assertIn("/assets/orkilab/orkilab-icon.svg", html)
         self.assertIn("/assets/orkilab/orkilab-logo-dark.svg", html)
-        self.assertIn("Academia SD", (ROOT / "LICENSE").read_text(encoding="utf-8"))
+        self.assertIn("Apache License", (ROOT / "LICENSE").read_text(encoding="utf-8"))
+        self.assertIn("Academia SD", (ROOT / "LICENSES/MIT-ORIGINAL").read_text(encoding="utf-8"))
         self.assertIn("AcademiaSD LoRAlab Trainer Studio", html)
 
     def test_updater_guards(self):

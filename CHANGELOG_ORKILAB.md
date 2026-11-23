@@ -1,5 +1,22 @@
 # OrkiLab changelog
 
+## 0.6.0-rc1 — staged development candidate (NOT released)
+
+**Status:** Version metadata staged as `0.6.0-rc1` in [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104), not merged to `main`, not tagged or published as a GitHub Release. This candidate includes newer 0.5.0 stable-preparation and Apache-2.0/MIT provenance records from `main`; publication still requires CI and approval.
+
+- **Benchmark foundation (B1–B9):** project-scoped SQLite run/variant/observation records; immutable local ComfyUI generation lineage; versioned reproducibility declarations, timing diagnostics, cache blockers, history comparison and read-only reports. No invented performance evidence.
+- **B10.1/B10.2:** declaration preflight, manual model selection audit against standard ComfyUI node choices, and strict single-variable candidate checking for supported API graphs.
+- **B10.3:** explicit protocol activation, single variant/repetition preparation, user-confirmed submission and audit/history binding; no batch autoplay or hidden GPU work.
+- **B10.4:** factual paired observation medians and signed differences; incomplete measurements remain unknown, **no benchmark winner or speedup claims**.
+- **B10.5:** fail-closed RC gate visible in Benchmark Studio, manual release checklist, and optional persistent, eight-language **light/dark theme** across key web screens and shared-shell modules. Full trainer/mobile accessibility review still pending.
+- **Testing:** **283 benchmark checks operator-reported PASS**, through B10.5 acceptance (`tok`); no independently attached rerun transcript or verified exact-commit Windows/Linux CI. Linux CI, full-application regression, privacy/data protection, actual GPU ComfyUI acceptance and maintainer release approval remain mandatory.
+- **Release notes and acceptance matrix:** [docs/orkilab/RC_0_6_0_READINESS.md](docs/orkilab/RC_0_6_0_READINESS.md).
+- **RC1 staging:** source `VERSION_ORKILAB`, launcher metadata and README now identify `0.6.0-rc1` as staged/unpublished, with draft `.github/RELEASE_0_6_0_RC1_DRAFT.md`. Five new metadata/license acceptance tests bring the expected Benchmark suite to **288** (283 previously operator-confirmed; five pending Windows retest). The reconciled feature branch requires a fresh Windows test run and exact-head CI before publishing.
+
+Do not merge the feature branch, alter `main`'s stable `0.5.0` version, tag an RC, or issue a GitHub Release without full regression, exact-commit CI and explicit maintainer authorization. The `0.6.0-rc1` version here is **staged only**.
+
+
+
 ## Release phase index (historical and planned)
 
 | Family | Phases documented in this changelog / delivery plan | GitHub release status |
@@ -22,7 +39,7 @@ See the [complete phase-by-phase release history](docs/orkilab/RELEASE_HISTORY.m
 
 ## 0.5.0-rc.1 — published GitHub prerelease (2026-11-22; not stable)
 
-**Status:** [v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.5.0-rc.1) is published as a **GitHub prerelease**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, after Windows/Linux CI. There is no stable `v0.5.0` yet; stable release depends on additional real-device acceptance.
+**Status:** [v0.5.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1) is published as a **GitHub prerelease**, commit `b4bc236bd61db2888aa035986b6dca84126dd83b`, after Windows/Linux CI. There is no stable `v0.5.0` yet; stable release depends on additional real-device acceptance.
 
 ### Multiview from alpha to RC.1
 - **Alpha.1:** subject/capture records scoped to Image projects in local SQLite, metadata, real/synthetic source distinctions, original-file protection and mobile navigation.
@@ -45,7 +62,7 @@ See the [complete phase-by-phase release history](docs/orkilab/RELEASE_HISTORY.m
 
 ## 0.4.0-rc.1 — published GitHub prerelease (2026-11-21)
 
-- Published source prerelease [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.4.0-rc.1). Windows/Linux automated gates passed; remaining real-device and stable-release limitations are documented separately.
+- Published source prerelease [`v0.4.0-rc.1`](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1). Windows/Linux automated gates passed; remaining real-device and stable-release limitations are documented separately.
 
 - Expand Dataset Studio: project-linked image inventory, duplicate/quality diagnostics, manual captions with revision history, export of captions in ZIP format, optional opt-in local Ollama vision previews and batch caption review.
 - Prepare separate image-and-caption training folders without modifying original sources, and connect project-specific prepared datasets to isolated trainer drafts where supported. Engine-specific dataset formats still require verification.
@@ -67,7 +84,7 @@ The release metadata is updated on the release-preparation branch; the GitHub ta
 - Extend GPU Manager with bounded, session-only system RAM and GPU telemetry graphs.
 - Add per-generation RAM/VRAM snapshots (before, sampled peak, after completion and optionally after model/cache release). These are system-wide readings, not proof of memory leaks or per-process attribution.
 - Define the planned **0.3.0-rc.1** feature freeze and acceptance tests in [the roadmap](docs/orkilab/ROADMAP.md). Real-device verification has been reported by the user; specific pass/fail evidence remains to be filed.
-- Released at [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab-LoRA-TrainerStudio/releases/tag/v0.3.0-rc.1), commit `3d7dde0ce19d1937320cd2517523a5b36860b098`, with successful Windows/Linux foundation and RC CI. Model compatibility, unsupported ComfyUI custom nodes, complete trainer modern-view migration and final installer testing remain outside this candidate's guaranteed scope.
+- Released at [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1), commit `3d7dde0ce19d1937320cd2517523a5b36860b098`, with successful Windows/Linux foundation and RC CI. Model compatibility, unsupported ComfyUI custom nodes, complete trainer modern-view migration and final installer testing remain outside this candidate's guaranteed scope.
 
 ## Unreleased — Workspace and ComfyUI development (2026-11-20)
 
