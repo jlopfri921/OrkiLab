@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+from urllib.error import HTTPError, URLError
 from contextlib import closing
 from pathlib import Path
 
@@ -167,8 +168,23 @@ def report_routes(app, base):
             if cfg["mode"] == "native":
                 return jsonify(error="ComfyUI disabled in native mode"), 409
             from urllib.parse import quote
-            info = get_json(cfg["url"], "/object_info/" + quote(kind, safe=""),
-                            max_bytes=500_000, timeout=5)
+            try:
+                info = get_json(cfg["url"], "/object_info/" + quote(kind, safe=""),
+                                max_bytes=500_000, timeout=5)
+            except (HTTPError, URLError, TimeoutError, ConnectionError, OSError):
+                return jsonify(
+                    error="ComfyUI is unreachable or did not provide model options. Check the configured connection and try again.",
+                    reason_codes=["comfyui_object_info_unavailable"],
+                    comparison_execution_authorized=False,
+                    generation_submitted=False,
+                ), 503
+            except (ValueError, UnicodeError):
+                return jsonify(
+                    error="ComfyUI returned invalid model-option data. Check the ComfyUI endpoint and custom nodes.",
+                    reason_codes=["comfyui_object_info_invalid"],
+                    comparison_execution_authorized=False,
+                    generation_submitted=False,
+                ), 502
             schema = info.get(kind) if isinstance(info, dict) else None
             return jsonify(inspect_model_variants(
                 graph, protocol, [dict(v) for v in variants], schema))
