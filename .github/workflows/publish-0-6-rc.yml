@@ -1,0 +1,108 @@
+name: Publish OrkiLab 0.6.0-rc1 prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      acceptance:
+        description: 'Type PUBLISH ORKILAB 0.6.0 RC1'
+        type: string
+        required: true
+      accepted_sha:
+        description: 'Full 40-character main SHA approved for RC1'
+        type: string
+        required: true
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: orkilab-v0.6.0-rc1-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Require explicit approval and exact main revision
+        shell: bash
+        env:
+          ACCEPTANCE: ${{ inputs.acceptance }}
+          ACCEPTED_SHA: ${{ inputs.accepted_sha }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$ACCEPTANCE" = "PUBLISH ORKILAB 0.6.0 RC1"
+          [[ "$ACCEPTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$ACCEPTED_SHA" = "$CURRENT_SHA"
+      - name: Checkout exact approved main revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate RC1 metadata, release notes and licensing
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          version=Path("VERSION_ORKILAB").read_text(encoding="utf-8").strip()
+          launcher=json.loads(Path("GUI/launcher.json").read_text(encoding="utf-8"))
+          assert version == "0.6.0-rc1", version
+          assert launcher["orkilab_version"] == version
+          for path in (
+              "README.md", "CHANGELOG_ORKILAB.md",
+              "docs/orkilab/RC_0_6_0_READINESS.md",
+              ".github/RELEASE_0_6_0_RC1.md",
+              "LICENSING.md", "LICENSE", "LICENSES/MIT-ORIGINAL",
+          ):
+              assert Path(path).is_file(), path
+          notes=Path(".github/RELEASE_0_6_0_RC1.md").read_text(encoding="utf-8")
+          assert "prerelease" in notes.lower()
+          assert "Partial ComfyUI workflow compatibility" in notes
+          assert "Apache-2.0" in notes and "MIT" in notes
+          assert "not stable" in notes.lower()
+          print("RC1 metadata verified", version)
+      - name: Check successful Windows and Linux CI on exact main SHA
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for workflow in "OrkiLab foundation checks" "OrkiLab RC validation"; do
+            success="$(gh run list --repo "$GH_REPO" --workflow "$workflow" --commit "$RELEASE_SHA" --limit 50 \
+              --json event,status,conclusion,headSha \
+              --jq '[.[] | select(.event == "push" and .status == "completed" and .conclusion == "success" and .headSha == env.RELEASE_SHA)] | length')"
+            if ! [[ "$success" =~ ^[1-9][0-9]*$ ]]; then
+              echo "Missing successful main push CI for $workflow at $RELEASE_SHA"
+              exit 1
+            fi
+            echo "$workflow passed on $RELEASE_SHA"
+          done
+      - name: Create source prerelease exactly once
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          tag="v0.6.0-rc1"
+          if gh release view "$tag" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo "Release exists; refusing to overwrite"
+            exit 1
+          fi
+          if gh api "repos/$GH_REPO/git/ref/tags/$tag" >/dev/null 2>&1; then
+            echo "Tag exists; refusing to move it"
+            exit 1
+          fi
+          gh release create "$tag" \
+            --repo "$GH_REPO" \
+            --target "$RELEASE_SHA" \
+            --title "OrkiLab v0.6.0-rc1 — Benchmark Studio" \
+            --notes-file ".github/RELEASE_0_6_0_RC1.md" \
+            --prerelease
+          gh release view "$tag" --repo "$GH_REPO" --json isPrerelease,url,tagName
