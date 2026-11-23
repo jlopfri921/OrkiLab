@@ -7,6 +7,19 @@ Feature branch: `feat/0.6-benchmark-core`
 Review: [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104) — keep **open/unmerged**.  
 Baseline: `main` carries stable 0.5.0 metadata; the feature branch now stages `0.6.0-rc1`. Branches remain **diverged** (at initial inspection: 277 feature commits ahead, four main commits behind). The 0.5 stable acceptance file and publication workflow differ and require careful reconciliation, without rewriting history. Actual v0.5.0 GitHub Release status and CI on the 0.6 head still need verification.
 
+## Aceptación operativa y decisión de fusión — 2026-11-23
+
+**Pruebas comunicadas por el mantenedor, sin adjuntos de consola ni capturas:**
+
+- **Nueva generación con ComfyUI y RTX 3090: PASS comunicado.** Workflow `image_flux2_text_to_image_9b.json`, registro de generación `f69ac654-d111-4c96-ad71-506329085771`; los valores de VRAM son **globales** y el monitor indicó `partial`.
+- **Benchmark Studio con RTX 3090: PASS comunicado expresamente por el mantenedor.** Confirma finalización de una generación y registro correcto en el proyecto. **No facilitó el ID específico de ejecución ni sus logs**; este resultado no certifica equivalencia de modelos, ranking ni soporte universal.
+- **Modo claro:** contraste de cuadros RAM/VRAM corregido y aceptado mediante `tok`. No se adjuntó captura ni matriz completa de dispositivos.
+- **Copia de `settings`, comprobación SQLite de solo lectura y restauración aislada de archivos con comparación SHA-256:** PASS comunicados mediante `hecho` y `tok`. No consta número de bases, transcripción de comprobaciones, **prueba de arranque de la instancia restaurada** ni respaldo de datasets/modelos/salidas fuera de `settings`.
+- **CI en commit anterior `2412178f5f0729f949b4fe20ba2f40e32a9870da`:** [Foundation 45187558918](https://github.com/jlopfri921/OrkiLab/actions/runs/45187558918) y [RC Validation 45187559318](https://github.com/jlopfri921/OrkiLab/actions/runs/45187559318), ambas `success` en Windows/Linux.
+- La PR #104 está **0 commits detrás de `main`**, estado `mergeable=true` comprobado el 2026-11-23. El mantenedor solicita explícitamente «continúa con el cierre de la PR #104» tras aceptar la generación de Benchmark.
+
+**Decisión:** preparar PR #104 para revisión/fusión, sometida al CI del **SHA final** y a las protecciones de GitHub. La fusión de la PR y la publicación del tag/GitHub Release **son acciones independientes**. La instrucción de cierre de la PR **no implica aprobación explícita para publicar `0.6.0-rc1`**. El release seguirá pendiente de dicha aprobación, con las limitaciones anteriores visibles.
+
 ## Prueba real de Nueva generación y contraste — 2026-11-23
 
 **Evidencia comunicada por el operador, sin capturas ni logs de ComfyUI adjuntos:**
