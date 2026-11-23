@@ -71,3 +71,91 @@
 }
 .orki-theme-toggle:focus-visible{outline:2px solid #087f86;outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.orki-theme-toggle{transition:none!important}}
+
+/* B10.5 contrast correction: many legacy modules use literal dark gradients.
+   Normalize BOTH surface and ink; changing text alone makes labels invisible. */
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  .orki-hero,.orki-command,.orki-command-card,.orki-promotion,
+  .orki-quick-grid>a,.projects-intro,.projects-steps article,.projects-empty,
+  .engine-intro,.engine-guides article,.comfy-welcome-grid article,
+  .gpu-card,.compare-step,.workflow-tools,.workflow-content,
+  .workspace-context,.queue-shell .box,.queue-shell .stat,
+  .studio-content .compare-pane,.studio-content .picker,
+  .studio-content .compare-controls
+),
+:root[data-orki-theme="light"] body :is(
+  .stat,.hash-field,#draft-form .hash-field
+){
+  background:#fff!important;
+  color:#15233c!important;
+  border-color:#ccd8e6!important;
+}
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  .orki-hero p,.orki-promo-content p,.orki-promo-label,
+  .orki-quick-grid span,.projects-steps p,.projects-disclaimer,
+  .engine-guides p,.orki-command-card p,.orki-app-context p
+){color:#4b5b72!important}
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  .orki-promo-content strong,.orki-big-number,.orki-eyebrow,.orki-kicker,
+  .projects-steps strong,.orki-command-card strong
+){color:#086d75!important}
+/* Navigation has dark, high-specificity button/link rules in the shared shell. */
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  .orki-app-nav,#home-navigation,#comfy-navigation
+)>:is(a,button),
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  .orki-mobile-option,.orki-mobile-close,.orki-mobile-tab
+){
+  background:#f2f6fb!important;color:#173a53!important;
+  border-color:#bdccdd!important;
+}
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  .orki-app-nav,#home-navigation,#comfy-navigation
+)>:is(a,button):is(:hover,:focus-visible,[aria-current="page"]),
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  .orki-mobile-option,.orki-mobile-tab
+):is(:hover,:focus-visible,[aria-current="page"],[aria-expanded="true"]){
+  background:#dbeff3!important;color:#075965!important;
+  border-color:#087c8b!important;
+}
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  .orki-app-footer,.orki-mobile-bar,.orki-mobile-sheet
+){background:#fff!important;color:#15233c!important;border-color:#ccd8e6!important}
+:root[data-orki-theme="light"] body.orki-app-frame .orki-app-footer a{color:#075965!important}
+:root[data-orki-theme="light"] body :is(
+  button,.btn,.act,.ib,.orki-action-secondary,.orki-promo-link,
+  .back-link,select,input,textarea
+):not(.primary):not(.danger):not(.orki-action-primary){
+  background:#f2f6fb!important;color:#173a53!important;
+  border-color:#bdccdd!important;
+}
+:root[data-orki-theme="light"] body :is(
+  button,.btn,.act,.ib,.orki-action-secondary,.orki-promo-link,.back-link
+):not(.primary):not(.danger):not(.orki-action-primary):is(:hover,:focus-visible){
+  background:#dbeff3!important;color:#075965!important;border-color:#087c8b!important;
+}
+/* Keep affirmative actions legible; preserve destructive action semantics. */
+:root[data-orki-theme="light"] body :is(
+  button.primary,.btn.primary,button[type="submit"],.orki-action-primary,
+  .comfy-welcome-action
+){background:#086d75!important;color:#fff!important;border-color:#086d75!important}
+:root[data-orki-theme="light"] body :is(button.danger,.btn.danger){
+  background:#9f2939!important;color:#fff!important;border-color:#9f2939!important;
+}
+:root[data-orki-theme="light"] body :is(
+  button,.btn,input,select,textarea,a,summary
+):focus-visible{outline:2px solid #086d75!important;outline-offset:2px}
+/* Native controls and Benchmark-specific dark wrappers. */
+:root[data-orki-theme="light"] body :is(
+  .controls,.toolbar,.compare-controls,.compare-caption,.caption-preview,
+  .caption-history,.qualitybar
+){color:#15233c}
+:root[data-orki-theme="light"] body :is(
+  .badge,.chip,.status,.state,.alert,.notice
+){border-color:#bdccdd}
+:root[data-orki-theme="light"] body :is(
+  .orki-command-track,.gpu-track
+){background:#dbe5ee!important}
+:root[data-orki-theme="light"] body :is(
+  .orki-command-track span,.gpu-fill
+){background:#087c8b}
