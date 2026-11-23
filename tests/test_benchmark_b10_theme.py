@@ -61,5 +61,27 @@ class OrkiLabThemeIntegrationTests(unittest.TestCase):
                 self.assertIn(piece,self.css)
 
 
+    def test_light_contrast_fixes_legacy_dark_surfaces_and_buttons(self):
+        """Light theme must override BOTH background and text of legacy controls."""
+        for marker in (
+            ".orki-hero,.orki-command,.orki-command-card,.orki-promotion",
+            ".projects-intro,.projects-steps article,.projects-empty",
+            ".engine-intro,.engine-guides article,.comfy-welcome-grid article",
+            ".gpu-card,.compare-step,.workflow-tools,.workflow-content",
+            ".orki-app-nav,#home-navigation,#comfy-navigation",
+            ".orki-mobile-option,.orki-mobile-close,.orki-mobile-tab",
+            'button.primary,.btn.primary,button[type="submit"]',
+            "button.danger,.btn.danger",
+            "background:#fff!important;",
+            "color:#15233c!important;",
+            "background:#086d75!important;color:#fff!important;",
+            ":focus-visible",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.css)
+        self.assertIn(':root[data-orki-theme="light"]', self.css)
+        self.assertNotIn(':root[data-orki-theme="dark"]', self.css)
+
+
 if __name__=="__main__":
     unittest.main()
