@@ -1,14 +1,13 @@
-"""0.6.0-rc1 staging metadata checks.
+"""0.6.0 stable-source metadata and retained RC evidence checks.
 
-Source metadata only. Passing these checks does not authorize a release,
-reconcile main, verify CI, or certify real GPU workflows.
+Tests do not authorize a release or independently certify operator GPU testing.
 """
 import json
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.6.0-rc1"
+VERSION = "0.6.0"
 
 
 class BenchmarkRcMetadataTests(unittest.TestCase):
@@ -17,35 +16,39 @@ class BenchmarkRcMetadataTests(unittest.TestCase):
         launcher = json.loads((ROOT / "GUI" / "launcher.json").read_text(encoding="utf-8"))
         self.assertEqual(launcher["orkilab_version"], VERSION)
 
-    def test_readme_labels_rc1_unpublished(self):
+    def test_readme_distinguishes_published_rc_and_unpublished_stable(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("0.6.0-rc1 staged", readme)
-        self.assertIn("NOT published", readme)
-        self.assertIn("0.6.0--rc1%20staged", readme)
-        self.assertIn("RC_0_6_0_READINESS.md", readme)
+        self.assertIn("Version 0.6.0 stable candidate, not published", readme)
+        self.assertIn("v0.6.0-rc1", readme)
+        self.assertIn("Stable 0.6.0 source candidate", readme)
+        self.assertIn("RC_0_6_0_STABLE_ACCEPTANCE.md", readme)
         self.assertIn("Apache--2.0%20%2B%20MIT", readme)
+        self.assertEqual(readme.count("## Version history — all phases (0.1.0 to 0.6.0)"), 1)
 
-    def test_release_notes_prohibit_premature_tagging(self):
-        notes = (ROOT / ".github" / "RELEASE_0_6_0_RC1_DRAFT.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("DRAFT ONLY", notes)
-        self.assertIn("not published", notes)
-        self.assertIn("No tag or GitHub Release is authorized", notes)
-        self.assertIn("Benchmark Studio GPU acceptance:", notes)
-        self.assertIn("final merge candidate SHA", notes)
-        self.assertIn("No tag or GitHub Release is authorized", notes)
+    def test_release_notes_and_stable_gates(self):
+        notes = (ROOT / ".github" / "RELEASE_0_6_0.md").read_text(encoding="utf-8")
+        self.assertIn("NOT YET PUBLISHED", notes)
+        self.assertIn("Benchmark Studio", notes)
+        self.assertIn("Partial ComfyUI", notes) if "Partial ComfyUI" in notes else self.assertIn("Partial", notes)
+        self.assertIn("Apache-2.0", notes)
+        self.assertIn("MIT", notes)
+        acceptance = (ROOT / "docs" / "orkilab" / "RC_0_6_0_STABLE_ACCEPTANCE.md").read_text(encoding="utf-8")
+        self.assertIn("35/35 PASS communicated", acceptance)
+        for suite, total in (("E1", 5), ("E2", 6), ("E3", 6), ("E4", 6), ("E5", 6), ("E6", 6)):
+            self.assertIn(f"| {suite} ({total}) |", acceptance)
+        self.assertIn("NOT RELEASED OR TAGGED", acceptance)
+        workflow = (ROOT / ".github" / "workflows" / "publish-0-6-stable.yml").read_text(encoding="utf-8")
+        self.assertIn("PUBLISH ORKILAB 0.6.0 STABLE", workflow)
+        self.assertIn("accepted_sha", workflow)
+        self.assertIn("--latest", workflow)
+        self.assertIn('tag="v0.6.0"', workflow)
+
+    def test_published_rc1_historical_notes_preserved(self):
+        notes = (ROOT / ".github" / "RELEASE_0_6_0_RC1.md").read_text(encoding="utf-8")
+        self.assertIn("Benchmark Studio", notes)
+        self.assertIn("prerelease", notes)
+        self.assertIn("RTX 3090", notes)
         self.assertIn("ComfyUI", notes)
-
-    def test_acceptance_register_keeps_manual_release_gates(self):
-        acceptance = (
-            ROOT / "docs" / "orkilab" / "RC_0_6_0_READINESS.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("Benchmark Studio con RTX 3090: PASS comunicado", acceptance)
-        self.assertIn("no implica aprobación explícita para publicar", acceptance)
-        for marker in ("B10.5-B", "B10.5-C", "B10.5-F", "B10.5-I", "B10.5-J"):
-            self.assertIn(marker, acceptance)
-        self.assertIn("No release tag, GitHub Release", acceptance)
 
     def test_original_mit_and_apache2_provenance_retained(self):
         apache = (ROOT / "LICENSE").read_text(encoding="utf-8")

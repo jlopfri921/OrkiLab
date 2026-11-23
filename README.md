@@ -3,38 +3,25 @@
 <p align="center"><strong>Train. Adapt. Create.</strong><br>Local-first LoRA training for image, video and audio.</p>
 
 <p align="center">
-  <a href="VERSION_ORKILAB"><img alt="0.6.0-rc1 staged, not published" src="https://img.shields.io/badge/version-0.6.0--rc1%20staged-087F91"></a>
+  <a href="VERSION_ORKILAB"><img alt="Version 0.6.0 stable candidate, not published" src="https://img.shields.io/badge/version-0.6.0%20candidate-087F91"></a>
   <a href="LICENSING.md"><img alt="Apache-2.0 and upstream MIT" src="https://img.shields.io/badge/license-Apache--2.0%20%2B%20MIT-315DB3"></a>
   <img alt="Windows and Linux" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-293C60">
   <a href="https://ko-fi.com/jorgelf"><img alt="Support OrkiLab on Ko-fi" src="https://img.shields.io/badge/Ko--fi-Support%20OrkiLab-FF5E5B?logo=kofi&logoColor=white"></a>
 </p>
 
-<p align="center"><a href="#orkilab-060-rc1--staged-not-yet-published">0.6 RC1 preparation</a> · <a href="#version-history--all-phases-010-to-060">Version history</a> · <a href="#orkilab-050--stable-release-preparation">What’s new (0.5.0)</a> · <a href="#quick-start">Quick start</a> · <a href="#training-engines">Training engines</a> · <a href="docs/orkilab/ROADMAP.md">Roadmap</a> · <a href="CHANGELOG_ORKILAB.md">Changelog</a> · <a href="#credits">Credits</a></p>
+<p align="center"><a href="#orkilab-060--stable-release-preparation">0.6.0 stable preparation</a> · <a href="#version-history--all-phases-010-to-060">Version history</a> · <a href="#orkilab-050--stable-release-history">0.5.0 release history</a> · <a href="#quick-start">Quick start</a> · <a href="#training-engines">Training engines</a> · <a href="docs/orkilab/ROADMAP.md">Roadmap</a> · <a href="CHANGELOG_ORKILAB.md">Changelog</a> · <a href="#credits">Credits</a></p>
 
 # OrkiLab — LoRA Trainer Studio
 
-> **0.6.0-rc1 staged on the development branch — NOT published.** The B1–B10.5 engineering work is in [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104), **not yet merged or released**. B10.4 reports observed durations without ranking or verified GPU/cache equivalence. B10.5 adds an explicit release-readiness checklist and optional persistent **light/dark web theme** (Workspace, Benchmark, Queue, Dataset and shared-shell modules; individual trainer/browser acceptance pending). Read the [0.6.0 RC readiness plan](docs/orkilab/RC_0_6_0_READINESS.md) and [complete Benchmark roadmap](docs/orkilab/BENCHMARK_0_6_ROADMAP.md) before any candidate tag. The version badge reflects the **staged development candidate only**, not a GitHub tag, merged PR or published 0.6.0 release.
+**Stable 0.6.0 source candidate on the `release/0.6.0-stable-prep` branch — NOT published.** The previous candidate [v0.6.0-rc1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.6.0-rc1) **was published on 2026-11-23**, and the [implementation PR #104](https://github.com/jlopfri921/OrkiLab/pull/104) was merged. The published stable baseline is [v0.5.0](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0). No stable `v0.6.0` tag or GitHub Release exists in this preparation step.
 
-Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, open-source and local-first workspace for adapting generative models with LoRA and connecting training, datasets and optional ComfyUI image-generation workflows. Workspace is the default interface. **The `main` branch carries 0.5.0 stable-candidate metadata and operator-accepted H1–H7; separate guarded publication status must still be verified. The feature branch stages 0.6.0-rc1 without a published release or tag.** The preceding public prereleases are [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1) and [v0.3.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1).
+Maintained by [jlopfri921](https://github.com/jlopfri921). OrkiLab is an independent, open-source, local-first workbench connecting projects, datasets, LoRA training, compatible ComfyUI generation, monitoring and exports. Original contributions use Apache-2.0; inherited Academia SD core retains MIT; see [licensing](LICENSING.md).
 
-## OrkiLab 0.6.0-rc1 — staged, not yet published
+## OrkiLab 0.6.0 — stable release preparation
 
-**Current feature-branch version: `0.6.0-rc1` (staged).** The B1–B10.5 Benchmark Studio development is complete according to the operator-reported **283 benchmark test passes**. It is **not** a published prerelease, not merged, and not independently verified for all ComfyUI/GPU and desktop environments. Release requires the [RC acceptance register](docs/orkilab/RC_0_6_0_READINESS.md), complete full-app regression, Windows/Linux CI at the final SHA, and explicit maintainer signoff. Benchmark medians are descriptive only, never proof of model superiority. The optional light/dark theme requires final contrast and mobile validation.
+**Version `0.6.0` is staged exclusively for review, not yet released.** Benchmark Studio B1–B10.5 offers project-local comparison declarations, conservatively checked checkpoint/LoRA variants, exactly one explicitly authorized generation, retained local histories and descriptive reports (no verified speed leaderboard). Optional persistent light/dark web themes are included. Some custom ComfyUI workflow graphs remain incompatible; the GPU resource monitor may be global/partial.
 
-## Version history — all phases (0.1.0 to 0.6.0)
-
-The following chronology separates **documented development phases**, **release candidates** and **verified GitHub prereleases**. An RC does **not** mean a stable release; for 0.1 and 0.2, historical changelog entries do not by themselves establish a published GitHub Release.
-
-| Version | Recorded development phases | Focus | Release status |
-| --- | --- | --- | --- |
-| **0.1.0 · Foundation** | **dev → rc.1 → rc.2** | Independent OrkiLab brand, safe updater, CI/regression baseline, consistent launcher/trainer identity | Historical RC candidates documented; public tag/release not verified here |
-| **0.2.0 · Workspace** | **dev.1 → rc.1** | Local project SQLite, modern dashboard, trainer navigation, new default Workspace | Historical RC candidate documented; public tag/release not verified here |
-| **0.3.0 · Connect** | Development increments → **rc.1** | ComfyUI Zone, Bridge, workflow generation, GPU monitoring | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1); stable not verified |
-| **0.4.0 · Dataset** | Incremental development/beta.1 work → **rc.1** | Dataset Studio, captions, trainer handoff, checkpoint/LoRA library | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1); stable pending |
-| **0.5.0 · Multiview** | **alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1** (+ follow-ups) | Photo subjects, camera coverage, view generation, reproducible export | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1); stable pending |
-| **0.6.0 · Benchmark** | **alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable** *(planned)* | Reproducible evaluation, model and LoRA comparison, reports | Development plan; not published |
-
-**Complete phase-by-phase details for every version:** [OrkiLab release history (0.1 → 1.0)](docs/orkilab/RELEASE_HISTORY.md), including the previously under-documented **0.1.0-rc.1 / rc.2** and **0.2.0-rc.1**; also see [Changelog](CHANGELOG_ORKILAB.md) and [Roadmap](docs/orkilab/ROADMAP.md). Versions 0.1–0.4 are not assigned invented alpha/beta releases.
+**Post-RC acceptance:** E1 startup/navigation 5/5; E2 project persistence 6/6; E3 ComfyUI generation 6/6; E4 Benchmark Studio 6/6; E5 safety/theme/mobile 6/6; E6 documentation/backup/regression checks 6/6. **35/35 reported PASS by the operator**, without console logs or screenshot bundle; this is local acceptance, not a universal compatibility guarantee. See [stable acceptance register](docs/orkilab/RC_0_6_0_STABLE_ACCEPTANCE.md). Windows/Linux CI for the final exact candidate SHA, PR review, and explicit maintainer authorization to publish stable remain separate requirements.
 
 ## Version history — all phases (0.1.0 to 0.6.0)
 
@@ -46,14 +33,14 @@ The following chronology separates **documented development phases**, **release 
 | **0.2.0 · Workspace** | **dev.1 → rc.1** | Local project SQLite, modern dashboard, trainer navigation, new default Workspace | Historical RC candidate documented; public tag/release not verified here |
 | **0.3.0 · Connect** | Development increments → **rc.1** | ComfyUI Zone, Bridge, workflow generation, GPU monitoring | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.3.0-rc.1); stable not verified |
 | **0.4.0 · Dataset** | Incremental development/beta.1 work → **rc.1** | Dataset Studio, captions, trainer handoff, checkpoint/LoRA library | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1); stable pending |
-| **0.5.0 · Multiview** | **alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1** (+ follow-ups) | Photo subjects, camera coverage, view generation, reproducible export | [Published prerelease](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1); stable pending |
-| **0.6.0 · Benchmark** | **alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable** *(planned)* | Reproducible evaluation, model and LoRA comparison, reports | Development plan; not published |
+| **0.5.0 · Multiview** | **alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1 → stable** | Photo subjects, camera coverage, view generation, reproducible export | [Stable release](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0) |
+| **0.6.0 · Benchmark** | **alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable** *(in preparation)* | Reproducible evaluation, model and LoRA comparison, reports, light theme | [RC1 published](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.6.0-rc1); stable not yet published |
 
 **Complete phase-by-phase details for every version:** [OrkiLab release history (0.1 → 1.0)](docs/orkilab/RELEASE_HISTORY.md), including the previously under-documented **0.1.0-rc.1 / rc.2** and **0.2.0-rc.1**; also see [Changelog](CHANGELOG_ORKILAB.md) and [Roadmap](docs/orkilab/ROADMAP.md). Versions 0.1–0.4 are not assigned invented alpha/beta releases.
 
-## OrkiLab 0.5.0 — stable release preparation
+## OrkiLab 0.5.0 — stable release history
 
-**Stable candidate source version: `0.5.0` (pending exact-SHA CI and publication).** [**GitHub prerelease `v0.5.0-rc.1` is published**](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0-rc.1), from validated commit `b4bc236bd61db2888aa035986b6dca84126dd83b` (2026-11-22). This is **not** stable `v0.5.0`. The preceding prerelease is [v0.4.0-rc.1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.4.0-rc.1).
+**Stable v0.5.0 was published on 2026-11-22** ([GitHub Release](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0)). The 0.5.0 RC history below remains for reference; development is now preparing 0.6.0 stable.
 
 **Why OrkiLab exists.** OrkiLab aims to be an independent, open-source, local-first workbench that connects projects, data preparation, LoRA training, compatible ComfyUI generation, model/GPU inspection and export. It coordinates tools and models installed by the user rather than being a model itself. The [eight-language in-app guide](http://127.0.0.1:4990/workspace/guide) now explains the overall philosophy, practical use, individual modules, limitations and future direction.
 
