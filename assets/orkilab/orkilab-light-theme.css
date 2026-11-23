@@ -159,3 +159,27 @@
 :root[data-orki-theme="light"] body :is(
   .orki-command-track span,.gpu-fill
 ){background:#087c8b}
+
+/* RC1: generation diagnostics use legacy .gpu-stat tiles with fixed dark ink
+   while the rest of Workspace switches to light ink. Override both surfaces
+   and both text levels together, including telemetry outside this section. */
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  #generation-resource-readings,#gpu-history-summary,#gpu-overview,#gpu-cards
+) .gpu-stat,
+:root[data-orki-theme="light"] body.orki-app-frame #generation-resource-diagnostics .gpu-stat{
+  background:#f2f6fb!important;
+  color:#15233c!important;
+  border:1px solid #ccd8e6!important;
+}
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  #generation-resource-readings,#gpu-history-summary,#gpu-overview,#gpu-cards
+) .gpu-stat strong,
+:root[data-orki-theme="light"] body.orki-app-frame #generation-resource-diagnostics .gpu-stat strong{
+  color:#15233c!important;
+}
+:root[data-orki-theme="light"] body.orki-app-frame :is(
+  #generation-resource-readings,#gpu-history-summary,#gpu-overview,#gpu-cards
+) .gpu-stat .muted,
+:root[data-orki-theme="light"] body.orki-app-frame #generation-resource-diagnostics .gpu-stat .muted{
+  color:#4b5b72!important;
+}
