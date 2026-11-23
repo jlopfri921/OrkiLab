@@ -1,8 +1,20 @@
 # OrkiLab changelog
 
-## 0.6.0-rc1 — staged development candidate (NOT released)
+## 0.6.0 — stable source prepared (NOT published)
 
-**Status:** Version metadata staged as `0.6.0-rc1` in [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104), not merged to `main`, not tagged or published as a GitHub Release. This candidate includes newer 0.5.0 stable-preparation and Apache-2.0/MIT provenance records from `main`; publication still requires CI and approval.
+**2026-11-23:** stable-source candidate staged exclusively on `release/0.6.0-stable-prep`, with version metadata `0.6.0`, independent stable publisher, updated README/changelog, formal acceptance record and stable notes. **No `v0.6.0` tag or stable GitHub Release has been created.** The published `v0.6.0-rc1` remains available and `main` retains its history until the release PR is merged.
+
+- **RC1 on-device validation:** E1–E6 combined **35/35 PASS communicated** by the operator on 2026-11-23; no raw GPU captures/logs supplied. Includes real RTX 3090 FLUX.2 generation, Benchmark Studio run and persistence, project recovery, no silent generation, UI theme and responsive navigation.
+- **Documentation repair:** corrected prepublication assertions in README and changelog, removed duplicate version-history table, and kept actual RC1 public link and Apache-2.0/MIT provenance visible.
+- **Stable release safeguards:** author-entered approval token + exact main commit SHA, Windows/Linux validation on main, non-overwriting tag/Release publishing; no automatic stable publication.
+- **Compatibility restrictions retained:** node-specific ComfyUI incompatibilities, descriptive rather than scientifically attested benchmark speed claims, global/partial GPU metrics and optional third-party model installation.
+- **Signoff:** final candidate CI/PR and a **separate explicit maintainer approval** remain required before stable release.
+
+See [stable acceptance](docs/orkilab/RC_0_6_0_STABLE_ACCEPTANCE.md) and [stable release notes](.github/RELEASE_0_6_0.md).
+
+## 0.6.0-rc1 — published prerelease (2026-11-23; historical development notes)
+
+**Current verified status:** [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104) merged, and [v0.6.0-rc1](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.6.0-rc1) published on 2026-11-23. Subsequent RC1 E1–E6 operator acceptance: **35/35 PASS communicated**, without raw logs/screenshots. Older paragraphs below are historical *prepublication* records and should not be read as current release status.
 
 - **Benchmark foundation (B1–B9):** project-scoped SQLite run/variant/observation records; immutable local ComfyUI generation lineage; versioned reproducibility declarations, timing diagnostics, cache blockers, history comparison and read-only reports. No invented performance evidence.
 - **B10.1/B10.2:** declaration preflight, manual model selection audit against standard ComfyUI node choices, and strict single-variable candidate checking for supported API graphs.
@@ -13,7 +25,7 @@
 - **Release notes and acceptance matrix:** [docs/orkilab/RC_0_6_0_READINESS.md](docs/orkilab/RC_0_6_0_READINESS.md).
 - **RC1 staging:** source `VERSION_ORKILAB`, launcher metadata and README now identify `0.6.0-rc1` as staged/unpublished, with draft `.github/RELEASE_0_6_0_RC1_DRAFT.md`. Five new metadata/license acceptance tests bring the expected Benchmark suite to **288** (283 previously operator-confirmed; five pending Windows retest). The reconciled feature branch requires a fresh Windows test run and exact-head CI before publishing.
 
-Do not merge the feature branch, alter `main`'s stable `0.5.0` version, tag an RC, or issue a GitHub Release without full regression, exact-commit CI and explicit maintainer authorization. The `0.6.0-rc1` version here is **staged only**.
+**Historical note (before RC1 publication):** the feature branch originally required CI and explicit authorization. Those RC1 gates have since been completed. **Stable 0.6.0 is a separate publication requiring new approval.**
 
 
 
@@ -25,17 +37,17 @@ Do not merge the feature branch, alter `main`'s stable `0.5.0` version, tag an R
 | **0.2.0** | dev.1 → rc.1 | Historical release candidate; publication not verified here |
 | **0.3.0** | development → rc.1 | Published prerelease |
 | **0.4.0** | development / beta.1 increments → rc.1 | Published prerelease |
-| **0.5.0** | alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1 (+ subsequent follow-ups) | Published prerelease; stable pending |
-| **0.6.0** | alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable (planned) | Not released |
+| **0.5.0** | alpha.1 → alpha.2 → beta.1 → beta.2 → rc.1 → stable | [Stable v0.5.0 published](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0) |
+| **0.6.0** | alpha.1 → alpha.2 → alpha.3 → beta.1 → beta.2 → beta.3 → rc.1 → stable (in preparation) | [RC1 published](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.6.0-rc1); stable pending |
 
 See the [complete phase-by-phase release history](docs/orkilab/RELEASE_HISTORY.md) for what was delivered at each milestone, linked evidence and outstanding acceptance gates. **Phase names in historical development notes do not imply public tags or stable releases.**
 
-## 0.5.0 — stable release candidate (not yet published)
+## 0.5.0 — stable release (historical preparation notes)
 
 - H1–H7 manual acceptance confirmed as PASS without blocking incidents by the operator on 2026-11-22; independent hardware logs and exact workflow/checkpoint details were not provided.
 - Stable metadata and guarded manual GitHub publication prepared for validation on the exact main commit and Windows/Linux CI.
 - Qwen/FLUX dedicated camera controls, calibrated multiview reconstruction and universal trainer compatibility are **not** claimed.
-- The published release remains `v0.5.0-rc.1` until the stable publisher completes successfully.
+- **Update:** [v0.5.0 stable](https://github.com/jlopfri921/OrkiLab/releases/tag/v0.5.0) was published on 2026-11-22.
 
 ## 0.5.0-rc.1 — published GitHub prerelease (2026-11-22; not stable)
 
