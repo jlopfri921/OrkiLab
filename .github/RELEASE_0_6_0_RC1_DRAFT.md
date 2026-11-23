@@ -22,6 +22,15 @@ The explicit submission path can consume GPU time and write ComfyUI output files
 
 The light theme is a visual enhancement. All trainer pages, mobile layouts, embedded panels, color contrast and keyboard focus require final visual acceptance on supported devices.
 
+## Known workflow compatibility constraints (release candidate)
+
+ComfyUI workflow compatibility is **partial, not universal**. OrkiLab may reject or fail to prepare workflows with unsupported custom nodes, unusual API exports or dynamically linked sampler/model choices. Earlier user-reported cases include `KSamplerSelect` with mismatched `COMBO`/`SAMPLER` node schemas. A successful workflow in the ComfyUI UI does **not** automatically imply it is compatible with Benchmark Studio's API-graph preflight.
+
+- The app must fail closed with a useful, actionable error and must not silently rewrite an unsupported graph into a different generation.
+- Unsupported workflows do not establish a general Benchmark or release failure, **provided** at least one supported representative API workflow is demonstrated end-to-end on a real NVIDIA RTX 3090 (24 GB) and failures stay non-destructive.
+- No claim of full compatibility with all custom-node packs, automatic adapter coverage or cross-workflow scientific comparability is made.
+- Broader import/adaptation support and a compatibility catalogue can be addressed in later updates. Confirming the real GPU run and safe failure handling remains a release acceptance gate.
+
 ## Provenance and evidence
 
 - Milestones B1–B10.5 implemented in the open [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104).
