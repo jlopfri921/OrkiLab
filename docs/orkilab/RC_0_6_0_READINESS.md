@@ -24,6 +24,16 @@ La reconciliación con `main` ya está realizada; en la comparación revisada, l
 
 **Importante:** las referencias históricas a divergencia, CI pendiente o fallos en secciones de 2026-11-22 son registros de aquel momento, no el estado actual. Al crear cualquier nuevo commit de aceptación se deberá verificar el CI de su **SHA exacto**.
 
+### Criterio de compatibilidad de workflows para RC1 (2026-11-23)
+
+El operador ha confirmado que **no todos los workflows de ComfyUI funcionan en OrkiLab**; esto es una limitación conocida, no una validación de compatibilidad universal. Los casos históricos incluyen `KSamplerSelect` y esquemas `COMBO`/`SAMPLER` incompatibles. En particular, distinguir:
+
+- **Compatible:** preflight y una generación real completados en ComfyUI, registro de resultado, historial y vínculo de prompt correctos.
+- **No compatible:** error claro de validación/preparación, sin generación silenciosa, mutación del grafo original ni datos perdidos.
+- **Desconocido:** sin prueba real; no marcar como PASS.
+
+**Hardware de aceptación:** NVIDIA RTX 3090, 24 GB VRAM. El `tok` anterior se limitaba a la preparación **sin GPU**; la generación GPU end-to-end **sigue pendiente**. El catálogo de adaptadores personalizados y la compatibilidad con todos los workflows quedan fuera de este RC, pero los errores destructivos o envíos sin consentimiento sí bloquean publicación.
+
 ### Prueba manual controlada de Benchmark (sin lote)
 
 1. Guardar una copia externa de `settings/orkilab`, bases SQLite de proyectos, dataset y resultados LoRA; no modificar los originales.
