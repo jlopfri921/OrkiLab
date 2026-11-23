@@ -7,6 +7,21 @@ Feature branch: `feat/0.6-benchmark-core`
 Review: [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104) — keep **open/unmerged**.  
 Baseline: `main` carries stable 0.5.0 metadata; the feature branch now stages `0.6.0-rc1`. Branches remain **diverged** (at initial inspection: 277 feature commits ahead, four main commits behind). The 0.5 stable acceptance file and publication workflow differ and require careful reconciliation, without rewriting history. Actual v0.5.0 GitHub Release status and CI on the 0.6 head still need verification.
 
+## Prueba real de Nueva generación y contraste — 2026-11-23
+
+**Evidencia comunicada por el operador, sin capturas ni logs de ComfyUI adjuntos:**
+
+- Workflow: `image_flux2_text_to_image_9b.json` (formato visual, `01 - Imagen/FLUX y LoRA`).
+- Hardware mostrado: NVIDIA GeForce RTX 3090 (24 GiB nominales).
+- Preparación: 10/10 etapas; ejecución completada; ID de generación `f69ac654-d111-4c96-ad71-506329085771`.
+- Monitorización de VRAM global: `partial`, no atribuible a ese workflow individual.
+- Antes del envío: RAM 31,2 GiB; VRAM global 1,6 GiB. Pico muestreado: RAM 32,4 GiB; VRAM 22,7 GiB.
+- Tras generar: RAM 22 GiB; VRAM 19,1 GiB. Tras descargar modelos: RAM 21,4 GiB; VRAM 19,1 GiB. Los valores reflejan todo el sistema, no prueban liberación/retención por proceso ni fuga.
+- Se confirma funcionalmente **Nueva generación** con un workflow compatible; **no** se puede trasladar esta ejecución a una generación realizada desde **Benchmark Studio** sin evidencia específica de sus registros y enlaces.
+- Defecto visual informado: los datos RAM/VRAM se veían negros sobre tarjetas oscuras al activar tema claro. Corrección CSS `7c8b3b4`; prueba estática `4f28f59`. **Revisión visual local post-corrección pendiente.**
+
+**Estado de aceptación:** prueba real de Nueva generación — PASS comunicado. GPU de Benchmark, compatibilidad de otros workflows, historial Benchmark, prueba de copia/restauración y autorización de publicación — pendientes. Las pruebas de CI deben verificarse sobre el SHA final.
+
 ## Estado actualizado — 2026-11-23 (validación en hardware pendiente)
 
 **Candidato comprobado:** `4087149b3ea42f762319b8acf0c6339e0c1fac1c`, rama `feat/0.6-benchmark-core`.
