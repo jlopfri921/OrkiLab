@@ -7,6 +7,38 @@ Feature branch: `feat/0.6-benchmark-core`
 Review: [PR #104](https://github.com/jlopfri921/OrkiLab/pull/104) — keep **open/unmerged**.  
 Baseline: `main` carries stable 0.5.0 metadata; the feature branch now stages `0.6.0-rc1`. Branches remain **diverged** (at initial inspection: 277 feature commits ahead, four main commits behind). The 0.5 stable acceptance file and publication workflow differ and require careful reconciliation, without rewriting history. Actual v0.5.0 GitHub Release status and CI on the 0.6 head still need verification.
 
+## Estado actualizado — 2026-11-23 (validación en hardware pendiente)
+
+**Candidato comprobado:** `4087149b3ea42f762319b8acf0c6339e0c1fac1c`, rama `feat/0.6-benchmark-core`.
+La reconciliación con `main` ya está realizada; en la comparación revisada, la rama tenía 0 commits por detrás. La PR #104 sigue abierta y no se ha publicado tag ni GitHub Release.
+
+- [x] [OrkiLab RC validation #45180067863](https://github.com/jlopfri921/OrkiLab/actions/runs/45180067863) — **success** en Windows y Ubuntu (pruebas, sintaxis de JS y metadatos).
+- [x] [OrkiLab foundation checks #45180067858](https://github.com/jlopfri921/OrkiLab/actions/runs/45180067858) — **success** en Windows y Ubuntu (regresión completa automatizada).
+- [x] Corrección de contraste claro/oscuro `eb45d52` y guardia estática `4087149`.
+- [x] Operador respondió `tok` tras solicitarse comprobación del tema, **sin adjuntar capturas, matriz de navegadores ni log local**.
+- [ ] Ejecución real en ComfyUI con un único trabajo explícitamente confirmado.
+- [ ] Verificación de alcance por proyecto, ausencia de envío automático y persistencia del historial.
+- [ ] Copia de seguridad y ensayo de restauración sobre copia independiente.
+- [ ] Revisión visual completa, incluidos controles deshabilitados, móvil, iframes e interfaces de entrenamiento.
+- [ ] Aprobación explícita de publicación RC1 después de revisar las pruebas.
+
+**Importante:** las referencias históricas a divergencia, CI pendiente o fallos en secciones de 2026-11-22 son registros de aquel momento, no el estado actual. Al crear cualquier nuevo commit de aceptación se deberá verificar el CI de su **SHA exacto**.
+
+### Prueba manual controlada de Benchmark (sin lote)
+
+1. Guardar una copia externa de `settings/orkilab`, bases SQLite de proyectos, dataset y resultados LoRA; no modificar los originales.
+2. Comprobar que ComfyUI está conectado y ocioso, y que no hay entrenamientos o generaciones en curso.
+3. Abrir `http://127.0.0.1:4990/workspace/comfyui#benchmark` (o entrar desde el menú ComfyUI).
+4. Elegir un proyecto de prueba con workflow API compatible y modelos locales presentes; verificar que los proyectos ajenos no se mezclan.
+5. Crear o seleccionar un protocolo de comparación; comprobar validación de modelos, semilla y parámetros declarados. No interpretar hashes declarados como archivos verificados.
+6. Activar el borrador, preparar **una sola variante y repetición**; revisar que no se envía nada a ComfyUI sin una confirmación adicional.
+7. **Solo si el operador desea gastar GPU:** confirmar explícitamente el envío de esa única generación. Vigilar cola/progreso/errores, resultado, historial, vínculo de prompt y memoria GPU; no realizar envíos automáticos posteriores.
+8. Inspeccionar el informe, tiempos y diferencias descriptivas sin declarar ganador; comprobar recarga de página y persistencia en el proyecto correcto.
+9. Alternar modo claro/oscuro en Benchmark embebido, Dataset, Queue, Projects y un entrenador; revisar texto, fondos, botones, foco, estados deshabilitados y pantalla estrecha.
+10. Restaurar una **copia de prueba** en ubicación separada y comprobar que abre sin alterar los datos originales.
+
+Registrar resultado real por paso (PASS/FAIL/NO PROBADO), incidencia, SHA probado y evidencia no sensible. La generación GPU y el ensayo de restauración **no** quedan aprobados por responder simplemente `tok` sin haberlos realizado.
+
 ## 0.6 scope and completed engineering
 
 - B1–B9: local Benchmark SQLite observations, project/run lineage, strict local-only/report access, reproducibility declarations, conservative timing/cache diagnostics and historical ComfyUI graph fingerprint inspection.
