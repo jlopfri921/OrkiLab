@@ -83,5 +83,26 @@ class OrkiLabThemeIntegrationTests(unittest.TestCase):
         self.assertNotIn(':root[data-orki-theme="dark"]', self.css)
 
 
+    def test_light_generation_memory_tiles_have_legible_surfaces_and_ink(self):
+        """The dark legacy GPU tiles must become readable in light mode."""
+        workspace=(ROOT/"GUI"/"workspace.html").read_text(encoding="utf-8")
+        self.assertIn('id="generation-resource-diagnostics"', workspace)
+        self.assertIn('id="generation-resource-readings"', workspace)
+        self.assertIn('"gpu-stat"', workspace)
+        for marker in (
+            '#generation-resource-readings,#gpu-history-summary,#gpu-overview,#gpu-cards',
+            '#generation-resource-diagnostics .gpu-stat',
+            '.gpu-stat strong',
+            '.gpu-stat .muted',
+            'background:#f2f6fb!important;',
+            'color:#15233c!important;',
+            'color:#4b5b72!important;',
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.css)
+        self.assertIn(':root[data-orki-theme="light"]', self.css)
+
+
+
 if __name__=="__main__":
     unittest.main()
