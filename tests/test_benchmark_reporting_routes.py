@@ -333,6 +333,27 @@ class BenchmarkReportsApiTests(unittest.TestCase):
         fetch.assert_called_once_with("http://127.0.0.1:8188",
             "/object_info/LoraLoader",max_bytes=500_000,timeout=5)
 
+        # A disconnected ComfyUI or invalid object_info response must never
+        # produce Flask's default HTML 500 (and must not write to SQLite).
+        from urllib.error import URLError, HTTPError
+        for upstream_error, status_code, reason in (
+            (URLError("connection refused"), 503, "comfyui_object_info_unavailable"),
+            (TimeoutError("timed out"), 503, "comfyui_object_info_unavailable"),
+            (HTTPError("http://localhost", 404, "Not Found", {}, None),
+             503, "comfyui_object_info_unavailable"),
+            (ValueError("invalid JSON"), 502, "comfyui_object_info_invalid"),
+        ):
+            with self.subTest(exception=type(upstream_error).__name__):
+                with patch("comfyui_connect.get_json", side_effect=upstream_error):
+                    failed = self.client.get(
+                        "/api/workspace/benchmark/model-check?project_id=project-a&run_id=run-a")
+                self.assertEqual(failed.status_code, status_code)
+                self.assertTrue(failed.is_json)
+                self.assertIn(reason, failed.get_json()["reason_codes"])
+                self.assertFalse(failed.get_json()["generation_submitted"])
+                self.assertFalse(failed.get_json()["comparison_execution_authorized"])
+                self.assertEqual(self.db.read_bytes(), before)
+
     def test_b10_2_ambiguous_workflow_returns_without_comfyui_request(self):
         import json
         from unittest.mock import patch
