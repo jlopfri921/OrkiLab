@@ -91,8 +91,20 @@ def validate_prompt(prompt, schema):
                             or parent + "." + child in optional):
                         raise ValueError(f"{kind} #{ident}: invalid nested input {parent}")
                     target[parent + "." + child] = descriptor
-        for name in required:
+        for name, descriptor in required.items():
             if name not in node["inputs"]:
+                # A required-section COMFY_AUTOGROW_V3 marker represents a
+                # family of generated sockets. If its template explicitly
+                # allows zero slots, absence of the marker is valid (e.g.
+                # Qwen Image 2.1 text-to-image without reference images).
+                if (isinstance(descriptor, list) and descriptor
+                        and descriptor[0] == "COMFY_AUTOGROW_V3"
+                        and len(descriptor) > 1
+                        and isinstance(descriptor[1], dict)
+                        and isinstance(descriptor[1].get("template"), dict)
+                        and type(descriptor[1]["template"].get("min")) is int
+                        and descriptor[1]["template"]["min"] == 0):
+                    continue
                 raise ValueError(f"{kind} #{ident}: missing input {name}")
         for name, value in node["inputs"].items():
             descriptor = required.get(name, optional.get(name))
