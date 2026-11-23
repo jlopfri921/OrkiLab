@@ -211,7 +211,24 @@ function readableName(value){
 }
 function option(text,value){const o=document.createElement("option");o.textContent=text;o.value=value;return o}
 function clearReport(){ b10GuidedPrepared=null;$("b10-send-confirm").checked=false;$("b10-submit").disabled=true;$("b10-execute-variant").replaceChildren();$("b10-execute-status").textContent="";$("b10-start").disabled=true;$("b10-prepare").disabled=true; $("report").hidden=true;$("metrics").replaceChildren();$("rows").replaceChildren();$("comparability-rows").replaceChildren();$("execution-evidence-rows").replaceChildren();$("saved-history-rows").replaceChildren();$("b9-closure-rows").replaceChildren();$("b10-rows").replaceChildren();$("b104-rows").replaceChildren();$("b105-rows").replaceChildren();$("b10-model-rows").replaceChildren();$("b10-model-status").textContent=""}
-async function get(path){const response=await fetch(path,{cache:"no-store",credentials:"same-origin"});const obj=await response.json();if(!response.ok)throw Error(obj.error||"HTTP "+response.status);return obj}
+async function get(path){
+ const response=await fetch(path,{cache:"no-store",credentials:"same-origin",
+  headers:{"Accept":"application/json"}});
+ const contentType=(response.headers.get("content-type")||"").toLowerCase();
+ if(!contentType.includes("application/json")){
+  const suffix=response.redirected?" (redirection)":"";
+  throw Error("API returned a non-JSON response (HTTP "+response.status+suffix+
+   "). Verify the OrkiLab launcher is updated and restart it; check the API endpoint.");
+ }
+ let obj;
+ try{obj=await response.json()}
+ catch(_error){throw Error("API returned malformed JSON (HTTP "+response.status+").")}
+ if(!obj||typeof obj!=="object"||Array.isArray(obj)){
+  throw Error("API returned an invalid JSON payload (HTTP "+response.status+").");
+ }
+ if(!response.ok)throw Error(obj.error||"HTTP "+response.status);
+ return obj;
+}
 function stateName(s){return t(({draft:"draft",running:"running",completed:"completedState",failed:"failedState",cancelled:"cancelledState"})[s]||s)}
 function resetDraftOptions(){
  for(const id of ["draft-workflow-pick","draft-gpu-pick"]){
